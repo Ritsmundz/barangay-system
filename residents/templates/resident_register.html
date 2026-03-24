@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resident Registration - Barangay E-Governance System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-container { width: 100%; max-width: 480px; }
+        .brand-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px 16px 0 0;
+            padding: 30px 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid #2563EB;
+        }
+        .brand-title { font-size: 22px; font-weight: 700; color: #1E293B; }
+        .brand-subtitle { font-size: 13px; color: #64748B; margin-top: 4px; }
+        .form-card {
+            background: #fff;
+            border-radius: 0 0 16px 16px;
+            padding: 28px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .form-title { font-size: 18px; font-weight: 600; color: #1E293B; margin-bottom: 6px; }
+        .form-subtitle { font-size: 13px; color: #64748B; margin-bottom: 18px; }
+        .msg-list {
+            list-style: none;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border: 1px solid #BFDBFE;
+            background: #EFF6FF;
+            color: #1E40AF;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .err-list {
+            list-style: none;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            border: 1px solid #FECACA;
+            background: #FEF2F2;
+            color: #991B1B;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .field { margin-bottom: 14px; }
+        .field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .field input {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            background: #F8FAFC;
+            font-size: 13px;
+            color: #1E293B;
+            outline: none;
+        }
+        .field input:focus {
+            border-color: #2563EB;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+        }
+        .btn {
+            width: 100%;
+            height: 42px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .footer { margin-top: 16px; text-align: center; font-size: 12px; color: #64748B; }
+        .footer a { color: #2563EB; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="brand-card">
+            <div class="brand-title">Barangay Gulod</div>
+            <div class="brand-subtitle">Resident Online Portal</div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-title">Create Resident Account</div>
+            <div class="form-subtitle">Register using your barangay record details.</div>
+
+            {% if messages %}
+            <ul class="msg-list">
+                {% for message in messages %}<li>{{ message }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+
+            {% if form.errors %}
+            <ul class="err-list">
+                {% for field in form %}
+                    {% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="field"><label for="id_username">Username</label>{{ form.username }}</div>
+                <div class="field"><label for="id_first_name">First name</label>{{ form.first_name }}</div>
+                <div class="field"><label for="id_last_name">Last name</label>{{ form.last_name }}</div>
+                <div class="field"><label for="id_birthdate">Birthdate</label>{{ form.birthdate }}</div>
+                <div class="field"><label for="id_password1">Password</label>{{ form.password1 }}</div>
+                <div class="field"><label for="id_password2">Confirm password</label>{{ form.password2 }}</div>
+                <button type="submit" class="btn">Register Account</button>
+            </form>
+
+            <div class="footer">
+                Already have an account? <a href="{% url 'login' %}">Sign in</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

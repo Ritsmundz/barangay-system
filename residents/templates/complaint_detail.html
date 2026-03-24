@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ complaint.title }}</h2>
+
+<p><strong>Resident:</strong> {{ complaint.resident }}</p>
+<p><strong>Description:</strong> {{ complaint.description }}</p>
+<p><strong>Status:</strong> {{ complaint.status }}</p>
+<p><strong>Date Filed:</strong> {{ complaint.date_filed }}</p>
+
+{% if can_update_status %}
+<h3>Update Status</h3>
+
+<form method="POST" action="{% url 'update_complaint_status' complaint.id %}">
+{% csrf_token %}
+
+<select name="status">
+    <option value="Pending" {% if complaint.status == "Pending" %}selected{% endif %}>
+        Pending
+    </option>
+
+    <option value="Under Investigation" {% if complaint.status == "Under Investigation" %}selected{% endif %}>
+        Under Investigation
+    </option>
+
+    <option value="For Mediation" {% if complaint.status == "For Mediation" %}selected{% endif %}>
+        For Mediation
+    </option>
+
+    <option value="Resolved" {% if complaint.status == "Resolved" %}selected{% endif %}>
+        Resolved
+    </option>
+
+    <option value="Dismissed" {% if complaint.status == "Dismissed" %}selected{% endif %}>
+        Dismissed
+    </option>
+</select>
+
+<button type="submit">Update</button>
+
+</form>
+{% endif %}
+
+{% endblock %}

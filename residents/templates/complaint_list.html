@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
+    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+    /* ── Action button in header ── */
+    .header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        text-decoration: none;
+        transition: all .15s;
+        border: none;
+    }
+    .header-btn:hover {
+        background: #1D4ED8;
+        text-decoration: none;
+        color: #fff;
+    }
+    .header-btn svg { width: 14px; height: 14px; }
+
+    /* ── Stats cards ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .stat-icon svg { width: 20px; height: 20px; }
+    .stat-content { flex: 1; }
+    .stat-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #1E293B; margin-top: 2px; }
+
+    /* Icon colors */
+    .stat-icon.total { background: #DBEAFE; }
+    .stat-icon.total svg { color: #3B82F6; }
+    .stat-icon.pending { background: #FEF3C7; }
+    .stat-icon.pending svg { color: #F59E0B; }
+    .stat-icon.resolved { background: #D1FAE5; }
+    .stat-icon.resolved svg { color: #10B981; }
+    .stat-icon.dismissed { background: #F3F4F6; }
+    .stat-icon.dismissed svg { color: #6B7280; }
+
+    /* ── Table card ── */
+    .table-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .table-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .table-card-title svg { width: 18px; height: 18px; }
+
+    /* ── Search and filter ── */
+    .table-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .search-box {
+        position: relative;
+        min-width: 200px;
+    }
+    .search-box input {
+        width: 100%;
+        padding: 6px 12px 6px 32px;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 6px;
+        font-size: 12px;
+        background: rgba(255,255,255,.15);
+        color: #fff;
+        outline: none;
+    }
+    .search-box input::placeholder { color: rgba(255,255,255,.6); }
+    .search-box svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        color: rgba(255,255,255,.6);
+    }
+    .filter-select {
+        padding: 6px 12px;
+        border: 1px solid rgba(255,255,255,.3);
+        border-radius: 6px;
+        font-size: 12px;
+        background: rgba(255,255,255,.15);
+        color: #fff;
+        outline: none;
+        cursor: pointer;
+    }
+    .filter-select option { background: #1E3A8A; }
+
+    /* ── Table ── */
+    .complaints-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .complaints-table thead {
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .complaints-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .complaints-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        color: #1E293B;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .complaints-table tr:last-child td { border-bottom: none; }
+    .complaints-table tbody tr:hover { background: #F8FAFC; }
+
+    /* ── Complaint title link ── */
+    .complaint-link {
+        color: #2563EB;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: color .15s;
+    }
+    .complaint-link:hover {
+        color: #1D4ED8;
+        text-decoration: underline;
+    }
+    .complaint-link svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+    }
+
+    /* ── Status badges ── */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .status-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+    
+    .status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+    .status-investigating {
+        background: #DBEAFE;
+        color: #1E40AF;
+    }
+    .status-resolved {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+    .status-dismissed {
+        background: #F3F4F6;
+        color: #374151;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+        color: #94A3B8;
+    }
+    .empty-state-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 6px;
+    }
+    .empty-state-text {
+        font-size: 13px;
+        color: #64748B;
+        margin-bottom: 16px;
+    }
+    .empty-state-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        text-decoration: none;
+        transition: all .15s;
+    }
+    .empty-state-btn:hover {
+        background: #1D4ED8;
+        text-decoration: none;
+        color: #fff;
+    }
+    .empty-state-btn svg { width: 14px; height: 14px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+        .complaints-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'role_redirect' %}">Dashboard</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">Complaints</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Complaints Management</div>
+        <div class="page-subtitle">Track and manage barangay complaints</div>
+    </div>
+    <a href="{% url 'file_complaint' %}" class="header-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        File Complaint
+    </a>
+</div>
+
+<!-- Stats grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Complaints</div>
+            <div class="stat-value">{{ complaints|length }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon pending">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Pending</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon resolved">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Resolved</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon dismissed">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Dismissed</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+</div>
+
+<!-- Table card -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            All Complaints
+        </div>
+        
+        <div class="table-controls">
+            <div class="search-box">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                </svg>
+                <input type="text" placeholder="Search complaints...">
+            </div>
+            
+            <select class="filter-select">
+                <option value="">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Investigating">Investigating</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Dismissed">Dismissed</option>
+            </select>
+        </div>
+    </div>
+
+    {% if complaints %}
+    <table class="complaints-table">
+        <thead>
+            <tr>
+                <th>Complaint Title</th>
+                <th>Complainant</th>
+                <th>Status</th>
+                <th>Date Filed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+            <tr>
+                <td>
+                    <a href="{% url 'complaint_detail' complaint.id %}" class="complaint-link">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ complaint.title }}
+                    </a>
+                </td>
+                <td>{{ complaint.resident }}</td>
+                <td>
+                    {% if complaint.status == "Pending" %}
+                    <span class="status-badge status-pending">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+                        </svg>
+                        Pending
+                    </span>
+                    {% elif complaint.status == "Investigating" %}
+                    <span class="status-badge status-investigating">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 9a2 2 0 114 0 2 2 0 01-4 0z"/>
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a4 4 0 00-3.446 6.032l-2.261 2.26a1 1 0 101.414 1.415l2.261-2.261A4 4 0 1011 5z" clip-rule="evenodd"/>
+                        </svg>
+                        Investigating
+                    </span>
+                    {% elif complaint.status == "Resolved" %}
+                    <span class="status-badge status-resolved">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Resolved
+                    </span>
+                    {% elif complaint.status == "Dismissed" %}
+                    <span class="status-badge status-dismissed">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        Dismissed
+                    </span>
+                    {% else %}
+                    <span class="status-badge status-pending">
+                        {{ complaint.status }}
+                    </span>
+                    {% endif %}
+                </td>
+                <td>{{ complaint.date_filed|date:"M d, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="empty-state-title">No complaints filed yet</div>
+        <div class="empty-state-text">Complaints filed by residents will appear here.</div>
+        <a href="{% url 'file_complaint' %}" class="empty-state-btn">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            File First Complaint
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

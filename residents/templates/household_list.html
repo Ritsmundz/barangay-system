@@ -1,0 +1,459 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
+    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+    /* ── Action button in header ── */
+    .header-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        text-decoration: none;
+        transition: all .15s;
+        border: none;
+    }
+    .header-btn:hover {
+        background: #1D4ED8;
+        text-decoration: none;
+        color: #fff;
+    }
+    .header-btn svg { width: 14px; height: 14px; }
+
+    /* ── Stats cards ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .stat-icon svg { width: 20px; height: 20px; }
+    .stat-content { flex: 1; }
+    .stat-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
+    .stat-value { font-size: 20px; font-weight: 600; color: #1E293B; margin-top: 2px; }
+
+    /* Icon colors */
+    .stat-icon.total { background: #DBEAFE; }
+    .stat-icon.total svg { color: #3B82F6; }
+
+    /* ── Filter card ── */
+    .filter-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+    }
+    .filter-form {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .filter-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+    }
+    .filter-input,
+    .filter-select {
+        padding: 8px 12px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 13px;
+        background: #F8FAFC;
+        color: #1E293B;
+        outline: none;
+        transition: all .15s;
+    }
+    .filter-input:focus,
+    .filter-select:focus {
+        border-color: #2563EB;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+    .filter-select {
+        cursor: pointer;
+    }
+    .filter-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: all .15s;
+        white-space: nowrap;
+    }
+    .filter-btn:hover {
+        background: #1D4ED8;
+    }
+    .filter-btn svg { width: 14px; height: 14px; }
+
+    /* ── Table card ── */
+    .table-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .table-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .table-card-title svg { width: 18px; height: 18px; }
+
+    /* ── Table ── */
+    .households-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .households-table thead {
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .households-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .households-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        color: #1E293B;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .households-table tr:last-child td { border-bottom: none; }
+    .households-table tbody tr:hover { background: #F8FAFC; }
+
+    /* ── Badge ── */
+    .member-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        background: #EFF6FF;
+        color: #1E40AF;
+    }
+    .member-badge svg { width: 12px; height: 12px; }
+
+    .no-head {
+        color: #94A3B8;
+        font-style: italic;
+        font-size: 12px;
+    }
+
+    /* ── Action button ── */
+    .btn-view {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        text-decoration: none;
+        transition: all .15s;
+    }
+    .btn-view:hover {
+        background: #1D4ED8;
+        text-decoration: none;
+        color: #fff;
+    }
+    .btn-view svg { width: 13px; height: 13px; }
+
+    /* ── Empty state ── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+        color: #94A3B8;
+    }
+    .empty-state-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 6px;
+    }
+    .empty-state-text {
+        font-size: 13px;
+        color: #64748B;
+        margin-bottom: 16px;
+    }
+    .empty-state-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #2563EB;
+        color: #fff;
+        text-decoration: none;
+        transition: all .15s;
+    }
+    .empty-state-btn:hover {
+        background: #1D4ED8;
+        text-decoration: none;
+        color: #fff;
+    }
+    .empty-state-btn svg { width: 14px; height: 14px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+        .households-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">Households</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Households</div>
+        <div class="page-subtitle">Manage household records in the barangay</div>
+    </div>
+    <a href="{% url 'add_household' %}" class="header-btn">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+        </svg>
+        Add Household
+    </a>
+</div>
+
+<!-- Stats grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Total Households</div>
+            <div class="stat-value">{{ households|length }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter card -->
+<div class="filter-card">
+    <form method="GET" class="filter-form">
+        <div class="filter-group">
+            <label class="filter-label" for="search_street">Search Street</label>
+            <input 
+                type="text" 
+                name="q" 
+                id="search_street"
+                class="filter-input"
+                placeholder="Enter street name..."
+                value="{{ request.GET.q }}"
+            >
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label" for="filter_purok">Filter by Purok</label>
+            <select name="purok" id="filter_purok" class="filter-select">
+                <option value="">All Puroks</option>
+                <option value="1" {% if request.GET.purok == "1" %}selected{% endif %}>Purok 1</option>
+                <option value="2" {% if request.GET.purok == "2" %}selected{% endif %}>Purok 2</option>
+                <option value="3" {% if request.GET.purok == "3" %}selected{% endif %}>Purok 3</option>
+                <option value="4" {% if request.GET.purok == "4" %}selected{% endif %}>Purok 4</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="filter-btn">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
+            </svg>
+            Apply Filter
+        </button>
+    </form>
+</div>
+
+<!-- Table card -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+            </svg>
+            All Households
+        </div>
+    </div>
+
+    {% if households %}
+    <table class="households-table">
+        <thead>
+            <tr>
+                <th>House No.</th>
+                <th>Street</th>
+                <th>Purok</th>
+                <th>Household Head</th>
+                <th>Members</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for household in households %}
+            <tr>
+                <td><strong>{{ household.house_number }}</strong></td>
+                <td>{{ household.street }}</td>
+                <td>Purok {{ household.purok }}</td>
+                <td>
+                    {% if household.head %}
+                        <strong>{{ household.head.first_name }} {{ household.head.last_name }}</strong>
+                    {% else %}
+                        <span class="no-head">No head assigned</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="member-badge">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                        </svg>
+                        {{ household.members.count }} member{{ household.members.count|pluralize }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'household_detail' household.id %}" class="btn-view">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                        </svg>
+                        View Details
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+            </svg>
+        </div>
+        <div class="empty-state-title">No households found</div>
+        <div class="empty-state-text">
+            {% if request.GET.q or request.GET.purok %}
+                No households match your search criteria. Try adjusting your filters.
+            {% else %}
+                Start by adding the first household to the system.
+            {% endif %}
+        </div>
+        <a href="{% url 'add_household' %}" class="empty-state-btn">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Add First Household
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .pv-wrap { max-width: 860px; margin: 0 auto; }
+    .pv-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .pv-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        color: #fff;
+    }
+    .pv-title { font-size: 16px; font-weight: 600; }
+    .pv-sub { font-size: 12px; opacity: .8; margin-top: 4px; }
+    .pv-body { padding: 22px 24px; }
+    .pv-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 10px;
+        margin: 14px 0 18px;
+    }
+    .pv-item {
+        border: 1px solid #E2E8F0;
+        background: #F8FAFC;
+        border-radius: 8px;
+        padding: 10px 12px;
+    }
+    .pv-label { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: .04em; }
+    .pv-value { font-size: 13px; color: #1E293B; margin-top: 3px; font-weight: 500; }
+    .pv-note {
+        border: 1px solid #FDE68A;
+        background: #FFFBEB;
+        color: #78350F;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+    .pv-msg {
+        list-style: none;
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #EFF6FF;
+        color: #1E40AF;
+        border: 1px solid #BFDBFE;
+        font-size: 12px;
+    }
+</style>
+
+<div class="pv-wrap">
+    <div class="pv-card">
+        <div class="pv-header">
+            <div class="pv-title">Account Verification Pending</div>
+            <div class="pv-sub">Your resident account is waiting for secretary approval.</div>
+        </div>
+        <div class="pv-body">
+            {% if messages %}
+            <ul class="pv-msg">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>
+            {% endif %}
+
+            <div class="pv-grid">
+                <div class="pv-item"><div class="pv-label">Name</div><div class="pv-value">{{ profile.first_name }} {{ profile.last_name }}</div></div>
+                <div class="pv-item"><div class="pv-label">Birthdate</div><div class="pv-value">{{ profile.birth_date }}</div></div>
+                <div class="pv-item"><div class="pv-label">Username</div><div class="pv-value">{{ profile.user.username }}</div></div>
+            </div>
+
+            <div class="pv-note">
+                You can use service requests and other resident features after your account is verified and linked by the secretary.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

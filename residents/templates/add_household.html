@@ -1,0 +1,468 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
+    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+    /* ── Layout ── */
+    .household-layout {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    /* ── Form card ── */
+    .form-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .form-card-hdr {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .form-card-hdr-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
+    .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
+    .form-card-hdr-sub { font-size: 11.5px; color: rgba(255,255,255,.7); margin-top: 1px; }
+    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Form sections ── */
+    .form-section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .section-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1E293B;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-title svg { width: 16px; height: 16px; color: #2563EB; }
+
+    /* ── Field grid ── */
+    .field-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .field-full { grid-column: 1 / -1; }
+    @media (max-width: 640px) {
+        .field-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Field group ── */
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-required { color: #DC2626; }
+    .field-hint { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+    .field-error {
+        font-size: 11px;
+        color: #DC2626;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-error svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Inputs ── */
+    .bmis-input,
+    .bmis-select,
+    .bmis-textarea {
+        width: 100%;
+        padding: 0 12px;
+        height: 40px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #1E293B;
+        background: #F8FAFC;
+        outline: none;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .bmis-textarea {
+        height: auto;
+        min-height: 80px;
+        padding: 10px 12px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+    .bmis-input:focus,
+    .bmis-select:focus,
+    .bmis-textarea:focus {
+        border-color: #2563EB;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+    .bmis-input:hover,
+    .bmis-select:hover,
+    .bmis-textarea:hover { border-color: #CBD5E1; }
+    .bmis-input.error,
+    .bmis-select.error,
+    .bmis-textarea.error {
+        border-color: #DC2626;
+    }
+
+    /* Custom select arrow */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+        content: '';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid #94A3B8;
+        pointer-events: none;
+    }
+    .select-wrap .bmis-select { padding-right: 32px; cursor: pointer; }
+
+    /* ── Info card ── */
+    .info-card {
+        background: #EFF6FF;
+        border: 1px solid #BFDBFE;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .info-card svg { width: 18px; height: 18px; color: #2563EB; flex-shrink: 0; margin-top: 1px; }
+    .info-card-content { flex: 1; }
+    .info-card-title { 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: #1E40AF; 
+        margin-bottom: 4px;
+    }
+    .info-card-text { font-size: 12px; color: #1E3A8A; line-height: 1.6; }
+
+    /* ── Form footer ── */
+    .form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        border-top: 1px solid #E2E8F0;
+        background: #FAFAFA;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .footer-note {
+        font-size: 11.5px;
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .footer-note svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .footer-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* ── Buttons ── */
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        line-height: 1;
+        white-space: nowrap;
+        border: none;
+    }
+    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary { background: #2563EB; color: #fff; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
+    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
+    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+
+    /* Hide default Django form rendering */
+    .form-body form > p { display: none; }
+    .form-body form > ul { display: none; }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'household_list' %}">Households</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">Add Household</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Add New Household</div>
+        <div class="page-subtitle">Register a new household in the barangay</div>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="household-layout">
+
+    <!-- Info card -->
+    <div class="info-card">
+        <svg viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+        </svg>
+        <div class="info-card-content">
+            <div class="info-card-title">About Households</div>
+            <div class="info-card-text">
+                A household represents a residential address in the barangay. After creating a household, 
+                you can add residents who live at this address. Each household should have a unique house number.
+            </div>
+        </div>
+    </div>
+
+    <!-- Form card -->
+    <div class="form-card">
+        <div class="form-card-hdr">
+            <div class="form-card-hdr-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="form-card-hdr-title">Household Information</div>
+                <div class="form-card-hdr-sub">Fill in the address details below</div>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-body">
+
+                <!-- Address Information Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                        </svg>
+                        Address Details
+                    </div>
+
+                    <div class="field-grid">
+                        <!-- House Number -->
+                        <div class="field-group">
+                            <label class="field-label" for="id_house_number">
+                                House Number <span class="field-required">*</span>
+                            </label>
+                            {{ form.house_number }}
+                            {% if form.house_number.errors %}
+                            <div class="field-error">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ form.house_number.errors.0 }}
+                            </div>
+                            {% else %}
+                            <div class="field-hint">Unique identifier for this household</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Street -->
+                        <div class="field-group">
+                            <label class="field-label" for="id_street">
+                                Street <span class="field-required">*</span>
+                            </label>
+                            {{ form.street }}
+                            {% if form.street.errors %}
+                            <div class="field-error">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ form.street.errors.0 }}
+                            </div>
+                            {% else %}
+                            <div class="field-hint">Street or road name</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Purok -->
+                        <div class="field-group field-full">
+                            <label class="field-label" for="id_purok">
+                                Purok <span class="field-required">*</span>
+                            </label>
+                            <div class="select-wrap">
+                                {{ form.purok }}
+                            </div>
+                            {% if form.purok.errors %}
+                            <div class="field-error">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ form.purok.errors.0 }}
+                            </div>
+                            {% else %}
+                            <div class="field-hint">Purok/zone number in the barangay</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Household Head Section -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                        </svg>
+                        Household Head (Optional)
+                    </div>
+
+                    <div class="field-grid">
+                        <!-- Household Head -->
+                        <div class="field-group field-full">
+                            <label class="field-label" for="id_head">
+                                Household Head
+                            </label>
+                            <input
+                                type="text"
+                                id="head-search"
+                                class="bmis-input"
+                                placeholder="Search resident name..."
+                                autocomplete="off"
+                            >
+                            <div class="select-wrap">
+                                {{ form.head }}
+                            </div>
+                            {% if form.head.errors %}
+                            <div class="field-error">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ form.head.errors.0 }}
+                            </div>
+                            {% endif %}
+                            <div class="field-hint">You can assign a household head now or later after adding residents</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer: Submit + Cancel -->
+            <div class="form-footer">
+                <div class="footer-note">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    Required fields are marked with <span style="color:#DC2626;">*</span>
+                </div>
+                <div class="footer-actions">
+                    <a href="{% url 'household_list' %}" class="btn-bmis btn-ghost">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                        </svg>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-bmis btn-primary">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Save Household
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<script>
+    (function () {
+        const searchInput = document.getElementById("head-search");
+        const headSelect = document.getElementById("id_head");
+        if (!searchInput || !headSelect) return;
+
+        const options = Array.from(headSelect.options).map((opt) => ({
+            value: opt.value,
+            text: opt.text,
+            selected: opt.selected,
+        }));
+
+        function rebuildOptions(filter) {
+            const term = (filter || "").trim().toLowerCase();
+            const currentValue = headSelect.value;
+            headSelect.innerHTML = "";
+
+            options.forEach((opt) => {
+                const matches = !term || opt.text.toLowerCase().includes(term);
+                if (!matches) return;
+                const optionEl = document.createElement("option");
+                optionEl.value = opt.value;
+                optionEl.text = opt.text;
+                if (opt.value === currentValue) {
+                    optionEl.selected = true;
+                }
+                headSelect.appendChild(optionEl);
+            });
+        }
+
+        searchInput.addEventListener("input", (e) => rebuildOptions(e.target.value));
+    })();
+</script>
+
+{% endblock %}

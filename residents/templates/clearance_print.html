@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<center>
+
+<p><b>Clearance No:</b> {{ service.clearance_number }}</p>
+
+<h3>Republic of the Philippines</h3>
+<h3>Province of ______</h3>
+<h3>Municipality of ______</h3>
+<h2>Barangay ______</h2>
+
+<h1>BARANGAY CLEARANCE</h1>
+
+</center>
+
+<p>
+
+This is to certify that
+
+<b>
+{{ resident.first_name }} {{ resident.middle_name }} {{ resident.last_name }}
+</b>
+
+of {{ address }}, Barangay ______.
+
+</p>
+
+<p>
+This certification is issued upon the request of the above named person
+for the purpose of:
+
+<b>{{ service.purpose_display }}</b>
+
+</p>
+
+<p><b>Birthdate:</b> {{ resident.birth_date }} &nbsp; <b>Precinct:</b> {{ resident.precinct|default:"-" }}</p>
+<p><b>Civil Status:</b> {{ resident.civil_status }} &nbsp; <b>Sex:</b> {{ resident.gender }}</p>
+<p><b>Birthplace:</b> {{ resident.place_of_birth|default:"-" }}</p>
+
+<p>Issued this day.</p>
+
+<br><br>
+
+________________________  
+Barangay Captain
+
+<br><br>
+
+<button onclick="window.print()">Print Clearance</button>
+
+{% endblock %}

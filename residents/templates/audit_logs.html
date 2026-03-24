@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>System Audit Logs</h2>
+
+<form method="get" style="margin-bottom: 16px;">
+    <label>Action:</label>
+    <select name="action">
+        <option value="">All</option>
+        {% for value, label in actions %}
+        <option value="{{ value }}" {% if filters.action == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Model:</label>
+    <select name="model_name">
+        <option value="">All</option>
+        {% for model in models %}
+        <option value="{{ model }}" {% if filters.model_name == model %}selected{% endif %}>{{ model }}</option>
+        {% endfor %}
+    </select>
+
+    <label>User:</label>
+    <select name="user_id">
+        <option value="">All</option>
+        {% for user in users %}
+        <option value="{{ user.id }}" {% if filters.user_id == user.id|stringformat:"s" %}selected{% endif %}>{{ user.username }}</option>
+        {% endfor %}
+    </select>
+
+    <label>From:</label>
+    <input type="date" name="start_date" value="{{ filters.start_date }}">
+
+    <label>To:</label>
+    <input type="date" name="end_date" value="{{ filters.end_date }}">
+
+    <label>Search:</label>
+    <input type="text" name="q" value="{{ filters.q }}" placeholder="Description, user, target ID">
+
+    <button type="submit">Filter</button>
+    <a href="{% url 'audit_logs' %}">Reset</a>
+</form>
+
+<table border="1" width="100%">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>User</th>
+            <th>Action</th>
+            <th>Model</th>
+            <th>Target ID</th>
+            <th>Description</th>
+            <th>IP Address</th>
+            <th>Path</th>
+            <th>Before</th>
+            <th>After</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.timestamp }}</td>
+            <td>{{ log.user }}</td>
+            <td>{{ log.action }}</td>
+            <td>{{ log.model_name }}</td>
+            <td>{{ log.target_id }}</td>
+            <td>{{ log.description }}</td>
+            <td>{{ log.ip_address }}</td>
+            <td>{{ log.request_path }}</td>
+            <td><pre style="white-space: pre-wrap;">{{ log.before_data }}</pre></td>
+            <td><pre style="white-space: pre-wrap;">{{ log.after_data }}</pre></td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="10">No audit logs found for selected filters.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

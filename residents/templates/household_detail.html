@@ -1,0 +1,572 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
+    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+    /* ── Action buttons ── */
+    .header-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        border: none;
+        white-space: nowrap;
+    }
+    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary { background: #2563EB; color: #fff; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
+    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
+    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+
+    /* ── Layout ── */
+    .household-detail-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+    @media (max-width: 1024px) {
+        .household-detail-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Sidebar cards ── */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    /* ── Info card ── */
+    .info-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .info-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .info-card-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .info-card-icon svg { width: 16px; height: 16px; color: #fff; }
+    .info-card-title { font-size: 13px; font-weight: 600; color: #fff; }
+    .info-card-body { padding: 16px 20px; }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #F1F5F9;
+        gap: 12px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
+    .info-value { font-size: 12px; font-weight: 500; color: #1E293B; text-align: right; }
+
+    /* ── Stats card ── */
+    .stats-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .stats-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .stats-card-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .stats-card-icon svg { width: 16px; height: 16px; color: #fff; }
+    .stats-card-title { font-size: 13px; font-weight: 600; color: #fff; }
+    .stats-card-body {
+        padding: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .stat-item {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 12px;
+        text-align: center;
+    }
+    .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #2563EB;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .stat-label {
+        font-size: 11px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    /* ── Main content ── */
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* ── Members table card ── */
+    .table-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .table-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .table-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .table-card-title svg { width: 18px; height: 18px; }
+    .table-card-count {
+        font-size: 11px;
+        color: rgba(255,255,255,.8);
+        background: rgba(255,255,255,.15);
+        padding: 4px 10px;
+        border-radius: 6px;
+    }
+
+    /* ── Table ── */
+    .members-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .members-table thead {
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+    }
+    .members-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .members-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        color: #1E293B;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .members-table tr:last-child td { border-bottom: none; }
+    .members-table tbody tr:hover { background: #F8FAFC; }
+
+    /* ── Badges ── */
+    .badge-head {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        background: #FEF3C7;
+        color: #92400E;
+        margin-left: 6px;
+    }
+    .badge-head svg { width: 11px; height: 11px; }
+
+    .voter-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    .voter-yes {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+    .voter-no {
+        background: #F3F4F6;
+        color: #6B7280;
+    }
+    .voter-badge svg { width: 12px; height: 12px; }
+
+    /* ── Action buttons in table ── */
+    .action-group {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all .15s;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+    .btn-action svg { width: 12px; height: 12px; }
+    
+    .btn-set-head {
+        background: #FEF3C7;
+        color: #92400E;
+    }
+    .btn-set-head:hover {
+        background: #FDE68A;
+        text-decoration: none;
+        color: #78350F;
+    }
+    
+    .btn-remove {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+    .btn-remove:hover {
+        background: #FECACA;
+        text-decoration: none;
+        color: #7F1D1D;
+    }
+
+    .head-label {
+        color: #64748B;
+        font-size: 11px;
+        font-style: italic;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+        color: #94A3B8;
+    }
+    .empty-state-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 6px;
+    }
+    .empty-state-text {
+        font-size: 13px;
+        color: #64748B;
+        margin-bottom: 16px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+        .members-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'household_list' %}">Households</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">Household #{{ household.house_number }}</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Household Dashboard</div>
+        <div class="page-subtitle">{{ household.street }}, Purok {{ household.purok }}</div>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'household_list' %}" class="btn-bmis btn-ghost">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+            </svg>
+            Back to List
+        </a>
+        <a href="{% url 'add_resident_to_household' household.id %}" class="btn-bmis btn-primary">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
+            </svg>
+            Add Resident
+        </a>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="household-detail-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        
+        <!-- Address Info Card -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="info-card-title">Address Information</div>
+            </div>
+            <div class="info-card-body">
+                <div class="info-row">
+                    <span class="info-label">House Number</span>
+                    <span class="info-value">{{ household.house_number }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Street</span>
+                    <span class="info-value">{{ household.street }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Purok</span>
+                    <span class="info-value">Purok {{ household.purok }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Head Info Card -->
+        <div class="info-card">
+            <div class="info-card-header">
+                <div class="info-card-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="info-card-title">Household Head</div>
+            </div>
+            <div class="info-card-body">
+                <div class="info-row">
+                    <span class="info-label">Name</span>
+                    <span class="info-value">
+                        {% if household.head %}
+                            {{ household.head.first_name }} {{ household.head.last_name }}
+                        {% else %}
+                            <span style="color: #94A3B8; font-style: italic;">Not assigned</span>
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Card -->
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <div class="stats-card-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
+                    </svg>
+                </div>
+                <div class="stats-card-title">Statistics</div>
+            </div>
+            <div class="stats-card-body">
+                <div class="stat-item">
+                    <div class="stat-value">{{ total_members }}</div>
+                    <div class="stat-label">Members</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ voters }}</div>
+                    <div class="stat-label">Voters</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ males }}</div>
+                    <div class="stat-label">Males</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ females }}</div>
+                    <div class="stat-label">Females</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <!-- Members Table -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div class="table-card-title">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                    Household Members
+                </div>
+                <span class="table-card-count">{{ members|length }} member{{ members|length|pluralize }}</span>
+            </div>
+
+            {% if members %}
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Gender</th>
+                        <th>Status</th>
+                        <th>Voter</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>
+                            <strong>{{ member.first_name }} {{ member.last_name }}</strong>
+                            {% if household.head == member %}
+                            <span class="badge-head">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                HEAD
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ member.gender }}</td>
+                        <td>{{ member.status }}</td>
+                        <td>
+                            {% if member.voter_status %}
+                            <span class="voter-badge voter-yes">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                Yes
+                            </span>
+                            {% else %}
+                            <span class="voter-badge voter-no">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                                </svg>
+                                No
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                {% if household.head != member %}
+                                <a href="{% url 'set_household_head' household.id member.id %}" class="btn-action btn-set-head">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Set as Head
+                                </a>
+                                {% else %}
+                                <span class="head-label">Current Head</span>
+                                {% endif %}
+                                
+                                <a href="{% url 'remove_from_household' member.id %}" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to remove this member from the household?')">
+                                    <svg viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Remove
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                    </svg>
+                </div>
+                <div class="empty-state-title">No members yet</div>
+                <div class="empty-state-text">Add residents to this household to get started.</div>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

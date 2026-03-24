@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
+    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+
+    /* ── Layout ── */
+    .complaint-layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 16px;
+        align-items: start;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+    @media (max-width: 920px) {
+        .complaint-layout { 
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* ── Form card ── */
+    .form-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .form-card-hdr {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .form-card-hdr-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
+    .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
+    .form-card-hdr-sub { font-size: 11.5px; color: rgba(255,255,255,.7); margin-top: 1px; }
+    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* ── Field group ── */
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #374151;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-required { color: #DC2626; }
+    .field-hint { font-size: 11px; color: #94A3B8; margin-top: 3px; }
+    .field-error {
+        font-size: 11px;
+        color: #DC2626;
+        margin-top: 3px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .field-error svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── Inputs ── */
+    .bmis-input,
+    .bmis-select,
+    .bmis-textarea {
+        width: 100%;
+        padding: 0 12px;
+        height: 40px;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        color: #1E293B;
+        background: #F8FAFC;
+        outline: none;
+        transition: border-color .15s, background .15s, box-shadow .15s;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+    .bmis-textarea {
+        height: auto;
+        min-height: 120px;
+        padding: 10px 12px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+    .bmis-input:focus,
+    .bmis-select:focus,
+    .bmis-textarea:focus {
+        border-color: #2563EB;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+    .bmis-input:hover,
+    .bmis-select:hover,
+    .bmis-textarea:hover { border-color: #CBD5E1; }
+    .bmis-input.error,
+    .bmis-select.error,
+    .bmis-textarea.error {
+        border-color: #DC2626;
+    }
+
+    /* Custom select arrow */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+        content: '';
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid #94A3B8;
+        pointer-events: none;
+    }
+    .select-wrap .bmis-select { padding-right: 32px; cursor: pointer; }
+
+    /* ── Form footer ── */
+    .form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        border-top: 1px solid #E2E8F0;
+        background: #FAFAFA;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .footer-note {
+        font-size: 11.5px;
+        color: #94A3B8;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .footer-note svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .footer-actions { display: flex; align-items: center; gap: 8px; }
+
+    /* ── Buttons ── */
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        line-height: 1;
+        white-space: nowrap;
+        border: none;
+    }
+    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .btn-primary { background: #2563EB; color: #fff; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
+    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
+    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+
+    /* ── Sidebar ── */
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* ── Info card ── */
+    .info-card {
+        background: #FFFBEB;
+        border: 1px solid #FDE68A;
+        border-radius: 10px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 12px;
+    }
+    .info-card svg { width: 18px; height: 18px; color: #D97706; flex-shrink: 0; margin-top: 1px; }
+    .info-card-content { flex: 1; }
+    .info-card-title { 
+        font-size: 13px; 
+        font-weight: 600; 
+        color: #92400E; 
+        margin-bottom: 6px;
+    }
+    .info-card-text { font-size: 12px; color: #78350F; line-height: 1.6; }
+
+    /* ── Guidelines card ── */
+    .guidelines-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .guidelines-card-header {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .guidelines-card-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: rgba(255,255,255,.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .guidelines-card-icon svg { width: 16px; height: 16px; color: #fff; }
+    .guidelines-card-title { font-size: 13px; font-weight: 600; color: #fff; }
+    .guidelines-card-body {
+        padding: 16px 20px;
+    }
+    .guidelines-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .guidelines-list li {
+        font-size: 12px;
+        color: #475569;
+        display: flex;
+        gap: 8px;
+        line-height: 1.5;
+    }
+    .guidelines-list li svg {
+        width: 14px;
+        height: 14px;
+        color: #10B981;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    /* Hide default Django form rendering */
+    .form-body form > p { display: none; }
+    .form-body form > ul { display: none; }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'complaint_list' %}">Complaints</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">File Complaint</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">File a Complaint</div>
+        <div class="page-subtitle">Submit a formal complaint to the barangay</div>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="complaint-layout">
+
+    <!-- Left: Form -->
+    <div class="form-card">
+        <div class="form-card-hdr">
+            <div class="form-card-hdr-icon">
+                <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+            </div>
+            <div>
+                <div class="form-card-hdr-title">Complaint Form</div>
+                <div class="form-card-hdr-sub">Please provide detailed information</div>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-body">
+
+                <!-- Resident Field -->
+                <div class="field-group">
+                    <label class="field-label" for="id_resident">
+                        Complainant <span class="field-required">*</span>
+                    </label>
+                    {% if is_resident_user %}
+                    <input type="text" class="bmis-input" value="{{ resident_profile.resident }}" readonly>
+                    {{ form.resident }}
+                    <div class="field-hint">Complaint will be filed under your linked resident profile.</div>
+                    {% else %}
+                        <div class="select-wrap">
+                            {{ form.resident }}
+                        </div>
+                        {% if form.resident.errors %}
+                        <div class="field-error">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            {{ form.resident.errors.0 }}
+                        </div>
+                        {% else %}
+                        <div class="field-hint">Select the resident filing this complaint</div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <!-- Title Field -->
+                <div class="field-group">
+                    <label class="field-label" for="id_title">
+                        Complaint Title <span class="field-required">*</span>
+                    </label>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                    <div class="field-error">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ form.title.errors.0 }}
+                    </div>
+                    {% else %}
+                    <div class="field-hint">Brief summary of the complaint</div>
+                    {% endif %}
+                </div>
+
+                <!-- Description Field -->
+                <div class="field-group">
+                    <label class="field-label" for="id_description">
+                        Description <span class="field-required">*</span>
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <div class="field-error">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                        </svg>
+                        {{ form.description.errors.0 }}
+                    </div>
+                    {% else %}
+                    <div class="field-hint">Provide detailed information about the complaint</div>
+                    {% endif %}
+                </div>
+
+                <!-- Respondent Field (if exists) -->
+                {% if form.respondent %}
+                <div class="field-group">
+                    <label class="field-label" for="id_respondent">
+                        Respondent (Optional)
+                    </label>
+                    {{ form.respondent }}
+                    <div class="field-hint">Person or entity being complained against (if applicable)</div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Footer: Submit + Cancel -->
+            <div class="form-footer">
+                <div class="footer-note">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                    Complaint will be reviewed by barangay officials
+                </div>
+                <div class="footer-actions">
+                    <a href="{% url 'complaint_list' %}" class="btn-bmis btn-ghost">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                        </svg>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-bmis btn-primary">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                        Submit Complaint
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <div class="sidebar">
+
+        <!-- Important Notice -->
+        <div class="info-card">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <div class="info-card-content">
+                <div class="info-card-title">Important Notice</div>
+                <div class="info-card-text">
+                    Filing a false complaint is a serious offense. Please ensure all information provided is truthful and accurate.
+                </div>
+            </div>
+        </div>
+
+        <!-- Guidelines Card -->
+        <div class="guidelines-card">
+            <div class="guidelines-card-header">
+                <div class="guidelines-card-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                    </svg>
+                </div>
+                <div class="guidelines-card-title">Filing Guidelines</div>
+            </div>
+            <div class="guidelines-card-body">
+                <ul class="guidelines-list">
+                    <li>
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Provide a clear and concise title
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Include all relevant details and facts
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        State when and where the incident occurred
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Identify witnesses if applicable
+                    </li>
+                    <li>
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Keep a copy for your records
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

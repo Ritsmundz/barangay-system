@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .pv-list-card { background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; overflow: hidden; }
+    .pv-list-head { background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%); color: #fff; padding: 16px 20px; }
+    .pv-list-title { font-size: 15px; font-weight: 600; }
+    .pv-list-sub { font-size: 12px; opacity: .8; margin-top: 4px; }
+    .pv-list-body { padding: 16px; }
+    .pv-msg { list-style: none; margin-bottom: 12px; padding: 10px 12px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; color: #1E40AF; font-size: 12px; }
+    .pv-table { width: 100%; border-collapse: collapse; }
+    .pv-table th { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #64748B; padding: 10px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+    .pv-table td { font-size: 13px; color: #1E293B; padding: 12px 10px; border-bottom: 1px solid #F1F5F9; }
+    .pv-btn, .pv-link { display: inline-block; padding: 6px 10px; border-radius: 6px; font-size: 12px; text-decoration: none; border: none; cursor: pointer; }
+    .pv-link { background: #DBEAFE; color: #1D4ED8; }
+    .pv-btn { background: #FEE2E2; color: #991B1B; }
+</style>
+
+<div class="pv-list-card">
+    <div class="pv-list-head">
+        <div class="pv-list-title">Pending Resident Verifications</div>
+        <div class="pv-list-sub">Review and resolve resident portal verification requests.</div>
+    </div>
+    <div class="pv-list-body">
+        {% if messages %}<ul class="pv-msg">{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
+
+        {% if profiles %}
+        <table class="pv-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Submitted Name</th>
+                    <th>Birthdate</th>
+                    <th>Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in profiles %}
+                <tr>
+                    <td>{{ profile.user.username }}</td>
+                    <td>{{ profile.first_name }} {{ profile.last_name }}</td>
+                    <td>{{ profile.birth_date }}</td>
+                    <td>{{ profile.created_at|date:"M d, Y h:i A" }}</td>
+                    <td>
+                        <a class="pv-link" href="{% url 'review_pending_verification' profile.id %}">Review</a>
+                        <form method="post" action="{% url 'review_pending_verification' profile.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="reject">
+                            <button type="submit" class="pv-btn">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="font-size:13px;color:#64748B;">No pending resident accounts.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

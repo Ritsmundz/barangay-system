@@ -1,0 +1,701 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .page-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1E293B;
+        line-height: 1.2;
+    }
+    .page-subtitle {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 2px;
+    }
+    .page-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* ── Buttons ── */
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: all .15s;
+        line-height: 1;
+    }
+    .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .btn-primary   { background: #2563EB; color: #fff; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
+    .btn-secondary { background: #fff; color: #475569; border: 1px solid #E2E8F0; }
+    .btn-secondary:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+    .btn-warning-bmis { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+    .btn-warning-bmis:hover { background: #FEF3C7; text-decoration: none; }
+    .btn-success-bmis { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+    .btn-success-bmis:hover { background: #DCFCE7; text-decoration: none; }
+    .btn-danger-bmis { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+    .btn-danger-bmis:hover { background: #FEE2E2; text-decoration: none; }
+
+    /* ── Stat cards ── */
+    .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .sc-blue::before   { background: linear-gradient(90deg,#2563EB,#60A5FA); }
+    .sc-green::before  { background: linear-gradient(90deg,#16A34A,#4ADE80); }
+    .sc-amber::before  { background: linear-gradient(90deg,#D97706,#FCD34D); }
+    .sc-purple::before { background: linear-gradient(90deg,#7C3AED,#C4B5FD); }
+    .sc-red::before    { background: linear-gradient(90deg,#DC2626,#F87171); }
+    .sc-teal::before   { background: linear-gradient(90deg,#0D9488,#5EEAD4); }
+    .stat-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+        margin-bottom: 8px;
+    }
+    .stat-row {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+    .stat-value {
+        font-size: 28px;
+        font-weight: 600;
+        color: #1E293B;
+        line-height: 1;
+    }
+    .stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .stat-icon svg { width: 17px; height: 17px; }
+    .icon-blue   { background: #EFF6FF; color: #2563EB; }
+    .icon-green  { background: #F0FDF4; color: #16A34A; }
+    .icon-amber  { background: #FFFBEB; color: #D97706; }
+    .icon-purple { background: #F5F3FF; color: #7C3AED; }
+    .icon-red    { background: #FEF2F2; color: #DC2626; }
+    .icon-teal   { background: #F0FDFA; color: #0D9488; }
+
+    /* ── Stat card export link ── */
+    .stat-export {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px solid #F1F5F9;
+        font-size: 11.5px;
+        font-weight: 500;
+        color: #64748B;
+        text-decoration: none;
+        transition: color .15s;
+        width: 100%;
+    }
+    .stat-export svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .stat-export:hover { color: #2563EB; text-decoration: none; }
+    .sc-blue  .stat-export:hover { color: #2563EB; }
+    .sc-green .stat-export:hover { color: #16A34A; }
+    .sc-amber .stat-export:hover { color: #D97706; }
+    .sc-red   .stat-export:hover { color: #DC2626; }
+    .sc-teal  .stat-export:hover { color: #0D9488; }
+
+    /* ── Section titles ── */
+    .section-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 24px 0 12px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .section-title::before {
+        content: '';
+        display: block;
+        width: 3px;
+        height: 16px;
+        background: #2563EB;
+        border-radius: 2px;
+    }
+    .section-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ── Charts grid ── */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+    .chart-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 16px;
+    }
+    .chart-card-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 4px;
+    }
+    .chart-card-sub {
+        font-size: 11px;
+        color: #94A3B8;
+        margin-bottom: 14px;
+    }
+    .chart-wrap {
+        position: relative;
+        height: 180px;
+    }
+    .chart-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #F1F5F9;
+    }
+    .cs-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11.5px;
+        color: #475569;
+    }
+    .cs-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .cs-val { font-weight: 600; color: #1E293B; }
+
+    /* ── Status badges ── */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .badge-alive       { background: #F0FDF4; color: #166534; }
+    .badge-alive::before { background: #16A34A; }
+    .badge-deceased    { background: #F1F5F9; color: #475569; }
+    .badge-deceased::before { background: #94A3B8; }
+    .badge-moved       { background: #FFF7ED; color: #9A3412; }
+    .badge-moved::before { background: #F97316; }
+    .badge-pending     { background: #FFFBEB; color: #92400E; }
+    .badge-pending::before { background: #D97706; }
+    .badge-approved    { background: #EFF6FF; color: #1E40AF; }
+    .badge-approved::before { background: #2563EB; }
+    .badge-released    { background: #F0FDF4; color: #166534; }
+    .badge-released::before { background: #16A34A; }
+    .badge-rejected    { background: #FEF2F2; color: #991B1B; }
+    .badge-rejected::before { background: #DC2626; }
+    .badge-investigating { background: #F5F3FF; color: #5B21B6; }
+    .badge-investigating::before { background: #7C3AED; }
+
+    /* ── Resident status mini-cards ── */
+    .status-mini-grid {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 4px;
+    }
+    .status-mini {
+        flex: 1;
+        min-width: 100px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        text-align: center;
+    }
+    .sm-val { font-size: 22px; font-weight: 600; color: #1E293B; }
+    .sm-label { font-size: 11px; color: #64748B; margin-top: 3px; }
+
+    /* ── Purok bar chart ── */
+    .purok-table {
+        width: 100%;
+    }
+    .purok-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 0;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .purok-row:last-child { border-bottom: none; }
+    .purok-name {
+        font-size: 12.5px;
+        color: #475569;
+        min-width: 90px;
+        font-weight: 500;
+    }
+    .purok-track {
+        flex: 1;
+        height: 8px;
+        background: #F1F5F9;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .purok-fill {
+        height: 100%;
+        background: #2563EB;
+        border-radius: 4px;
+    }
+    .purok-count {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1E293B;
+        min-width: 30px;
+        text-align: right;
+    }
+
+    /* ── Tables ── */
+    .table-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+    .bmis-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .bmis-table th {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #64748B;
+        text-align: left;
+        padding: 10px 16px;
+        background: #FAFAFA;
+        border-bottom: 1px solid #E2E8F0;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        white-space: nowrap;
+    }
+    .bmis-table td {
+        padding: 10px 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 12.5px;
+        color: #1E293B;
+        vertical-align: middle;
+    }
+    .bmis-table tbody tr:last-child td { border-bottom: none; }
+    .bmis-table tbody tr:hover td { background: #FAFAFE; }
+
+    /* ── Two-column layout for bottom section ── */
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+    @media (max-width: 900px) {
+        .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── Divider ── */
+    .bmis-divider {
+        border: none;
+        border-top: 1px solid #E2E8F0;
+        margin: 24px 0;
+    }
+</style>
+
+<!-- ═══════════════ PAGE HEADER ═══════════════ -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Captain Dashboard</div>
+        <div class="page-subtitle">Barangay San Isidro · Population &amp; Services Overview</div>
+    </div>
+    <div class="page-actions">
+        <a href="{% url 'audit_logs' %}" class="btn-bmis btn-warning-bmis">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg>
+            Audit Logs
+        </a>
+        <a href="{% url 'export_summary' %}" class="btn-bmis btn-primary">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Summary
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════ STAT CARDS ═══════════════ -->
+<div class="cards-grid">
+
+    <!-- Total Residents → Export Residents CSV -->
+    <div class="stat-card sc-blue">
+        <div class="stat-label">Total Residents</div>
+        <div class="stat-row">
+            <div class="stat-value">{{ total_residents }}</div>
+            <div class="stat-icon icon-blue">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/></svg>
+            </div>
+        </div>
+        <a href="{% url 'export_residents' %}" class="stat-export">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Residents CSV
+        </a>
+    </div>
+
+    <!-- Total Households → Export Households Report -->
+    <div class="stat-card sc-green">
+        <div class="stat-label">Total Households</div>
+        <div class="stat-row">
+            <div class="stat-value">{{ total_households }}</div>
+            <div class="stat-icon icon-green">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h5v-4h4v4h5a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+            </div>
+        </div>
+        <a href="{% url 'export_households' %}" class="stat-export">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Households Report
+        </a>
+    </div>
+
+    <!-- Documents Issued → Export Summary -->
+    <div class="stat-card sc-amber">
+        <div class="stat-label">Documents Issued</div>
+        <div class="stat-row">
+            <div class="stat-value">{{ documents_issued }}</div>
+            <div class="stat-icon icon-amber">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+            </div>
+        </div>
+        <a href="{% url 'export_summary' %}" class="stat-export">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Summary Report
+        </a>
+    </div>
+
+    <!-- Total Revenue → Export Payments -->
+    <div class="stat-card sc-teal">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-row">
+            <div class="stat-value" style="font-size:20px">₱{{ total_revenue }}</div>
+            <div class="stat-icon icon-teal">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/></svg>
+            </div>
+        </div>
+        <a href="{% url 'export_payments' %}" class="stat-export">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Payments CSV
+        </a>
+    </div>
+
+    <!-- Total Complaints → Export Complaints -->
+    <div class="stat-card sc-red">
+        <div class="stat-label">Total Complaints</div>
+        <div class="stat-row">
+            <div class="stat-value">{{ total_complaints }}</div>
+            <div class="stat-icon icon-red">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            </div>
+        </div>
+        <a href="{% url 'export_complaints' %}" class="stat-export">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            Export Complaints CSV
+        </a>
+    </div>
+
+</div>
+
+<!-- ═══════════════ CHARTS ROW ═══════════════ -->
+<div class="section-hdr">
+    <div class="section-title">Statistics &amp; Analytics</div>
+</div>
+
+<div class="charts-grid">
+
+    <!-- Gender Chart -->
+    <div class="chart-card">
+        <div class="chart-card-title">Gender Distribution</div>
+        <div class="chart-card-sub">All registered residents</div>
+        <div class="chart-wrap">
+            <canvas id="genderChart"></canvas>
+        </div>
+        <div class="chart-stats">
+            <div class="cs-item">
+                <div class="cs-dot" style="background:#2563EB"></div>
+                Male: <span class="cs-val">{{ male_residents }}</span>
+            </div>
+            <div class="cs-item">
+                <div class="cs-dot" style="background:#EC4899"></div>
+                Female: <span class="cs-val">{{ female_residents }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Age Group Chart -->
+    <div class="chart-card">
+        <div class="chart-card-title">Age Group Statistics</div>
+        <div class="chart-card-sub">Population breakdown by age</div>
+        <div class="chart-wrap">
+            <canvas id="ageChart"></canvas>
+        </div>
+        <div class="chart-stats">
+            <div class="cs-item"><div class="cs-dot" style="background:#2563EB"></div>Children: <span class="cs-val">{{ children }}</span></div>
+            <div class="cs-item"><div class="cs-dot" style="background:#7C3AED"></div>Youth: <span class="cs-val">{{ youth }}</span></div>
+            <div class="cs-item"><div class="cs-dot" style="background:#16A34A"></div>Adults: <span class="cs-val">{{ adults }}</span></div>
+            <div class="cs-item"><div class="cs-dot" style="background:#D97706"></div>Seniors: <span class="cs-val">{{ seniors }}</span></div>
+        </div>
+    </div>
+
+    <!-- Complaint Chart -->
+    <div class="chart-card">
+        <div class="chart-card-title">Complaint Status</div>
+        <div class="chart-card-sub">Current complaint breakdown</div>
+        <div class="chart-wrap">
+            <canvas id="complaintChart"></canvas>
+        </div>
+        <div class="chart-stats">
+            <div class="cs-item"><div class="cs-dot" style="background:#D97706"></div>Pending: <span class="cs-val">{{ pending_complaints }}</span></div>
+            <div class="cs-item"><div class="cs-dot" style="background:#7C3AED"></div>Investigating: <span class="cs-val">{{ investigating_complaints }}</span></div>
+            <div class="cs-item"><div class="cs-dot" style="background:#16A34A"></div>Resolved: <span class="cs-val">{{ resolved_complaints }}</span></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ═══════════════ RESIDENT STATUS ═══════════════ -->
+<div class="section-hdr">
+    <div class="section-title">Resident Status</div>
+</div>
+<div class="status-mini-grid">
+    <div class="status-mini">
+        <div class="sm-val" style="color:#16A34A">{{ alive }}</div>
+        <div class="sm-label">Alive</div>
+    </div>
+    <div class="status-mini">
+        <div class="sm-val" style="color:#F97316">{{ moved }}</div>
+        <div class="sm-label">Moved Out</div>
+    </div>
+    <div class="status-mini">
+        <div class="sm-val" style="color:#94A3B8">{{ deceased }}</div>
+        <div class="sm-label">Deceased</div>
+    </div>
+</div>
+
+<!-- ═══════════════ PUROK + RECENT REQUESTS ═══════════════ -->
+<div class="two-col" style="margin-top:20px">
+
+    <!-- Residents per Purok -->
+    <div>
+        <div class="section-hdr">
+            <div class="section-title">Residents per Purok</div>
+        </div>
+        <div class="table-card" style="padding:16px">
+            <div class="purok-table">
+                {% for purok in purok_stats %}
+                <div class="purok-row">
+                    <div class="purok-name">{{ purok.household__purok__name }}</div>
+                    <div class="purok-track">
+                        {# Width % is visual only — Django can't calculate max inline. For full dynamic bars, compute pct in the view. #}
+                        <div class="purok-fill" style="width:{{ purok.pct|default:'50' }}%"></div>
+                    </div>
+                    <div class="purok-count">{{ purok.resident_count }}</div>
+                </div>
+                {% empty %}
+                <p style="font-size:12.5px;color:#94A3B8;padding:8px 0">No purok data available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Financial -->
+    <div>
+        <div class="section-hdr">
+            <div class="section-title">Financial Summary</div>
+        </div>
+        <div class="table-card" style="padding:20px">
+            <div style="font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Total Revenue Collected</div>
+            <div style="font-size:36px;font-weight:600;color:#0D9488;line-height:1">₱{{ total_revenue }}</div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F1F5F9">
+                <div style="font-size:11px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Documents Issued</div>
+                <div style="font-size:28px;font-weight:600;color:#1E293B">{{ documents_issued }}</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ═══════════════ RECENT SERVICE REQUESTS ═══════════════ -->
+<div class="section-hdr">
+    <div class="section-title">Recent Service Requests</div>
+</div>
+
+<div class="table-card">
+    <table class="bmis-table">
+        <thead>
+            <tr>
+                <th>Resident</th>
+                <th>Service Type</th>
+                <th>Status</th>
+                <th>Date Requested</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in recent_requests %}
+            <tr>
+                <td style="font-weight:500">{{ req.resident }}</td>
+                <td>{{ req.service_type }}</td>
+                <td>
+                    {% if req.status == "Pending" %}
+                        <span class="badge badge-pending">{{ req.status }}</span>
+                    {% elif req.status == "Approved" %}
+                        <span class="badge badge-approved">{{ req.status }}</span>
+                    {% elif req.status == "Released" %}
+                        <span class="badge badge-released">{{ req.status }}</span>
+                    {% elif req.status == "Rejected" %}
+                        <span class="badge badge-rejected">{{ req.status }}</span>
+                    {% else %}
+                        <span class="badge badge-pending">{{ req.status }}</span>
+                    {% endif %}
+                </td>
+                <td style="color:#64748B">{{ req.request_date }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center;color:#94A3B8;padding:20px">No recent service requests.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ═══════════════ CHART.JS SCRIPTS ═══════════════ -->
+<script>
+/* Shared font & grid config */
+const _font = { family: "'IBM Plex Sans', sans-serif", size: 11 };
+const _grid = { color: 'rgba(0,0,0,.05)' };
+
+/* Gender Pie Chart — preserves {{ male_residents }} / {{ female_residents }} */
+new Chart(document.getElementById("genderChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: [{{ male_residents }}, {{ female_residents }}],
+            backgroundColor: ["#2563EB", "#EC4899"],
+            borderWidth: 0,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "65%",
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw } }
+        }
+    }
+});
+
+/* Age Group Bar Chart — preserves {{ children }} {{ youth }} {{ adults }} {{ seniors }} */
+new Chart(document.getElementById("ageChart"), {
+    type: "bar",
+    data: {
+        labels: ["Children\n(0–12)", "Youth\n(13–17)", "Adults\n(18–59)", "Seniors\n(60+)"],
+        datasets: [{
+            data: [{{ children }}, {{ youth }}, {{ adults }}, {{ seniors }}],
+            backgroundColor: ["#2563EB", "#7C3AED", "#16A34A", "#D97706"],
+            borderRadius: 6,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { font: _font, color: '#64748B' }, grid: { display: false } },
+            y: { ticks: { font: _font, color: '#64748B' }, grid: _grid }
+        }
+    }
+});
+
+/* Complaint Doughnut Chart — preserves {{ pending_complaints }} {{ investigating_complaints }} {{ resolved_complaints }} */
+new Chart(document.getElementById("complaintChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Pending", "Investigating", "Resolved"],
+        datasets: [{
+            data: [{{ pending_complaints }}, {{ investigating_complaints }}, {{ resolved_complaints }}],
+            backgroundColor: ["#D97706", "#7C3AED", "#16A34A"],
+            borderWidth: 0,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "60%",
+        plugins: { legend: { display: false } }
+    }
+});
+</script>
+
+{% endblock %}
