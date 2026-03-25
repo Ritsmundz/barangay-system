@@ -10,8 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -79,12 +80,34 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+DATABASE_URL = os.getenv('DATABASE_URL') or os.getenv('DATABASE_INTERNAL_URL')
+PGHOST = os.getenv('PGHOST')
+PGDATABASE = os.getenv('PGDATABASE')
+PGUSER = os.getenv('PGUSER')
+PGPASSWORD = os.getenv('PGPASSWORD')
+PGPORT = os.getenv('PGPORT')
+ON_RENDER = os.getenv('RENDER', '').lower() == 'true'
 
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
+elif PGHOST and PGDATABASE and PGUSER and PGPORT:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': PGDATABASE,
+            'USER': PGUSER,
+            'PASSWORD': PGPASSWORD or '',
+            'HOST': PGHOST,
+            'PORT': PGPORT,
+        }
+    }
+elif ON_RENDER:
+    raise RuntimeError(
+        "Database is not configured on Render. Set DATABASE_URL "
+        "(or DATABASE_INTERNAL_URL) in the Render service environment."
+    )
 else:
     DATABASES = {
         'default': {
