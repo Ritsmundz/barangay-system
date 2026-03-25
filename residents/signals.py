@@ -2,46 +2,57 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.signals import user_logged_in, user_logged_out, user_login_failed
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
+import logging
 
 from .audit import get_current_request, log_audit_event
 
+logger = logging.getLogger(__name__)
 
 @receiver(user_logged_in)
 def on_user_logged_in(sender, request, user, **kwargs):
-    log_audit_event(
-        action="LOGIN",
-        model_name="Authentication",
-        description=f"User '{user.username}' logged in.",
-        user=user,
-        target_id=user.pk,
-        request=request,
-    )
+    try:
+        log_audit_event(
+            action="LOGIN",
+            model_name="Authentication",
+            description=f"User '{user.username}' logged in.",
+            user=user,
+            target_id=user.pk,
+            request=request,
+        )
+    except Exception:
+        logger.exception("LOGIN audit signal failed; continuing request.")
 
 
 @receiver(user_logged_out)
 def on_user_logged_out(sender, request, user, **kwargs):
     username = user.username if user else "Unknown"
     user_id = user.pk if user else None
-    log_audit_event(
-        action="LOGOUT",
-        model_name="Authentication",
-        description=f"User '{username}' logged out.",
-        user=user,
-        target_id=user_id,
-        request=request,
-    )
+    try:
+        log_audit_event(
+            action="LOGOUT",
+            model_name="Authentication",
+            description=f"User '{username}' logged out.",
+            user=user,
+            target_id=user_id,
+            request=request,
+        )
+    except Exception:
+        logger.exception("LOGOUT audit signal failed; continuing request.")
 
 
 @receiver(user_login_failed)
 def on_user_login_failed(sender, credentials, request, **kwargs):
     attempted_username = credentials.get("username", "Unknown")
-    log_audit_event(
-        action="LOGIN_FAILED",
-        model_name="Authentication",
-        description=f"Failed login attempt for username '{attempted_username}'.",
-        target_id=attempted_username,
-        request=request,
-    )
+    try:
+        log_audit_event(
+            action="LOGIN_FAILED",
+            model_name="Authentication",
+            description=f"Failed login attempt for username '{attempted_username}'.",
+            target_id=attempted_username,
+            request=request,
+        )
+    except Exception:
+        logger.exception("LOGIN_FAILED audit signal failed; continuing request.")
 
 
 @receiver(m2m_changed, sender=User.groups.through)
