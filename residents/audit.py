@@ -1,12 +1,15 @@
 import json
+import logging
 from threading import local
 
+from django.db import DatabaseError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
 
 from .models import AuditLog
 
 _state = local()
+logger = logging.getLogger(__name__)
 
 
 def set_current_request(request):
@@ -65,15 +68,20 @@ def log_audit_event(
     user_agent = request.META.get("HTTP_USER_AGENT", "")[:255] if request else ""
     request_path = request.path[:255] if request else ""
 
-    AuditLog.objects.create(
-        user=user,
-        action=action,
-        model_name=model_name,
-        description=description,
-        target_id=str(target_id) if target_id is not None else None,
-        before_data=_json_safe(before_data),
-        after_data=_json_safe(after_data),
-        ip_address=ip_address,
-        user_agent=user_agent,
-        request_path=request_path,
-    )
+    try:
+        AuditLog.objects.create(
+            user=user,
+            action=action,
+            model_name=model_name,
+            description=description,
+            target_id=str(target_id) if target_id is not None else None,
+            before_data=_json_safe(before_data),
+            after_data=_json_safe(after_data),
+            ip_address=ip_address,
+            user_agent=user_agent,
+            request_path=request_path,
+        )
+    except DatabaseError:
+        # Audit logging should never break request flow (e.g., during fresh deploys
+        # where migrations are not yet fully applied).
+        logger.exception("Audit log write failed; continuing request.")
