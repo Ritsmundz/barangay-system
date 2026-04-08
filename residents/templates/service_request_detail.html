@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block page_title %}Service Request Details{% endblock %}
+{% block page_subtitle %}{{ service_request.document_number }}{% endblock %}
+{% block page_header_actions %}
+<a href="{% url 'service_requests' %}" class="btn-bmis btn-ghost">
+    <svg viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+    </svg>
+    Back to Requests
+</a>
+{% if service_request.status == "Approved" or service_request.status == "Released" %}
+<a href="{% url 'generate_document' service_request.id %}" class="btn-bmis btn-primary">
+    <svg viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+    </svg>
+    {% if service_request.status == "Released" %}Print Document{% else %}Generate Document{% endif %}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: all .15s;
+        line-height: 1;
+        white-space: nowrap;
+    }
+    .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .btn-ghost { background: #fff; color: #475569; border: 1px solid #E2E8F0; }
+    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+    .btn-primary { background: #2563EB; color: #fff; border: 1px solid #2563EB; }
+    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
+
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: #94A3B8;
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: #64748B; text-decoration: none; }
+    .breadcrumb a:hover { color: #2563EB; }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    .request-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 1180px;
+    }
+
+    .request-hero {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    }
+    .request-hero-main {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+    }
+    .request-identity {
+        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+        color: #fff;
+        padding: 22px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .request-avatar {
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.16);
+        border: 3px solid rgba(255,255,255,.34);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+        font-weight: 700;
+        margin-bottom: 14px;
+    }
+    .request-name {
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 8px;
+    }
+    .request-subtitle {
+        font-size: 12.5px;
+        line-height: 1.5;
+        color: rgba(255,255,255,.82);
+        max-width: 190px;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 14px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 600;
+    }
+    .status-pill::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    .pill-pending { background: rgba(245, 158, 11, 0.18); color: #FDE68A; }
+    .pill-pending::before { background: #F59E0B; }
+    .pill-processing { background: rgba(59, 130, 246, 0.18); color: #BFDBFE; }
+    .pill-processing::before { background: #3B82F6; }
+    .pill-approved { background: rgba(34, 197, 94, 0.18); color: #BBF7D0; }
+    .pill-approved::before { background: #22C55E; }
+    .pill-released { background: rgba(16, 185, 129, 0.18); color: #A7F3D0; }
+    .pill-released::before { background: #10B981; }
+    .pill-rejected { background: rgba(239, 68, 68, 0.18); color: #FECACA; }
+    .pill-rejected::before { background: #EF4444; }
+
+    .request-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 12px 14px;
+    }
+    .request-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 16px;
+        border-right: 1px solid #F1F5F9;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .request-info-item:nth-child(3n) { border-right: none; }
+    .request-info-item:nth-last-child(-n + 3) { border-bottom: none; }
+    .request-info-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .request-info-icon svg { width: 15px; height: 15px; color: #64748B; }
+    .info-label {
+        font-size: 10px;
+        color: #94A3B8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        font-size: 13px;
+        color: #1E293B;
+        font-weight: 500;
+        line-height: 1.45;
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+    .detail-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
+    }
+    .section-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #E2E8F0;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        font-size: 13px;
+        font-weight: 600;
+        color: #1E293B;
+    }
+    .section-head svg { width: 15px; height: 15px; color: #2563EB; }
+    .section-body {
+        padding: 18px 20px;
+    }
+    .detail-text {
+        font-size: 13px;
+        line-height: 1.7;
+        color: #334155;
+    }
+    .meta-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    .meta-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .meta-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .meta-key {
+        font-size: 11px;
+        color: #94A3B8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .05em;
+    }
+    .meta-val {
+        font-size: 13px;
+        color: #1E293B;
+        font-weight: 500;
+        text-align: right;
+    }
+    .payment-paid { color: #16A34A; }
+    .payment-unpaid { color: #DC2626; }
+
+    @media (max-width: 980px) {
+        .request-hero-main {
+            grid-template-columns: 1fr;
+        }
+        .request-info-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .request-info-item:nth-child(3n) { border-right: 1px solid #F1F5F9; }
+        .request-info-item:nth-child(2n) { border-right: none; }
+        .request-info-item:nth-last-child(-n + 3) { border-bottom: 1px solid #F1F5F9; }
+        .request-info-item:nth-last-child(-n + 2) { border-bottom: none; }
+        .meta-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 720px) {
+        .request-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .request-info-item,
+        .request-info-item:nth-child(2n),
+        .request-info-item:nth-child(3n) {
+            border-right: none;
+        }
+        .request-info-item:nth-last-child(-n + 2) { border-bottom: 1px solid #F1F5F9; }
+        .request-info-item:last-child { border-bottom: none; }
+        .meta-row {
+            flex-direction: column;
+        }
+        .meta-val {
+            text-align: left;
+        }
+    }
+</style>
+
+<div class="breadcrumb">
+    <a href="{% url 'service_requests' %}">Service Requests</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">{{ service_request.document_number }}</span>
+</div>
+
+<div class="request-dashboard">
+    <section class="request-hero">
+        <div class="request-hero-main">
+            <div class="request-identity">
+                <div class="request-avatar">{{ service_request.service_type.name|slice:":1"|upper }}{{ service_request.service_type.name|slice:"1:2"|upper }}</div>
+                <div class="request-name">{{ service_request.service_type }}</div>
+                <div class="request-subtitle">Official barangay service request record and processing summary</div>
+                {% if service_request.status == "Pending" %}
+                    <div class="status-pill pill-pending">Pending</div>
+                {% elif service_request.status == "Processing" %}
+                    <div class="status-pill pill-processing">Processing</div>
+                {% elif service_request.status == "Approved" %}
+                    <div class="status-pill pill-approved">Approved</div>
+                {% elif service_request.status == "Released" %}
+                    <div class="status-pill pill-released">Released</div>
+                {% elif service_request.status == "Rejected" %}
+                    <div class="status-pill pill-rejected">Rejected</div>
+                {% else %}
+                    <div class="status-pill pill-pending">{{ service_request.status }}</div>
+                {% endif %}
+            </div>
+
+            <div class="request-info-grid">
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Document Number</div><div class="info-value">{{ service_request.document_number }}</div></div>
+                </div>
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Resident</div><div class="info-value">{{ service_request.resident }}</div></div>
+                </div>
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Date Requested</div><div class="info-value">{{ service_request.request_date|date:"F j, Y, g:i a" }}</div></div>
+                </div>
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12l-6-3-6 3V4z"/></svg></div>
+                    <div><div class="info-label">Service Type</div><div class="info-value">{{ service_request.service_type }}</div></div>
+                </div>
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a6 6 0 00-6 6v1H3a1 1 0 000 2h1v1a6 6 0 0012 0v-1h1a1 1 0 100-2h-1V9a6 6 0 00-6-6zm0 2a4 4 0 014 4v1H6V9a4 4 0 014-4z"/></svg></div>
+                    <div><div class="info-label">Purpose</div><div class="info-value">{{ service_request.purpose_display|default:"-" }}</div></div>
+                </div>
+                <div class="request-info-item">
+                    <div class="request-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v2H2V5z"/><path d="M2 9h16v6a2 2 0 01-2 2H4a2 2 0 01-2-2V9z"/></svg></div>
+                    <div><div class="info-label">Fee</div><div class="info-value">P{{ service_request.fee }}</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="meta-grid">
+        <section class="detail-card">
+            <div class="section-head">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V8l-6-5H4z"/><path d="M12 3v5h5"/></svg>
+                Request Summary
+            </div>
+            <div class="section-body">
+                <div class="detail-text">
+                    This request was filed for <strong>{{ service_request.service_type }}</strong> by <strong>{{ service_request.resident }}</strong>.
+                    {% if service_request.purpose_display and service_request.purpose_display != "-" %}
+                    The recorded purpose is <strong>{{ service_request.purpose_display }}</strong>.
+                    {% else %}
+                    No additional purpose details were provided during filing.
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <section class="detail-card">
+            <div class="section-head">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zm2-5a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zm3 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"/></svg>
+                Processing Details
+            </div>
+            <div class="section-body">
+                <div class="meta-list">
+                    <div class="meta-row">
+                        <div class="meta-key">Payment Status</div>
+                        <div class="meta-val {% if service_request.payment %}payment-paid{% else %}payment-unpaid{% endif %}">
+                            {% if service_request.payment %}Paid{% else %}Unpaid{% endif %}
+                        </div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-key">Processed Date</div>
+                        <div class="meta-val">{{ service_request.processed_date|date:"F j, Y, g:i a"|default:"Not yet processed" }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-key">Created By</div>
+                        <div class="meta-val">{{ service_request.created_by|default:"System" }}</div>
+                    </div>
+                    <div class="meta-row">
+                        <div class="meta-key">Remarks</div>
+                        <div class="meta-val">{{ service_request.remarks|default:"No remarks recorded" }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

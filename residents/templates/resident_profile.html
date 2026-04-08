@@ -1,21 +1,22 @@
 {% extends "base.html" %}
 
+{% block page_title %}Resident Profile{% endblock %}
+{% block page_subtitle %}Full record - Barangay Gulod{% endblock %}
+{% block page_header_actions %}
+<a href="{% url 'edit_resident' resident.id %}" class="btn-bmis btn-secondary">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
+    Edit Resident
+</a>
+{% if resident.status == "Alive" and can_create_service_requests %}
+<a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-success">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+    Create Service Request
+</a>
+{% endif %}
+{% endblock %}
+
 {% block content %}
-
 <style>
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* ── Buttons ── */
     .btn-bmis {
         display: inline-flex;
         align-items: center;
@@ -33,222 +34,11 @@
         white-space: nowrap;
     }
     .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .btn-primary  { background: #2563EB; color: #fff; }
-    .btn-primary:hover  { background: #1D4ED8; color: #fff; text-decoration: none; }
     .btn-secondary { background: #fff; color: #475569; border: 1px solid #E2E8F0; }
     .btn-secondary:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-    .btn-success  { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
-    .btn-success:hover  { background: #DCFCE7; color: #14532D; text-decoration: none; }
+    .btn-success { background: #F0FDF4; color: #166534; border: 1px solid #BBF7D0; }
+    .btn-success:hover { background: #DCFCE7; color: #14532D; text-decoration: none; }
 
-    /* ── Two-column layout ── */
-    .profile-layout {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 16px;
-        align-items: start;
-    }
-    @media (max-width: 860px) {
-        .profile-layout { grid-template-columns: 1fr; }
-    }
-
-    /* ── Profile sidebar card ── */
-    .profile-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .profile-card-top {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 28px 20px 20px;
-        text-align: center;
-    }
-    .profile-avatar {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.2);
-        border: 3px solid rgba(255,255,255,.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        font-weight: 600;
-        color: #fff;
-        margin: 0 auto 12px;
-    }
-    .profile-name {
-        font-size: 15px;
-        font-weight: 600;
-        color: #fff;
-        line-height: 1.3;
-    }
-    .profile-status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        margin-top: 8px;
-        padding: 3px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 500;
-    }
-    .profile-status-pill::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-    }
-    .psp-alive    { background: rgba(74,222,128,.2); color: #86EFAC; }
-    .psp-alive::before { background: #4ADE80; }
-    .psp-moved    { background: rgba(251,146,60,.2); color: #FED7AA; }
-    .psp-moved::before { background: #FB923C; }
-    .psp-deceased { background: rgba(148,163,184,.2); color: #CBD5E1; }
-    .psp-deceased::before { background: #94A3B8; }
-
-    .profile-card-body {
-        padding: 16px 20px;
-    }
-    .info-row {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 9px 0;
-        border-bottom: 1px solid #F1F5F9;
-    }
-    .info-row:last-child { border-bottom: none; }
-    .info-icon {
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        background: #F8FAFC;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        margin-top: 1px;
-    }
-    .info-icon svg { width: 13px; height: 13px; color: #64748B; }
-    .info-label { font-size: 10.5px; color: #94A3B8; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; line-height: 1; margin-bottom: 3px; }
-    .info-value { font-size: 12.5px; color: #1E293B; font-weight: 500; line-height: 1.4; }
-    .info-value a { color: #2563EB; text-decoration: none; }
-    .info-value a:hover { text-decoration: underline; }
-
-    /* ── Right column ── */
-    .profile-right { display: flex; flex-direction: column; gap: 16px; }
-
-    /* ── Stats row ── */
-    .stats-row {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-    .stat-mini {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 14px 16px;
-        text-align: center;
-        position: relative;
-        overflow: hidden;
-    }
-    .stat-mini::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        height: 3px;
-    }
-    .sm-blue::before   { background: linear-gradient(90deg,#2563EB,#60A5FA); }
-    .sm-purple::before { background: linear-gradient(90deg,#7C3AED,#C4B5FD); }
-    .sm-green::before  { background: linear-gradient(90deg,#16A34A,#4ADE80); }
-    .stat-mini-val  { font-size: 22px; font-weight: 600; color: #1E293B; line-height: 1; }
-    .stat-mini-lbl  { font-size: 11px; color: #64748B; margin-top: 4px; }
-
-    /* ── Section card ── */
-    .section-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .section-card-hdr {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 16px;
-        border-bottom: 1px solid #E2E8F0;
-        background: #FAFAFA;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .section-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E293B;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
-    .section-card-title svg { width: 14px; height: 14px; color: #2563EB; }
-
-    /* ── Service request table ── */
-    .bmis-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .bmis-table th {
-        font-size: 11.5px;
-        font-weight: 600;
-        color: #64748B;
-        text-align: left;
-        padding: 9px 16px;
-        background: #FAFAFA;
-        border-bottom: 1px solid #E2E8F0;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        white-space: nowrap;
-    }
-    .bmis-table td {
-        padding: 10px 16px;
-        border-bottom: 1px solid #F1F5F9;
-        font-size: 12.5px;
-        color: #1E293B;
-        vertical-align: middle;
-    }
-    .bmis-table tbody tr:last-child td { border-bottom: none; }
-    .bmis-table tbody tr:hover td { background: #FAFAFE; }
-
-    /* ── Badges ── */
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 9px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-    .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-    .badge-pending     { background: #FFFBEB; color: #92400E; }
-    .badge-pending::before { background: #D97706; }
-    .badge-approved    { background: #EFF6FF; color: #1E40AF; }
-    .badge-approved::before { background: #2563EB; }
-    .badge-released    { background: #F0FDF4; color: #166534; }
-    .badge-released::before { background: #16A34A; }
-    .badge-rejected    { background: #FEF2F2; color: #991B1B; }
-    .badge-rejected::before { background: #DC2626; }
-
-    /* ── Voter badge ── */
-    .voter-yes { display:inline-flex;align-items:center;gap:4px;background:#EFF6FF;color:#1E40AF;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500; }
-    .voter-no  { display:inline-flex;align-items:center;gap:4px;background:#F8FAFC;color:#64748B;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500; }
-
-    /* ── Empty state ── */
-    .empty-state { text-align:center; padding:32px 20px; }
-    .empty-state svg { width:36px;height:36px;color:#CBD5E1;margin:0 auto 10px;display:block; }
-    .empty-state p { font-size:12.5px;color:#94A3B8; }
-
-    /* ── Breadcrumb ── */
     .breadcrumb {
         display: flex;
         align-items: center;
@@ -261,9 +51,348 @@
     .breadcrumb a:hover { color: #2563EB; }
     .breadcrumb svg { width: 12px; height: 12px; }
     .breadcrumb .cur { color: #1E293B; font-weight: 500; }
+
+    .resident-dashboard {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .resident-hero {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    }
+    .resident-hero-main {
+        display: grid;
+        grid-template-columns: 236px 1fr;
+    }
+    .resident-identity {
+        background: linear-gradient(135deg, #17347d 0%, #2563EB 100%);
+        color: #fff;
+        padding: 20px 18px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .resident-heading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+    }
+    .resident-avatar {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.16);
+        border: 3px solid rgba(255,255,255,.38);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    .resident-heading-copy {
+        min-width: 0;
+        width: 100%;
+        max-width: 190px;
+        margin: 0 auto;
+    }
+    .resident-name {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.25;
+        margin: 0;
+        text-wrap: balance;
+    }
+    .resident-status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-top: 12px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        font-size: 10.5px;
+        font-weight: 600;
+        width: fit-content;
+    }
+    .resident-status-pill::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+    }
+    .psp-alive { background: rgba(74,222,128,.2); color: #bbf7d0; }
+    .psp-alive::before { background: #4ADE80; }
+    .psp-moved { background: rgba(251,146,60,.2); color: #fed7aa; }
+    .psp-moved::before { background: #FB923C; }
+    .psp-deceased { background: rgba(148,163,184,.2); color: #e2e8f0; }
+    .psp-deceased::before { background: #CBD5E1; }
+
+    .resident-info-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 12px 14px;
+    }
+    .resident-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        padding: 11px 12px;
+        border-right: 1px solid #F1F5F9;
+        border-bottom: 1px solid #F1F5F9;
+    }
+    .resident-info-item:nth-child(3n) { border-right: none; }
+    .resident-info-item:nth-last-child(-n + 3) { border-bottom: none; }
+    .info-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+    .info-icon svg { width: 14px; height: 14px; color: #64748B; }
+    .info-label {
+        font-size: 10px;
+        color: #94A3B8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+    .info-value {
+        font-size: 12px;
+        color: #1E293B;
+        font-weight: 500;
+        line-height: 1.35;
+    }
+    .info-value a { color: #2563EB; text-decoration: none; }
+    .info-value a:hover { text-decoration: underline; }
+
+    .resident-lower {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .panel-card,
+    .history-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
+    }
+    .section-card-hdr {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 14px;
+        border-bottom: 1px solid #E2E8F0;
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .section-card-title {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: #1E293B;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+    .section-card-title svg { width: 14px; height: 14px; color: #2563EB; }
+
+    .snapshot-grid {
+        padding: 14px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .snapshot-card {
+        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        border: 1px solid #DCE7F5;
+        border-radius: 12px;
+        padding: 14px 15px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.75);
+    }
+    .snapshot-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+    }
+    .sc-blue::before { background: linear-gradient(180deg, #2563EB, #60A5FA); }
+    .sc-amber::before { background: linear-gradient(180deg, #D97706, #FBBF24); }
+    .sc-green::before { background: linear-gradient(180deg, #16A34A, #4ADE80); }
+    .sc-purple::before { background: linear-gradient(180deg, #7C3AED, #A78BFA); }
+    .snapshot-card::after {
+        content: '';
+        position: absolute;
+        right: -18px;
+        top: -18px;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: rgba(37, 99, 235, 0.05);
+    }
+    .snapshot-label {
+        font-size: 10px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        margin-bottom: 8px;
+    }
+    .snapshot-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1E293B;
+        line-height: 1.3;
+        position: relative;
+        z-index: 1;
+    }
+    .snapshot-sub {
+        margin-top: 6px;
+        font-size: 11px;
+        color: #64748B;
+        line-height: 1.4;
+        position: relative;
+        z-index: 1;
+    }
+
+    .bmis-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .bmis-table th {
+        font-size: 11.5px;
+        font-weight: 600;
+        color: #64748B;
+        text-align: left;
+        padding: 10px 16px;
+        background: #FAFAFA;
+        border-bottom: 1px solid #E2E8F0;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        white-space: nowrap;
+    }
+    .bmis-table td {
+        padding: 10px 16px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 12px;
+        color: #1E293B;
+        vertical-align: middle;
+    }
+    .bmis-table tbody tr:last-child td { border-bottom: none; }
+    .bmis-table tbody tr:hover td { background: #FAFAFE; }
+
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .badge::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .badge-pending { background: #FFFBEB; color: #92400E; }
+    .badge-pending::before { background: #D97706; }
+    .badge-approved { background: #EFF6FF; color: #1E40AF; }
+    .badge-approved::before { background: #2563EB; }
+    .badge-released { background: #F0FDF4; color: #166534; }
+    .badge-released::before { background: #16A34A; }
+    .badge-rejected { background: #FEF2F2; color: #991B1B; }
+    .badge-rejected::before { background: #DC2626; }
+
+    .voter-yes,
+    .voter-no {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 9px;
+        border-radius: 20px;
+        font-size: 10.5px;
+        font-weight: 500;
+    }
+    .voter-yes { background: #EFF6FF; color: #1E40AF; }
+    .voter-no { background: #F8FAFC; color: #64748B; }
+
+    .empty-state {
+        text-align: center;
+        padding: 32px 20px;
+    }
+    .empty-state svg {
+        width: 36px;
+        height: 36px;
+        color: #CBD5E1;
+        margin: 0 auto 10px;
+        display: block;
+    }
+    .empty-state p {
+        font-size: 12.5px;
+        color: #94A3B8;
+    }
+
+    @media (max-width: 1180px) {
+        .resident-hero-main,
+        .resident-lower {
+            grid-template-columns: 1fr;
+        }
+        .resident-info-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .snapshot-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .resident-info-item:nth-child(3n) { border-right: 1px solid #F1F5F9; }
+        .resident-info-item:nth-child(2n) { border-right: none; }
+        .resident-info-item:nth-last-child(-n + 3) { border-bottom: 1px solid #F1F5F9; }
+        .resident-info-item:nth-last-child(-n + 2) { border-bottom: none; }
+    }
+
+    @media (max-width: 720px) {
+        .resident-name { font-size: 18px; }
+        .resident-info-grid {
+            grid-template-columns: 1fr;
+        }
+        .snapshot-grid {
+            grid-template-columns: 1fr;
+        }
+        .resident-info-item,
+        .resident-info-item:nth-child(2n),
+        .resident-info-item:nth-child(3n) {
+            border-right: none;
+        }
+        .resident-info-item:nth-last-child(-n + 2) { border-bottom: 1px solid #F1F5F9; }
+        .resident-info-item:last-child { border-bottom: none; }
+    }
 </style>
 
-<!-- Breadcrumb -->
 <div class="breadcrumb">
     {% if not is_portal_resident_user %}
     <a href="{% url 'resident_list' %}">Residents</a>
@@ -272,176 +401,122 @@
     <span class="cur">{{ resident.first_name }} {{ resident.last_name }}</span>
 </div>
 
-<!-- ═══════════════ PAGE HEADER ═══════════════ -->
-<div class="page-header">
-    <div>
-        <div class="page-title">Resident Profile</div>
-        <div class="page-subtitle">Full record · Barangay Gulod</div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="{% url 'edit_resident' resident.id %}" class="btn-bmis btn-secondary">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/></svg>
-            Edit Resident
-        </a>
-        {% if resident.status == "Alive" and can_create_service_requests %}
-        <a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-success">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
-            Create Service Request
-        </a>
-        {% endif %}
-    </div>
-</div>
-
-<!-- ═══════════════ PROFILE LAYOUT ═══════════════ -->
-<div class="profile-layout">
-
-    <!-- ── Left: Profile sidebar ── -->
-    <aside class="profile-card">
-
-        <!-- Avatar + name + status -->
-        <div class="profile-card-top">
-            <div class="profile-avatar">
-                {{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}
+<div class="resident-dashboard">
+    <section class="resident-hero">
+        <div class="resident-hero-main">
+            <div class="resident-identity">
+                <div class="resident-heading">
+                    <div class="resident-avatar">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
+                    <div class="resident-heading-copy">
+                        <div class="resident-name">
+                            {{ resident.first_name }}
+                            {% if resident.middle_name %}{{ resident.middle_name|slice:":1" }}.{% endif %}
+                            {{ resident.last_name }}
+                        </div>
+                    </div>
+                </div>
+                {% if resident.status == "Alive" %}
+                    <div class="resident-status-pill psp-alive">Active Resident</div>
+                {% elif resident.status == "Moved" %}
+                    <div class="resident-status-pill psp-moved">Moved Out</div>
+                {% elif resident.status == "Deceased" %}
+                    <div class="resident-status-pill psp-deceased">Deceased</div>
+                {% else %}
+                    <div class="resident-status-pill psp-deceased">{{ resident.status }}</div>
+                {% endif %}
             </div>
-            <div class="profile-name">
-                {{ resident.first_name }}
-                {% if resident.middle_name %}{{ resident.middle_name|slice:":1" }}.{% endif %}
-                {{ resident.last_name }}
+
+            <div class="resident-info-grid">
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Birth Date</div><div class="info-value">{{ resident.birth_date }}</div></div>
+                </div>
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg></div>
+                    <div><div class="info-label">Contact</div><div class="info-value">{{ resident.contact_number|default:"-" }}</div></div>
+                </div>
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg></div>
+                    <div><div class="info-label">Email</div><div class="info-value">{{ resident.email|default:"-" }}</div></div>
+                </div>
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div>
+                    <div>
+                        <div class="info-label">Address</div>
+                        <div class="info-value">
+                            {% if resident.household %}
+                                {{ resident.household.house_number }} {{ resident.household.street }}, Purok {{ resident.household.purok }}
+                            {% else %}
+                                <span style="color:#94A3B8">No household assigned</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Gender</div><div class="info-value">{{ resident.gender }}</div></div>
+                </div>
+                <div class="resident-info-item">
+                    <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></div>
+                    <div><div class="info-label">Civil Status</div><div class="info-value">{{ resident.civil_status|default:"-" }}</div></div>
+                </div>
             </div>
-            {% if resident.status == "Alive" %}
-                <div class="profile-status-pill psp-alive">Alive</div>
-            {% elif resident.status == "Moved" %}
-                <div class="profile-status-pill psp-moved">Moved Out</div>
-            {% elif resident.status == "Deceased" %}
-                <div class="profile-status-pill psp-deceased">Deceased</div>
-            {% else %}
-                <div class="profile-status-pill psp-deceased">{{ resident.status }}</div>
-            {% endif %}
         </div>
+    </section>
 
-        <!-- Info rows — all variables preserved -->
-        <div class="profile-card-body">
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Gender</div>
-                    <div class="info-value">{{ resident.gender }}</div>
+    <div class="resident-lower">
+        <section class="panel-card">
+            <div class="section-card-hdr">
+                <div class="section-card-title">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                    Resident Snapshot
                 </div>
             </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Birth Date</div>
-                    <div class="info-value">{{ resident.birth_date }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Age / Age Group</div>
-                    <div class="info-value">{{ resident.age }} yrs · {{ resident.age_group }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg></div>
-                <div>
-                    <div class="info-label">Contact</div>
-                    <div class="info-value">{{ resident.contact_number|default:"—" }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg></div>
-                <div>
-                    <div class="info-label">Email</div>
-                    <div class="info-value">{{ resident.email|default:"—" }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Address</div>
-                    <div class="info-value">
-                        {% if resident.household %}
-                            {{ resident.household.house_number }}
-                            {{ resident.household.street }},
-                            Purok {{ resident.household.purok }}
+            <div class="snapshot-grid">
+                <div class="snapshot-card sc-blue">
+                    <div class="snapshot-label">Latest Request</div>
+                    <div class="snapshot-value">
+                        {% if latest_service %}
+                            {{ latest_service.service_type }}
                         {% else %}
-                            <span style="color:#94A3B8">No household assigned</span>
+                            No requests yet
+                        {% endif %}
+                    </div>
+                    <div class="snapshot-sub">
+                        {% if latest_service %}
+                            Last filed on {{ latest_service.request_date }}
+                        {% else %}
+                            No recorded service activity for this resident.
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="snapshot-card sc-amber">
+                    <div class="snapshot-label">Pending Queue</div>
+                    <div class="snapshot-value">{{ pending_requests }}</div>
+                    <div class="snapshot-sub">Requests currently waiting for processing or review.</div>
+                </div>
+                <div class="snapshot-card sc-green">
+                    <div class="snapshot-label">Released Documents</div>
+                    <div class="snapshot-value">{{ released_requests }}</div>
+                    <div class="snapshot-sub">Requests already completed and released to the resident.</div>
+                </div>
+                <div class="snapshot-card sc-purple">
+                    <div class="snapshot-label">Record Completeness</div>
+                    <div class="snapshot-value">{{ profile_completeness }}/6</div>
+                    <div class="snapshot-sub">
+                        {% if has_full_contact_info %}
+                            Profile includes both mobile number and email for easier coordination.
+                        {% elif has_contact_info %}
+                            Profile has one contact channel available for coordination.
+                        {% else %}
+                            Profile still needs contact details for easier follow-up.
                         {% endif %}
                     </div>
                 </div>
             </div>
+        </section>
 
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h5v-4h4v4h5a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>
-                <div>
-                    <div class="info-label">Household</div>
-                    <div class="info-value">
-                        {% if resident.household %}
-                            <a href="{% url 'household_detail' resident.household.id %}">
-                                {{ resident.household }}
-                            </a>
-                        {% else %}
-                            <span style="color:#94A3B8">Not Assigned</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Civil Status</div>
-                    <div class="info-value">{{ resident.civil_status|default:"—" }}</div>
-                </div>
-            </div>
-
-            <div class="info-row">
-                <div class="info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg></div>
-                <div>
-                    <div class="info-label">Voter Status</div>
-                    <div class="info-value">
-                        {% if resident.voter_status %}
-                            <span class="voter-yes">✓ Registered Voter</span>
-                        {% else %}
-                            <span class="voter-no">Not a Voter</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </aside>
-
-    <!-- ── Right: Stats + service history ── -->
-    <div class="profile-right">
-
-        <!-- Mini stats -->
-        <div class="stats-row">
-            <div class="stat-mini sm-blue">
-                <div class="stat-mini-val">{{ services|length }}</div>
-                <div class="stat-mini-lbl">Total Requests</div>
-            </div>
-            <div class="stat-mini sm-green">
-                <div class="stat-mini-val">
-                    {% with released=services|length %}{{ released }}{% endwith %}
-                </div>
-                <div class="stat-mini-lbl">Documents Released</div>
-            </div>
-            <div class="stat-mini sm-purple">
-                <div class="stat-mini-val">{{ resident.age }}</div>
-                <div class="stat-mini-lbl">Age · {{ resident.age_group }}</div>
-            </div>
-        </div>
-
-        <!-- Service request history -->
-        <div class="section-card">
+        <section class="history-card">
             <div class="section-card-hdr">
                 <div class="section-card-title">
                     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
@@ -454,7 +529,6 @@
                 </a>
                 {% endif %}
             </div>
-
             <table class="bmis-table">
                 <thead>
                     <tr>
@@ -496,9 +570,9 @@
                     {% endfor %}
                 </tbody>
             </table>
-        </div>
-
-    </div><!-- /profile-right -->
-</div><!-- /profile-layout -->
-
+        </section>
+    </div>
+</div>
 {% endblock %}
+
+

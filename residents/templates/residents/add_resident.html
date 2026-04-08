@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block page_title %}Add New Resident{% endblock %}
+{% block page_subtitle %}Register a new resident in the barangay system{% endblock %}
+
 {% block content %}
 
 <style>
@@ -33,11 +36,21 @@
     .resident-layout {
         display: grid;
         grid-template-columns: 1fr 320px;
-        gap: 16px;
+        gap: 18px;
         align-items: start;
-        max-width: 1100px;
+        max-width: 1140px;
         margin: 0 auto;
-        padding: 0 20px;
+        padding: 0 16px;
+    }
+    .resident-layout-centered {
+        grid-template-columns: minmax(0, 880px);
+        justify-content: center;
+    }
+    .form-column {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        width: 100%;
     }
     @media (max-width: 920px) {
         .resident-layout { 
@@ -421,17 +434,24 @@
     .household-info-val { font-size: 12px; font-weight: 500; color: #1E293B; text-align: right; }
 
     /* ── Help card ── */
-    .help-card {
+    .info-card {
         background: #EFF6FF;
         border: 1px solid #BFDBFE;
         border-radius: 10px;
         padding: 12px 14px;
         display: flex;
         gap: 10px;
+        align-items: flex-start;
     }
-    .help-card svg { width: 15px; height: 15px; color: #2563EB; flex-shrink: 0; margin-top: 1px; }
-    .help-card-text { font-size: 11.5px; color: #1E3A8A; line-height: 1.6; }
-    .help-card-text strong { color: #1E40AF; }
+    .info-card svg { width: 16px; height: 16px; color: #2563EB; flex-shrink: 0; margin-top: 2px; }
+    .info-card-content { flex: 1; }
+    .info-card-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1E40AF;
+        margin-bottom: 4px;
+    }
+    .info-card-text { font-size: 11.5px; color: #1E3A8A; line-height: 1.6; }
 
     /* Hide default Django form rendering */
     .form-body form > p { display: none; }
@@ -449,32 +469,38 @@
     <span class="cur">Add Resident</span>
 </div>
 
-<!-- Page header -->
-<div class="page-header">
-    <div>
-        <div class="page-title">Add New Resident</div>
-        <div class="page-subtitle">Register a new resident in the barangay system</div>
-    </div>
-</div>
-
 <!-- Main Layout -->
-<div class="resident-layout">
+<div class="resident-layout{% if not household %} resident-layout-centered{% endif %}">
 
     <!-- Left: Form -->
-    <div class="form-card">
-        <div class="form-card-hdr">
-            <div class="form-card-hdr-icon">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
-                </svg>
-            </div>
-            <div>
-                <div class="form-card-hdr-title">Resident Information</div>
-                <div class="form-card-hdr-sub">Fill in the details below</div>
+    <div class="form-column">
+        <div class="info-card">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+            <div class="info-card-content">
+                <div class="info-card-title">About Resident Information</div>
+                <div class="info-card-text">
+                    Make sure all required fields marked with <span style="color:#DC2626;">*</span> are filled out correctly.
+                    Date of birth should be entered in YYYY-MM-DD format before saving the record.
+                </div>
             </div>
         </div>
 
-        <form method="POST">
+        <div class="form-card">
+            <div class="form-card-hdr">
+                <div class="form-card-hdr-icon">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="form-card-hdr-title">Resident Information</div>
+                    <div class="form-card-hdr-sub">Fill in the details below</div>
+                </div>
+            </div>
+
+            <form method="POST">
             {% csrf_token %}
 
             <div class="form-body">
@@ -797,10 +823,12 @@
                 </div>
             </div>
 
-        </form>
+            </form>
+        </div>
     </div>
 
     <!-- Right: Sidebar -->
+    {% if household %}
     <div class="sidebar">
 
         <!-- Household card (if household exists) -->
@@ -832,19 +860,8 @@
         </div>
         {% endif %}
 
-        <!-- Help card -->
-        <div class="help-card">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-            </svg>
-            <div class="help-card-text">
-                <strong>Need help?</strong> Make sure all required fields marked with 
-                <span style="color:#DC2626;">*</span> are filled out correctly. 
-                Date of birth should be in YYYY-MM-DD format.
-            </div>
-        </div>
-
     </div>
+    {% endif %}
 
 </div>
 

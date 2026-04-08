@@ -1,5 +1,16 @@
 {% extends "base.html" %}
 
+{% block page_title %}Complaints Management{% endblock %}
+{% block page_subtitle %}Track and manage barangay complaints{% endblock %}
+{% block page_header_actions %}
+<a href="{% url 'file_complaint' %}" class="header-btn">
+    <svg viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+    </svg>
+    File Complaint
+</a>
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -236,6 +247,36 @@
         color: #374151;
     }
 
+    .table-actions {
+        display: flex;
+        justify-content: center;
+    }
+    .view-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 7px;
+        font-size: 11px;
+        font-weight: 500;
+        text-decoration: none;
+        background: #EFF6FF;
+        color: #1D4ED8;
+        border: 1px solid #BFDBFE;
+        transition: all .15s;
+        white-space: nowrap;
+    }
+    .view-btn:hover {
+        background: #DBEAFE;
+        color: #1E40AF;
+        text-decoration: none;
+    }
+    .view-btn svg {
+        width: 12px;
+        height: 12px;
+        flex-shrink: 0;
+    }
+
     /* ── Empty state ── */
     .empty-state {
         padding: 60px 20px;
@@ -301,20 +342,6 @@
     <a href="{% url 'role_redirect' %}">Dashboard</a>
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
     <span class="cur">Complaints</span>
-</div>
-
-<!-- Page header -->
-<div class="page-header">
-    <div>
-        <div class="page-title">Complaints Management</div>
-        <div class="page-subtitle">Track and manage barangay complaints</div>
-    </div>
-    <a href="{% url 'file_complaint' %}" class="header-btn">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-        </svg>
-        File Complaint
-    </a>
 </div>
 
 <!-- Stats grid -->
@@ -405,6 +432,7 @@
                 <th>Complainant</th>
                 <th>Status</th>
                 <th>Date Filed</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -457,6 +485,16 @@
                     {% endif %}
                 </td>
                 <td>{{ complaint.date_filed|date:"M d, Y" }}</td>
+                <td>
+                    <div class="table-actions">
+                        <a href="{% url 'complaint_detail' complaint.id %}" class="view-btn">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 3C5 3 1.73 7.11.46 9.02a1.69 1.69 0 000 1.96C1.73 12.89 5 17 10 17s8.27-4.11 9.54-6.02a1.69 1.69 0 000-1.96C18.27 7.11 15 3 10 3zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.2A1.8 1.8 0 1010 8.2a1.8 1.8 0 000 3.6z"/>
+                            </svg>
+                            View
+                        </a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

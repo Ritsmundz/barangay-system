@@ -19,6 +19,7 @@ urlpatterns = [
     path('', role_redirect, name='role_redirect'),
     path('captain/', dashboard, name='captain_dashboard'),
     path('secretary/', secretary_dashboard, name='secretary_dashboard'),
+    path('secretary/report/', views.secretary_analytics_report, name='secretary_analytics_report'),
     path('treasurer/', treasurer_dashboard, name='treasurer_dashboard'),
     path('staff/', staff_dashboard, name='staff_dashboard'),
 
@@ -41,6 +42,11 @@ urlpatterns = [
     "service-requests/",
     views.service_requests,
     name="service_requests"
+),
+    path(
+    "service-request/<int:request_id>/",
+    views.service_request_detail,
+    name="service_request_detail"
 ),
     path(
     "service-request/<int:request_id>/update-status/",

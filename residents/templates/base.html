@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -79,6 +80,13 @@
             width: 22px;
             height: 22px;
         }
+        .sb-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            display: block;
+        }
 
         .sb-bname {
             font-size: 12px;
@@ -155,43 +163,10 @@
             background: #DC2626;
         }
 
-        /* ── Sidebar footer (user info + logout) ── */
+        /* ── Sidebar footer ── */
         .sb-footer {
             padding: 12px 14px;
             border-top: 1px solid rgba(255,255,255,.12);
-        }
-
-        .sb-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-
-        .sb-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255,255,255,.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: #fff;
-            flex-shrink: 0;
-        }
-
-        .sb-uname {
-            font-size: 12px;
-            color: #fff;
-            font-weight: 500;
-            line-height: 1.2;
-        }
-
-        .sb-urole {
-            font-size: 10px;
-            color: rgba(255,255,255,.6);
         }
 
         /* Logout button inside sidebar */
@@ -240,68 +215,106 @@
 
         /* ── Topbar ── */
         .bmis-topbar {
-            background: var(--card);
-            border-bottom: 1px solid var(--brd);
-            padding: 0 24px;
-            height: 52px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+            border-bottom: 1px solid #dbe5f0;
+            padding: 10px 24px;
+            min-height: 68px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            gap: 18px;
             position: sticky;
             top: 0;
             z-index: 50;
         }
 
-        .tb-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--txt);
+        .tb-left {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            flex: 1;
         }
 
-        .tb-logged {
+        .tb-page {
+            min-width: 0;
+        }
+
+        .tb-page-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--txt);
+            line-height: 1.1;
+        }
+
+        .tb-page-subtitle {
+            margin-top: 4px;
             font-size: 12px;
             color: var(--txt2);
-        }
-
-        .tb-logged b {
-            color: var(--txt);
-            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .tb-right {
-            margin-left: auto;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: flex-end;
+            gap: 14px;
+            flex-shrink: 0;
         }
 
-        .tb-search {
+        .tb-header-actions {
             display: flex;
             align-items: center;
-            gap: 6px;
-            background: var(--bg);
-            border: 1px solid var(--brd);
-            border-radius: var(--radius);
-            padding: 0 10px;
-            height: 32px;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .tb-search input {
-            border: none;
-            background: transparent;
-            font-size: 12.5px;
+        .tb-user-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0 8px 14px;
+            border-left: 1px solid #dbe5f0;
+        }
+
+        .tb-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #274bb3 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .04em;
+            box-shadow: 0 8px 18px rgba(30, 58, 138, .18);
+            flex-shrink: 0;
+        }
+
+        .tb-user-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            line-height: 1.2;
+        }
+
+        .tb-role {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--txt2);
+            margin-bottom: 4px;
+        }
+
+        .tb-name {
+            font-size: 15px;
+            font-weight: 600;
             color: var(--txt);
-            width: 160px;
-            font-family: inherit;
-            outline: none;
-        }
-
-        .tb-search input::placeholder { color: var(--txt3); }
-
-        .tb-search svg {
-            width: 14px;
-            height: 14px;
-            color: var(--txt3);
         }
 
         /* ── Page content wrapper ── */
@@ -327,6 +340,42 @@
             .bmis-main {
                 margin-left: 0;
             }
+            .bmis-topbar {
+                padding: 10px 16px;
+                min-height: 60px;
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .tb-left,
+            .tb-right {
+                width: 100%;
+            }
+            .tb-right {
+                justify-content: space-between;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .tb-page-title {
+                font-size: 17px;
+            }
+            .tb-page-subtitle {
+                white-space: normal;
+            }
+            .tb-user-card {
+                padding-left: 10px;
+                gap: 10px;
+            }
+            .tb-avatar {
+                width: 38px;
+                height: 38px;
+                font-size: 12px;
+            }
+            .tb-name {
+                font-size: 13px;
+            }
+            .tb-role {
+                font-size: 10px;
+            }
         }
     </style>
 </head>
@@ -345,10 +394,7 @@
         <div class="sb-header">
             <div class="sb-brand">
                 <div class="sb-logo">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" fill="#1E3A8A"/>
-                        <path d="M12 8v8M8 10l4-2 4 2" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>
-                    </svg>
+                    <img src="{% static 'images/gulod-logo.png' %}" alt="Barangay Gulod logo">
                 </div>
                 <div>
                     <div class="sb-bname">Barangay Gulod</div>
@@ -473,24 +519,8 @@
 
         </nav>
 
-        <!-- Sidebar footer: user info + logout -->
+        <!-- Sidebar footer -->
         <div class="sb-footer">
-            <div class="sb-user">
-                <div class="sb-avatar">
-                    {{ request.user.username|slice:":2"|upper }}
-                </div>
-                <div>
-                    <div class="sb-uname">{{ request.user.username }}</div>
-                    <div class="sb-urole">
-                        {% for group in request.user.groups.all %}
-                            {{ group.name }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            Staff
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
             <!-- Logout form (method POST + csrf preserved) -->
             <form action="{% url 'logout' %}" method="POST" class="sb-logout-form">
                 {% csrf_token %}
@@ -512,16 +542,43 @@
 
         <!-- Topbar -->
         <div class="bmis-topbar">
-            <div class="tb-title">Barangay E-Governance System</div>
-            <span class="tb-logged">
-                Logged in as: <b>{{ request.user.username }}</b>
-            </span>
+            <div class="tb-left">
+                <div class="tb-page">
+                    <div class="tb-page-title">{% block page_title %}{% endblock %}</div>
+                    <div class="tb-page-subtitle">{% block page_subtitle %}{% endblock %}</div>
+                </div>
+            </div>
             <div class="tb-right">
-                <div class="tb-search">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-                    </svg>
-                    <input type="text" placeholder="Search...">
+                <div class="tb-header-actions">
+                    {% block page_header_actions %}{% endblock %}
+                </div>
+                <div class="tb-user-card">
+                    <div class="tb-avatar">
+                        {{ request.user.username|slice:":2"|upper }}
+                    </div>
+                    <div class="tb-user-meta">
+                        <div class="tb-role">
+                            {% for group in request.user.groups.all %}
+                                {{ group.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                Staff
+                            {% endfor %}
+                        </div>
+                        <div class="tb-name">
+                            {% if request.user.profile and request.user.profile.resident %}
+                                {{ request.user.profile.resident.first_name }}
+                                {% if request.user.profile.resident.middle_name %}{{ request.user.profile.resident.middle_name|slice:":1" }}. {% endif %}
+                                {{ request.user.profile.resident.last_name }}
+                                {% if request.user.profile.resident.suffix %} {{ request.user.profile.resident.suffix }}{% endif %}
+                            {% elif request.user.first_name or request.user.last_name %}
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            {% elif request.user.profile %}
+                                {{ request.user.profile.first_name }} {{ request.user.profile.last_name }}
+                            {% else %}
+                                {{ request.user.username }}
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

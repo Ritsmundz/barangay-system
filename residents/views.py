@@ -1,5 +1,5 @@
 from calendar import month
-from datetime import date
+from datetime import date, timedelta
 import csv
 import json
 import re
@@ -75,6 +75,117 @@ def group_required(test_func):
 
 def get_user_profile(user):
     return UserProfile.objects.filter(user=user).select_related("resident").first()
+
+
+def _get_secretary_dashboard_report_context(user):
+    today = timezone.localdate()
+    week_start = today - timedelta(days=6)
+    month_start = today.replace(day=1)
+    current_year = today.year
+    month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    total_residents = Resident.objects.count()
+    total_households = Household.objects.count()
+    total_requests = ServiceRequest.objects.count()
+    pending_requests = ServiceRequest.objects.filter(status="Pending").count()
+    completed_requests = ServiceRequest.objects.filter(status="Released").count()
+    total_complaints = Complaint.objects.count()
+    pending_complaints = Complaint.objects.filter(status="Pending").count()
+    resolved_complaints = Complaint.objects.filter(status="Resolved").count()
+    pending_verifications = UserProfile.objects.filter(is_verified=False).count()
+    verified_profiles = UserProfile.objects.filter(is_verified=True, resident__isnull=False)
+    verified_residents = verified_profiles.count()
+
+    new_residents_daily = Resident.objects.filter(created_at__date=today).count()
+    new_residents_weekly = Resident.objects.filter(created_at__date__gte=week_start).count()
+    new_residents_monthly = Resident.objects.filter(created_at__date__gte=month_start).count()
+
+    household_add_logs = AuditLog.objects.filter(
+        model_name="Household",
+        action="CREATE",
+    )
+    households_added_daily = household_add_logs.filter(timestamp__date=today).count()
+    households_added_weekly = household_add_logs.filter(timestamp__date__gte=week_start).count()
+    households_added_monthly = household_add_logs.filter(timestamp__date__gte=month_start).count()
+
+    recent_activity = AuditLog.objects.select_related("user").order_by("-timestamp")[:10]
+    recent_requests = ServiceRequest.objects.select_related(
+        "resident",
+        "service_type",
+        "payment",
+    ).order_by("-request_date")[:10]
+    all_complaints = Complaint.objects.select_related(
+        "resident",
+        "resident__household",
+        "resident__household__purok",
+    ).order_by("-date_filed")
+    recent_complaints = all_complaints[:10]
+    recently_verified = verified_profiles.order_by("-updated_at")[:5]
+
+    request_trend_map = {
+        item["month"]: item["total"]
+        for item in ServiceRequest.objects.filter(request_date__year=current_year)
+        .annotate(month=ExtractMonth("request_date"))
+        .values("month")
+        .annotate(total=Count("id"))
+        .order_by("month")
+    }
+    complaint_trend_map = {
+        item["month"]: item["total"]
+        for item in Complaint.objects.filter(date_filed__year=current_year)
+        .annotate(month=ExtractMonth("date_filed"))
+        .values("month")
+        .annotate(total=Count("id"))
+        .order_by("month")
+    }
+
+    request_trends = [
+        {"label": month_labels[index - 1], "value": request_trend_map.get(index, 0)}
+        for index in range(1, 13)
+    ]
+    complaint_trends = [
+        {"label": month_labels[index - 1], "value": complaint_trend_map.get(index, 0)}
+        for index in range(1, 13)
+    ]
+
+    max_request_trend = max([item["value"] for item in request_trends] or [0])
+    max_complaint_trend = max([item["value"] for item in complaint_trends] or [0])
+    for item in request_trends:
+        item["height"] = int((item["value"] / max_request_trend) * 120) if max_request_trend else 4
+    for item in complaint_trends:
+        item["height"] = int((item["value"] / max_complaint_trend) * 120) if max_complaint_trend else 4
+
+    secretary_name = user.get_full_name().strip() or user.username
+
+    return {
+        "date_generated": timezone.now(),
+        "secretary_name": secretary_name,
+        "total_residents": total_residents,
+        "total_households": total_households,
+        "total_requests": total_requests,
+        "pending_requests": pending_requests,
+        "completed_requests": completed_requests,
+        "total_complaints": total_complaints,
+        "pending_complaints": pending_complaints,
+        "resolved_complaints": resolved_complaints,
+        "pending_verifications": pending_verifications,
+        "verified_residents": verified_residents,
+        "new_residents_daily": new_residents_daily,
+        "new_residents_weekly": new_residents_weekly,
+        "new_residents_monthly": new_residents_monthly,
+        "households_added_daily": households_added_daily,
+        "households_added_weekly": households_added_weekly,
+        "households_added_monthly": households_added_monthly,
+        "recent_activity": recent_activity,
+        "recent_requests": recent_requests,
+        "recent_complaints": recent_complaints,
+        "all_complaints": all_complaints,
+        "recently_verified": recently_verified,
+        "request_trends": request_trends,
+        "complaint_trends": complaint_trends,
+        "max_request_trend": max_request_trend,
+        "max_complaint_trend": max_complaint_trend,
+    }
 
 
 def _extract_resident_data_from_ocr(text):
@@ -1388,7 +1499,28 @@ def portal_my_profile(request):
 #SECRETARY DASHBOARD
 @group_required(is_secretary)
 def secretary_dashboard(request):
-    return render(request, 'secretary_dashboard.html')
+    context = _get_secretary_dashboard_report_context(request.user)
+    context["recent_activity"] = context["recent_activity"][:4]
+    return render(request, 'secretary_dashboard.html', context)
+
+
+@group_required(is_secretary)
+def secretary_analytics_report(request):
+    allowed_sections = {
+        "all",
+        "residents",
+        "households",
+        "complaints",
+        "requests",
+        "verifications",
+    }
+    selected_section = request.GET.get("section", "all").strip().lower()
+    if selected_section not in allowed_sections:
+        selected_section = "all"
+
+    context = _get_secretary_dashboard_report_context(request.user)
+    context["selected_section"] = selected_section
+    return render(request, "secretary_analytics_report.html", context)
 
 
 #TREASURER DASHBOARD
@@ -1815,21 +1947,46 @@ def resident_profile(request, resident_id):
         if not profile.is_verified:
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
-        services = ServiceRequest.objects.filter(resident=profile.resident)
+        services = ServiceRequest.objects.filter(resident=profile.resident).select_related("service_type").order_by("-request_date")
         is_portal_resident_user = True
         can_create_requests = True
     elif is_staff_user(request.user):
-        services = ServiceRequest.objects.filter(resident=resident)
+        services = ServiceRequest.objects.filter(resident=resident).select_related("service_type").order_by("-request_date")
         can_create_requests = can_create_service_requests(request.user)
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
+
+    total_requests = services.count()
+    pending_requests = services.filter(status="Pending").count()
+    released_requests = services.filter(status="Released").count()
+    latest_service = services.first()
+    has_contact_info = bool((resident.contact_number or "").strip()) or bool((resident.email or "").strip())
+    has_full_contact_info = bool((resident.contact_number or "").strip()) and bool((resident.email or "").strip())
+    profile_completeness = 0
+    for value in [
+        resident.birth_date,
+        resident.gender,
+        resident.contact_number,
+        resident.email,
+        resident.household_id,
+        resident.civil_status,
+    ]:
+        if value:
+            profile_completeness += 1
     
     context = {
-    "resident": resident,
-    "services": services,
-    "is_portal_resident_user": is_portal_resident_user,
-    "can_create_service_requests": can_create_requests,
-}
+        "resident": resident,
+        "services": services,
+        "is_portal_resident_user": is_portal_resident_user,
+        "can_create_service_requests": can_create_requests,
+        "total_requests": total_requests,
+        "pending_requests": pending_requests,
+        "released_requests": released_requests,
+        "latest_service": latest_service,
+        "has_contact_info": has_contact_info,
+        "has_full_contact_info": has_full_contact_info,
+        "profile_completeness": profile_completeness,
+    }
     return render(request, "resident_profile.html", context)
 
 
@@ -2413,6 +2570,35 @@ def service_requests(request):
 
     return render(request, "service_requests.html", {
         "requests": requests
+    })
+
+@login_required
+def service_request_detail(request, request_id):
+    service_request = get_object_or_404(
+        ServiceRequest.objects.select_related(
+            "resident",
+            "service_type",
+            "purpose_option",
+            "created_by",
+            "payment",
+        ),
+        id=request_id,
+    )
+
+    if is_resident(request.user):
+        profile = get_user_profile(request.user)
+        if not profile or not profile.resident:
+            return HttpResponseForbidden("Resident profile not linked.")
+        if not profile.is_verified:
+            messages.error(request, "Your account is still pending verification.")
+            return redirect("portal_pending_verification")
+        if service_request.resident_id != profile.resident_id:
+            return HttpResponseForbidden("You can only view your own service requests.")
+    elif not is_staff_user(request.user):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+
+    return render(request, "service_request_detail.html", {
+        "service_request": service_request
     })
 
 @login_required

@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 
+{% block page_title %}Residents{% endblock %}
+{% block page_subtitle %}Barangay Gulod · Registered Resident Records{% endblock %}
+
 {% block content %}
 
 <style>
@@ -319,14 +322,6 @@
     }
     .empty-state p { font-size: 13px; color: #94A3B8; }
 </style>
-
-<!-- ═══════════════ PAGE HEADER ═══════════════ -->
-<div class="page-header">
-    <div>
-        <div class="page-title">Residents</div>
-        <div class="page-subtitle">Barangay Gulod · Registered Resident Records</div>
-    </div>
-</div>
 
 <!-- ═══════════════ FILTER FORM ═══════════════
      Preserved: method="GET", name="q", name="gender", name="status"
