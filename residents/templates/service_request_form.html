@@ -341,9 +341,15 @@
 
 <!-- Breadcrumb -->
 <div class="breadcrumb">
+    {% if not is_portal_resident_user %}
     <a href="{% url 'resident_list' %}">Residents</a>
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    {% endif %}
+    {% if is_portal_resident_user %}
+    <a href="{% url 'portal_my_profile' %}">{{ resident.first_name }} {{ resident.last_name }}</a>
+    {% else %}
     <a href="{% url 'resident_profile' resident.id %}">{{ resident.first_name }} {{ resident.last_name }}</a>
+    {% endif %}
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
     <span class="cur">New Service Request</span>
 </div>
@@ -487,7 +493,11 @@
                     Request will be logged under Pending status.
                 </div>
                 <div class="footer-actions">
+                    {% if is_portal_resident_user %}
+                    <a href="{% url 'service_requests' %}" class="btn-bmis btn-ghost">
+                    {% else %}
                     <a href="{% url 'resident_profile' resident.id %}" class="btn-bmis btn-ghost">
+                    {% endif %}
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
                         </svg>

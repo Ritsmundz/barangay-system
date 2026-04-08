@@ -203,6 +203,16 @@
             color: #64748B;
         }
 
+        .footer-link {
+            color: #2563EB;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .footer-link:hover {
+            text-decoration: underline;
+        }
+
         /* ── Hide Django's default form rendering ── */
         form > p {
             display: none;
@@ -325,6 +335,9 @@
             <div class="login-footer">
                 <p class="footer-text">
                     © 2024 Barangay Gulod. All rights reserved.
+                </p>
+                <p class="footer-text" style="margin-top: 8px;">
+                    <a class="footer-link" href="{% url 'about_us' %}">About Us</a>
                 </p>
                 <p class="footer-text" style="margin-top: 8px;">
                     Resident account? <a href="{% url 'resident_register' %}">Register here</a>

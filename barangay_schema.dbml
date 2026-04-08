@@ -1,0 +1,212 @@
+Project barangay_project {
+  database_type: "PostgreSQL"
+  Note: "DBML schema generated from the current Django models in residents/models.py. Django computed properties like Resident.age and Resident.age_group are not stored columns."
+}
+
+Table auth_user {
+  id int [pk, increment]
+  username varchar(150) [not null, unique]
+  first_name varchar(150)
+  last_name varchar(150)
+  email varchar(254)
+  password varchar(128) [not null]
+  is_superuser boolean [not null, default: false]
+  is_staff boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  last_login datetime
+  date_joined datetime [not null]
+
+  Note: "Simplified Django auth user table used by the barangay app."
+}
+
+Table purok {
+  id int [pk, increment]
+  name varchar(50) [not null]
+}
+
+Table household {
+  id int [pk, increment]
+  house_number varchar(20) [not null]
+  street varchar(100) [not null]
+  purok_id int
+  head_id int
+
+  indexes {
+    purok_id
+    head_id
+  }
+}
+
+Table resident {
+  id int [pk, increment]
+  household_id int
+  first_name varchar(100) [not null]
+  middle_name varchar(100)
+  last_name varchar(100) [not null]
+  suffix varchar(20)
+  birth_date date [not null]
+  place_of_birth varchar(150)
+  gender varchar(10) [not null, note: "Choices: Male, Female"]
+  civil_status varchar(20) [not null]
+  nationality varchar(100)
+  religion varchar(100)
+  occupation varchar(120)
+  educational_attainment varchar(50) [not null, default: "", note: "Choices include No Formal Education, Elementary, High School, Vocational, College, Postgraduate"]
+  pwd boolean [not null, default: false]
+  indigenous boolean [not null, default: false]
+  solo_parent boolean [not null, default: false]
+  status varchar(20) [not null, default: "Alive", note: "Choices: Alive, Deceased, Moved"]
+  contact_number varchar(15)
+  email varchar(254)
+  precinct varchar(50)
+  voter_status boolean [not null, default: false]
+  created_at datetime [not null]
+
+  indexes {
+    household_id
+    last_name
+    first_name
+  }
+}
+
+Table user_profile {
+  id int [pk, increment]
+  user_id int [not null, unique]
+  resident_id int [unique]
+  first_name varchar(100) [not null]
+  last_name varchar(100) [not null]
+  birth_date date [not null]
+  is_verified boolean [not null, default: false]
+  is_auto_matched boolean [not null, default: false]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+}
+
+Table service_type {
+  id int [pk, increment]
+  name varchar(100) [not null]
+  fee decimal(8,2) [not null]
+  voter_fee decimal(8,2) [not null, default: 0]
+  non_voter_fee decimal(8,2) [not null, default: 0]
+}
+
+Table request_purpose {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+  requires_details boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  sort_order int [not null, default: 0]
+
+  indexes {
+    sort_order
+  }
+}
+
+Table service_request {
+  id int [pk, increment]
+  resident_id int [not null]
+  service_type_id int [not null]
+  purpose_option_id int
+  purpose text
+  purpose_for varchar(100) [note: "Legacy choices include Barangay Clearance, Local Employment, Bank Requirement, Postal ID, Police Clearance, NBI Clearance, Senior Citizen ID, PSA, First Time Job Seeker, Other"]
+  purpose_other varchar(255)
+  emergency_contact_name varchar(150)
+  emergency_contact_address varchar(255)
+  emergency_contact_number varchar(30)
+  residency_since date
+  fee decimal(6,2) [not null, default: 0]
+  status varchar(20) [not null, default: "Pending", note: "Choices: Pending, Processing, Approved, Released, Rejected"]
+  document_number varchar(50) [unique]
+  request_date datetime [not null]
+  processed_date datetime
+  created_by_id int
+  remarks text
+  clearance_number varchar(20)
+
+  indexes {
+    resident_id
+    service_type_id
+    purpose_option_id
+    created_by_id
+    document_number
+    status
+    request_date
+  }
+}
+
+Table payment {
+  id int [pk, increment]
+  service_request_id int [not null, unique]
+  receipt_number varchar(50) [not null, unique]
+  amount decimal(10,2) [not null]
+  payment_date datetime [not null]
+  collected_by_id int
+
+  Note: "The resident tied to a payment is derived through service_request_id -> service_request.resident_id, which supports both walk-in residents and portal users."
+
+  indexes {
+    collected_by_id
+    payment_date
+  }
+}
+
+Table complaint {
+  id int [pk, increment]
+  resident_id int [not null]
+  title varchar(200) [not null]
+  description text [not null]
+  status varchar(20) [not null, default: "Pending", note: "Choices: Pending, Under Investigation, For Mediation, Resolved, Dismissed"]
+  filed_by_id int
+  date_filed datetime [not null]
+  updated_at datetime [not null]
+
+  indexes {
+    resident_id
+    filed_by_id
+    status
+    date_filed
+  }
+}
+
+Table audit_log {
+  id int [pk, increment]
+  user_id int
+  action varchar(30) [not null, note: "Choices: CREATE, UPDATE, DELETE, LOGIN, LOGOUT, LOGIN_FAILED, EXPORT, PRINT, ROLE_CHANGE, PERMISSION_CHANGE"]
+  model_name varchar(100) [not null]
+  description text [not null]
+  target_id varchar(100)
+  before_data json
+  after_data json
+  ip_address varchar(45)
+  user_agent varchar(255)
+  request_path varchar(255)
+  timestamp datetime [not null]
+
+  indexes {
+    user_id
+    timestamp
+    action
+    model_name
+  }
+}
+
+Ref: household.purok_id > purok.id [delete: set null]
+Ref: household.head_id > resident.id [delete: set null]
+
+Ref: resident.household_id > household.id [delete: set null]
+
+Ref: user_profile.user_id - auth_user.id [delete: cascade]
+Ref: user_profile.resident_id - resident.id [delete: set null]
+
+Ref: service_request.resident_id > resident.id [delete: cascade]
+Ref: service_request.service_type_id > service_type.id [delete: cascade]
+Ref: service_request.purpose_option_id > request_purpose.id [delete: set null]
+Ref: service_request.created_by_id > auth_user.id [delete: set null]
+
+Ref: payment.service_request_id - service_request.id [delete: cascade]
+Ref: payment.collected_by_id > auth_user.id [delete: set null]
+
+Ref: complaint.resident_id > resident.id [delete: cascade]
+Ref: complaint.filed_by_id > auth_user.id [delete: set null]
+
+Ref: audit_log.user_id > auth_user.id [delete: set null]

@@ -1,0 +1,144 @@
+﻿[
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "Resident",
+    "permissions": []
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 1,
+  "fields": {
+    "name": "Barangay Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 1
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 2,
+  "fields": {
+    "name": "Local Employment",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 2
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 3,
+  "fields": {
+    "name": "Bank Requirement",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 3
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 4,
+  "fields": {
+    "name": "Postal ID",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 4
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 5,
+  "fields": {
+    "name": "Police Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 5
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 6,
+  "fields": {
+    "name": "NBI Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 6
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 7,
+  "fields": {
+    "name": "Senior Citizen ID",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 7
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 8,
+  "fields": {
+    "name": "PSA",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 8
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 9,
+  "fields": {
+    "name": "First Time Job Seeker",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 9
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 10,
+  "fields": {
+    "name": "Other (state)",
+    "requires_details": true,
+    "is_active": true,
+    "sort_order": 10
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 1,
+  "fields": {
+    "user": null,
+    "action": "LOGIN_FAILED",
+    "model_name": "Authentication",
+    "description": "Failed login attempt for username 'joy'.",
+    "target_id": "joy",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "180.190.170.212",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-25T07:34:36.129Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 2,
+  "fields": {
+    "user": null,
+    "action": "LOGIN_FAILED",
+    "model_name": "Authentication",
+    "description": "Failed login attempt for username 'ritsmund'.",
+    "target_id": "ritsmund",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "180.190.170.212",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-25T07:34:46.038Z"
+  }
+}
+]

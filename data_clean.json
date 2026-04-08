@@ -1,0 +1,4549 @@
+[
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2026-03-13T05:59:59.899Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "1",
+    "object_repr": "Barangay Clearance",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2026-03-13T11:31:41.095Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "joy",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2026-03-13T11:32:26.206Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "joy",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\", \"Email address\", \"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 4,
+  "fields": {
+    "action_time": "2026-03-13T11:32:37.836Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "1",
+    "object_repr": "Secretary",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 5,
+  "fields": {
+    "action_time": "2026-03-13T11:32:49.737Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "joy",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Groups\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 6,
+  "fields": {
+    "action_time": "2026-03-13T16:49:53.145Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "3",
+    "object_repr": "princess",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 7,
+  "fields": {
+    "action_time": "2026-03-13T16:50:13.707Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "4",
+    "object_repr": "ryan",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 8,
+  "fields": {
+    "action_time": "2026-03-13T16:51:14.469Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "4",
+    "object_repr": "ryan",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Groups\", \"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 9,
+  "fields": {
+    "action_time": "2026-03-13T16:51:22.122Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "3",
+    "object_repr": "princess",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Groups\", \"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 10,
+  "fields": {
+    "action_time": "2026-03-13T17:05:08.371Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "2",
+    "object_repr": "Certificate of Residency",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 11,
+  "fields": {
+    "action_time": "2026-03-14T00:47:53.033Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "1",
+    "object_repr": "Captain",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Name\", \"Permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 12,
+  "fields": {
+    "action_time": "2026-03-14T00:48:53.486Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "2",
+    "object_repr": "Secretary",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 13,
+  "fields": {
+    "action_time": "2026-03-14T00:50:44.099Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "3",
+    "object_repr": "Treasurer",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 14,
+  "fields": {
+    "action_time": "2026-03-14T00:50:53.305Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "3",
+    "object_repr": "Treasurer",
+    "action_flag": 2,
+    "change_message": "[]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 15,
+  "fields": {
+    "action_time": "2026-03-14T00:52:03.731Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "2",
+    "object_repr": "Secretary",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 16,
+  "fields": {
+    "action_time": "2026-03-14T00:52:27.570Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "2",
+    "object_repr": "joy",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Groups\", \"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 17,
+  "fields": {
+    "action_time": "2026-03-14T00:52:37.362Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "3",
+    "object_repr": "princess",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 18,
+  "fields": {
+    "action_time": "2026-03-14T00:52:45.300Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "4",
+    "object_repr": "ryan",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Groups\", \"User permissions\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 19,
+  "fields": {
+    "action_time": "2026-03-14T11:16:45.308Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "1",
+    "object_repr": "Barangay Clearance",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Fee\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 20,
+  "fields": {
+    "action_time": "2026-03-15T01:06:52.899Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "6",
+    "object_repr": "Certificate of Residency - maitim, ryan",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 21,
+  "fields": {
+    "action_time": "2026-03-15T01:06:52.900Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "5",
+    "object_repr": "Certificate of Residency - maitim, ryan",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 22,
+  "fields": {
+    "action_time": "2026-03-15T01:06:52.900Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "3",
+    "object_repr": "Barangay Clearance - maitim, ryan",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 23,
+  "fields": {
+    "action_time": "2026-03-15T01:06:52.900Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "2",
+    "object_repr": "Certificate of Residency - maitim, ryan",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 24,
+  "fields": {
+    "action_time": "2026-03-15T01:06:52.900Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "1",
+    "object_repr": "Barangay Clearance - maitim, ryan",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 25,
+  "fields": {
+    "action_time": "2026-03-17T01:18:01.346Z",
+    "user": 1,
+    "content_type": 14,
+    "object_id": "1",
+    "object_repr": "Purok 2",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 26,
+  "fields": {
+    "action_time": "2026-03-17T01:19:49.377Z",
+    "user": 1,
+    "content_type": 14,
+    "object_id": "2",
+    "object_repr": "2",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 27,
+  "fields": {
+    "action_time": "2026-03-17T01:23:08.026Z",
+    "user": 1,
+    "content_type": 9,
+    "object_id": "1",
+    "object_repr": "!!7-E Macaya - Purok 2",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 28,
+  "fields": {
+    "action_time": "2026-03-22T02:52:08.386Z",
+    "user": 1,
+    "content_type": 14,
+    "object_id": "1",
+    "object_repr": "Purok 2",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 29,
+  "fields": {
+    "action_time": "2026-03-22T06:26:38.047Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "3",
+    "object_repr": "Indigency",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 30,
+  "fields": {
+    "action_time": "2026-03-22T06:27:03.371Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "4",
+    "object_repr": "QCID",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 31,
+  "fields": {
+    "action_time": "2026-03-22T06:27:49.111Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "5",
+    "object_repr": "Barangay ID",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 32,
+  "fields": {
+    "action_time": "2026-03-22T06:28:19.618Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "2",
+    "object_repr": "Certificate of Residency",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 33,
+  "fields": {
+    "action_time": "2026-03-22T06:29:26.118Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "1",
+    "object_repr": "Barangay Clearance",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 34,
+  "fields": {
+    "action_time": "2026-03-22T06:29:47.745Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "6",
+    "object_repr": "Service Request",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 35,
+  "fields": {
+    "action_time": "2026-03-22T06:53:17.099Z",
+    "user": 1,
+    "content_type": 13,
+    "object_id": "4",
+    "object_repr": "QCID",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Voter fee\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 36,
+  "fields": {
+    "action_time": "2026-03-23T06:20:55.828Z",
+    "user": 1,
+    "content_type": 2,
+    "object_id": "4",
+    "object_repr": "Resident",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 37,
+  "fields": {
+    "action_time": "2026-03-23T06:23:42.002Z",
+    "user": 1,
+    "content_type": 12,
+    "object_id": "18",
+    "object_repr": "QCID - Duma, Charl",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 38,
+  "fields": {
+    "action_time": "2026-03-23T06:23:53.541Z",
+    "user": 1,
+    "content_type": 4,
+    "object_id": "5",
+    "object_repr": "Charl",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "Captain",
+    "permissions": [
+      37,
+      38,
+      39,
+      40,
+      25,
+      26,
+      27,
+      28,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      33,
+      34,
+      35,
+      36,
+      45,
+      46,
+      47,
+      48,
+      29,
+      30,
+      31,
+      32
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 2,
+  "fields": {
+    "name": "Secretary",
+    "permissions": [
+      37,
+      38,
+      40,
+      25,
+      26,
+      28,
+      52,
+      53,
+      54,
+      56,
+      33,
+      34,
+      36,
+      45,
+      46,
+      48,
+      29,
+      30,
+      32
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 3,
+  "fields": {
+    "name": "Treasurer",
+    "permissions": [
+      40,
+      28,
+      49,
+      50,
+      52,
+      56,
+      36,
+      48,
+      32
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 4,
+  "fields": {
+    "name": "Resident",
+    "permissions": [
+      37,
+      61
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$sXDkMTVH2LWlV2lxjvthv3$gzEtUtP8owWAtiwsqIiPUgS4DVrVQRBG2RfdgsBX7Ts=",
+    "last_login": "2026-03-23T07:20:36.440Z",
+    "is_superuser": true,
+    "username": "ritsmund",
+    "first_name": "",
+    "last_name": "",
+    "email": "johnrichmond2805@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-03-13T05:54:09.541Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$y5EPbJrNFy91pfivAWeeOD$Elvm6GJwtYFwJMu5cXOCM+Q4QWqXvvzNrHqL00tCr2o=",
+    "last_login": "2026-03-25T02:01:25.329Z",
+    "is_superuser": false,
+    "username": "joy",
+    "first_name": "Joy",
+    "last_name": "Arcilla",
+    "email": "testemail@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T11:31:40Z",
+    "groups": [
+      2
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$jDhw6s3awVjn19qPbeGT6k$dXrFijlWVF3kmj5EK/it+jbR5rsj5p+CUv6pCFdxdOo=",
+    "last_login": "2026-03-23T06:09:24.913Z",
+    "is_superuser": false,
+    "username": "princess",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T16:49:52Z",
+    "groups": [
+      1
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$fovETTHv55u7vJLzZzwElv$+eSnp4ueCtLnRdZCjHxL5QjpGN9Y2+fZ46rclu6EoxY=",
+    "last_login": "2026-03-22T06:43:15.093Z",
+    "is_superuser": false,
+    "username": "ryan",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-13T16:50:13Z",
+    "groups": [
+      3
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$nrn92xB8M45ikOklUB5ll5$RKD1VVm0VCuhR5x9Br+HHkAGfiypEvKXXZXeI0pstz4=",
+    "last_login": "2026-03-23T06:39:26.740Z",
+    "is_superuser": false,
+    "username": "Charl",
+    "first_name": "Charl",
+    "last_name": "Duma",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-23T06:27:19.668Z",
+    "groups": [
+      4
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$5GHbLiO5KkRI6I8N7NA4o7$gguNxCvB9b5ByEr2voXn4CENn7ITvwaV1PCYhZbnQfA=",
+    "last_login": "2026-03-23T06:49:40.231Z",
+    "is_superuser": false,
+    "username": "ryan123",
+    "first_name": "ryan",
+    "last_name": "maitim",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-23T06:46:36.843Z",
+    "groups": [
+      4
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 8,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$VdM4Oy6qafIro1X2jGW7aS$KaAgbuY3r4iCbSeMgCzUrAuBg3usUBp8VhHV5GxY1EA=",
+    "last_login": "2026-03-23T07:25:55.429Z",
+    "is_superuser": false,
+    "username": "julianna",
+    "first_name": "Princess Julianna",
+    "last_name": "pine",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-03-23T07:23:40.333Z",
+    "groups": [
+      4
+    ],
+    "user_permissions": []
+  }
+},
+{
+  "model": "residents.purok",
+  "pk": 2,
+  "fields": {
+    "name": "2"
+  }
+},
+{
+  "model": "residents.household",
+  "pk": 2,
+  "fields": {
+    "house_number": "117-E",
+    "street": "Macaya",
+    "purok": 2,
+    "head": 2
+  }
+},
+{
+  "model": "residents.resident",
+  "pk": 1,
+  "fields": {
+    "household": 2,
+    "first_name": "ryan",
+    "middle_name": null,
+    "last_name": "maitim",
+    "suffix": "Jr",
+    "birth_date": "2024-04-02",
+    "place_of_birth": "Quezon City",
+    "gender": "Male",
+    "civil_status": "Married",
+    "nationality": "Filipino",
+    "religion": "iglisya",
+    "occupation": "lalamog Rider",
+    "educational_attainment": "College",
+    "pwd": false,
+    "indigenous": true,
+    "solo_parent": false,
+    "status": "Alive",
+    "contact_number": "09910358018",
+    "email": "testemail@gmail.com",
+    "precinct": null,
+    "voter_status": true,
+    "created_at": "2026-03-13T11:33:21.654Z"
+  }
+},
+{
+  "model": "residents.resident",
+  "pk": 2,
+  "fields": {
+    "household": 2,
+    "first_name": "Kiervy",
+    "middle_name": null,
+    "last_name": "Villafania",
+    "suffix": null,
+    "birth_date": "2005-01-14",
+    "place_of_birth": "Quezon City",
+    "gender": "Male",
+    "civil_status": "single",
+    "nationality": "Filipino",
+    "religion": "iglisya",
+    "occupation": "Mechanic",
+    "educational_attainment": "College",
+    "pwd": false,
+    "indigenous": false,
+    "solo_parent": false,
+    "status": "Alive",
+    "contact_number": "09910358018",
+    "email": "testemail@gmail.com",
+    "precinct": null,
+    "voter_status": true,
+    "created_at": "2026-03-15T12:13:13.027Z"
+  }
+},
+{
+  "model": "residents.resident",
+  "pk": 3,
+  "fields": {
+    "household": 2,
+    "first_name": "Princess Julianna",
+    "middle_name": null,
+    "last_name": "Pine",
+    "suffix": null,
+    "birth_date": "2005-01-11",
+    "place_of_birth": null,
+    "gender": "Female",
+    "civil_status": "single",
+    "nationality": null,
+    "religion": null,
+    "occupation": null,
+    "educational_attainment": "",
+    "pwd": false,
+    "indigenous": false,
+    "solo_parent": false,
+    "status": "Alive",
+    "contact_number": "09910358018",
+    "email": "testemail@gmail.com",
+    "precinct": null,
+    "voter_status": true,
+    "created_at": "2026-03-22T01:59:16.553Z"
+  }
+},
+{
+  "model": "residents.resident",
+  "pk": 4,
+  "fields": {
+    "household": 2,
+    "first_name": "Charl",
+    "middle_name": "Bastos",
+    "last_name": "Duma",
+    "suffix": null,
+    "birth_date": "2005-03-17",
+    "place_of_birth": "Biringan",
+    "gender": "Male",
+    "civil_status": "Single",
+    "nationality": "Filipino",
+    "religion": "iglisya",
+    "occupation": "One Day Mythic",
+    "educational_attainment": "College",
+    "pwd": true,
+    "indigenous": false,
+    "solo_parent": true,
+    "status": "Alive",
+    "contact_number": "09910358018",
+    "email": "testemail@gmail.com",
+    "precinct": null,
+    "voter_status": true,
+    "created_at": "2026-03-22T06:04:25.581Z"
+  }
+},
+{
+  "model": "residents.userprofile",
+  "pk": 2,
+  "fields": {
+    "user": 6,
+    "resident": 4,
+    "first_name": "Charl",
+    "last_name": "Duma",
+    "birth_date": "2005-03-17",
+    "is_verified": true,
+    "is_auto_matched": false,
+    "created_at": "2026-03-23T06:27:20.737Z",
+    "updated_at": "2026-03-23T06:28:38.135Z"
+  }
+},
+{
+  "model": "residents.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": 7,
+    "resident": 1,
+    "first_name": "ryan",
+    "last_name": "maitim",
+    "birth_date": "2005-01-07",
+    "is_verified": true,
+    "is_auto_matched": false,
+    "created_at": "2026-03-23T06:46:37.872Z",
+    "updated_at": "2026-03-23T06:48:13.566Z"
+  }
+},
+{
+  "model": "residents.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": 8,
+    "resident": 3,
+    "first_name": "Princess Julianna",
+    "last_name": "pine",
+    "birth_date": "2005-01-11",
+    "is_verified": true,
+    "is_auto_matched": true,
+    "created_at": "2026-03-23T07:23:41.379Z",
+    "updated_at": "2026-03-23T07:25:40.041Z"
+  }
+},
+{
+  "model": "residents.servicetype",
+  "pk": 3,
+  "fields": {
+    "name": "Indigency",
+    "fee": "0.00",
+    "voter_fee": "0.00",
+    "non_voter_fee": "0.00"
+  }
+},
+{
+  "model": "residents.servicetype",
+  "pk": 4,
+  "fields": {
+    "name": "QCID",
+    "fee": "60.00",
+    "voter_fee": "30.00",
+    "non_voter_fee": "60.00"
+  }
+},
+{
+  "model": "residents.servicetype",
+  "pk": 5,
+  "fields": {
+    "name": "Barangay ID",
+    "fee": "0.00",
+    "voter_fee": "0.00",
+    "non_voter_fee": "0.00"
+  }
+},
+{
+  "model": "residents.servicetype",
+  "pk": 6,
+  "fields": {
+    "name": "Service Request",
+    "fee": "0.00",
+    "voter_fee": "0.00",
+    "non_voter_fee": "0.00"
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 1,
+  "fields": {
+    "name": "Barangay Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 1
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 2,
+  "fields": {
+    "name": "Local Employment",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 2
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 3,
+  "fields": {
+    "name": "Bank Requirement",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 3
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 4,
+  "fields": {
+    "name": "Postal ID",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 4
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 5,
+  "fields": {
+    "name": "Police Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 5
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 6,
+  "fields": {
+    "name": "NBI Clearance",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 6
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 7,
+  "fields": {
+    "name": "Senior Citizen ID",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 7
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 8,
+  "fields": {
+    "name": "PSA",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 8
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 9,
+  "fields": {
+    "name": "First Time Job Seeker",
+    "requires_details": false,
+    "is_active": true,
+    "sort_order": 9
+  }
+},
+{
+  "model": "residents.requestpurpose",
+  "pk": 10,
+  "fields": {
+    "name": "Other (state)",
+    "requires_details": true,
+    "is_active": true,
+    "sort_order": 10
+  }
+},
+{
+  "model": "residents.servicerequest",
+  "pk": 15,
+  "fields": {
+    "resident": 4,
+    "service_type": 5,
+    "purpose_option": null,
+    "purpose": null,
+    "purpose_for": null,
+    "purpose_other": null,
+    "emergency_contact_name": "Mike L realisan",
+    "emergency_contact_address": "123 Chimken Street",
+    "emergency_contact_number": "09910358018",
+    "residency_since": null,
+    "fee": "0.00",
+    "status": "Released",
+    "document_number": "BAR-2026-0001",
+    "request_date": "2026-03-22T06:42:40.459Z",
+    "processed_date": "2026-03-22T06:43:20.639Z",
+    "created_by": 2,
+    "remarks": null,
+    "clearance_number": "2026-0015"
+  }
+},
+{
+  "model": "residents.servicerequest",
+  "pk": 16,
+  "fields": {
+    "resident": 3,
+    "service_type": 4,
+    "purpose_option": null,
+    "purpose": null,
+    "purpose_for": null,
+    "purpose_other": null,
+    "emergency_contact_name": null,
+    "emergency_contact_address": null,
+    "emergency_contact_number": null,
+    "residency_since": "2005-05-22",
+    "fee": "60.00",
+    "status": "Pending",
+    "document_number": "QCI-2026-0001",
+    "request_date": "2026-03-22T06:44:14.652Z",
+    "processed_date": null,
+    "created_by": 2,
+    "remarks": null,
+    "clearance_number": "2026-0016"
+  }
+},
+{
+  "model": "residents.servicerequest",
+  "pk": 17,
+  "fields": {
+    "resident": 3,
+    "service_type": 6,
+    "purpose_option": 1,
+    "purpose": "Barangay Clearance",
+    "purpose_for": "Barangay Clearance",
+    "purpose_other": null,
+    "emergency_contact_name": null,
+    "emergency_contact_address": null,
+    "emergency_contact_number": null,
+    "residency_since": null,
+    "fee": "0.00",
+    "status": "Pending",
+    "document_number": "SER-2026-0001",
+    "request_date": "2026-03-22T06:44:28.756Z",
+    "processed_date": null,
+    "created_by": 2,
+    "remarks": null,
+    "clearance_number": "2026-0017"
+  }
+},
+{
+  "model": "residents.payment",
+  "pk": 9,
+  "fields": {
+    "service_request": 15,
+    "receipt_number": "RCPT-2026-0001",
+    "received_by": null,
+    "amount": "0.00",
+    "payment_date": "2026-03-22T06:43:20.633Z",
+    "collected_by": 4
+  }
+},
+{
+  "model": "residents.complaint",
+  "pk": 1,
+  "fields": {
+    "resident": 1,
+    "title": "Illegal parking",
+    "description": "Someone is illegally parked outside my house",
+    "status": "Resolved",
+    "filed_by": null,
+    "date_filed": "2026-03-15T12:13:39.888Z",
+    "updated_at": "2026-03-15T12:14:12.597Z"
+  }
+},
+{
+  "model": "residents.complaint",
+  "pk": 2,
+  "fields": {
+    "resident": 3,
+    "title": "Illegal Vendor",
+    "description": "There is an illegal vendor in front of my house",
+    "status": "Pending",
+    "filed_by": null,
+    "date_filed": "2026-03-22T02:00:01.955Z",
+    "updated_at": "2026-03-22T02:00:01.955Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 1,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Barangay Clearance",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-14T10:51:38.939Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-14T11:17:14.343Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 3,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Barangay Clearance",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-14T11:17:39.878Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 4,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T00:50:02.778Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 5,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T00:55:40.980Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 6,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T01:07:12.050Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 7,
+  "fields": {
+    "user": 4,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T05:31:52.016Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 8,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Barangay Clearance",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T06:10:02.743Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 9,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for maitim, ryan - Certificate of Residency",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T12:11:26.217Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 10,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Resident",
+    "description": "Added resident Kiervy Villafania",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T12:13:13.029Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 11,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Complaint",
+    "description": "Complaint filed: Illegal parking",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T12:13:39.892Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 12,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Barangay Clearance request for Villafania, Kiervy",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T13:36:23.826Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 13,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request BAR-2026-0002 to Processing",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T13:36:28.486Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 14,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request BAR-2026-0002 to Approved",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T13:36:31.294Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 15,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request BAR-2026-0002 to Rejected",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-15T13:36:33.303Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 16,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Certificate of Residency request for maitim, ryan",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-16T14:53:08.566Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 17,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Resident",
+    "description": "Updated resident ryan maitim",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T01:22:00.330Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 18,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Certificate of Residency request for Villafania, Kiervy",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T03:50:10.866Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 19,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0013 to Processing",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T03:51:06.635Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 20,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0013 to Approved",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T03:51:16.174Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 21,
+  "fields": {
+    "user": 4,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for Villafania, Kiervy",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T04:27:09.073Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 22,
+  "fields": {
+    "user": 4,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0013 to Released",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": null,
+    "user_agent": "",
+    "request_path": "",
+    "timestamp": "2026-03-17T04:27:15.507Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 23,
+  "fields": {
+    "user": 4,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ryan' logged out.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T01:57:55.640Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 24,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T01:58:08.511Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 25,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T01:58:39.526Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 26,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T01:58:44.251Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 27,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Resident",
+    "description": "Added resident Princess Julianna Pine",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": {
+      "id": 3,
+      "email": "testemail@gmail.com",
+      "gender": "Female",
+      "status": "Alive",
+      "household": 2,
+      "last_name": "Pine",
+      "birth_date": "2005-01-11",
+      "first_name": "Princess Julianna",
+      "middle_name": null,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/residents/add/",
+    "timestamp": "2026-03-22T01:59:16.556Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 28,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T01:59:30.968Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 29,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T01:59:38.258Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 30,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Complaint",
+    "description": "Complaint filed: Illegal Vendor",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": {
+      "id": 2,
+      "title": "Illegal Vendor",
+      "status": "Pending",
+      "filed_by": null,
+      "resident": 3,
+      "description": "There is an illegal vendor in front of my house"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/complaints/file/",
+    "timestamp": "2026-03-22T02:00:01.958Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 31,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Barangay Clearance request for Pine, Princess Julianna",
+    "target_id": "14",
+    "before_data": null,
+    "after_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "pending",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": null
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/create_service_request/3/",
+    "timestamp": "2026-03-22T02:00:22.871Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 32,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:00:29.555Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 33,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:00:36.302Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 34,
+  "fields": {
+    "user": 3,
+    "action": "EXPORT",
+    "model_name": "Resident",
+    "description": "Exported residents CSV (3 records).",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/export/residents/",
+    "timestamp": "2026-03-22T02:01:39.639Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 35,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:06:46.913Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 36,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:06:52.227Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 37,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0014 to Processing.",
+    "target_id": "14",
+    "before_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "pending",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "after_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "Processing",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/14/update-status/",
+    "timestamp": "2026-03-22T02:07:05.062Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 38,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0014 to Approved.",
+    "target_id": "14",
+    "before_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "Processing",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "after_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "Approved",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/14/update-status/",
+    "timestamp": "2026-03-22T02:07:07.869Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 39,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0003.",
+    "target_id": "14",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/14/",
+    "timestamp": "2026-03-22T02:07:10.035Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 40,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:07:14.579Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 41,
+  "fields": {
+    "user": 4,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ryan' logged in.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:07:19.495Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 42,
+  "fields": {
+    "user": 4,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for Pine, Princess Julianna.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": {
+      "id": 8,
+      "amount": "100.00",
+      "received_by": null,
+      "collected_by": 4,
+      "receipt_number": "RCPT-2026-0004",
+      "service_request": 14
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/record-payment/14/",
+    "timestamp": "2026-03-22T02:07:23.818Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 43,
+  "fields": {
+    "user": 4,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Request BAR-2026-0003 released after payment.",
+    "target_id": "14",
+    "before_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "Approved",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "after_data": {
+      "id": 14,
+      "fee": "100.00",
+      "status": "Released",
+      "purpose": "For enrollment",
+      "remarks": null,
+      "resident": 3,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": "2026-03-22T02:07:23.819Z",
+      "document_number": "BAR-2026-0003",
+      "clearance_number": "2026-0014"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/record-payment/14/",
+    "timestamp": "2026-03-22T02:07:23.821Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 44,
+  "fields": {
+    "user": 4,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0003.",
+    "target_id": "14",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/14/",
+    "timestamp": "2026-03-22T02:07:23.929Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 45,
+  "fields": {
+    "user": 4,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ryan' logged out.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:07:34.083Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 46,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:07:45.900Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 47,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0012 to Pending.",
+    "target_id": "12",
+    "before_data": {
+      "id": 12,
+      "fee": "100.00",
+      "status": "pending",
+      "purpose": "",
+      "remarks": null,
+      "resident": 1,
+      "created_by": null,
+      "service_type": 2,
+      "processed_date": null,
+      "document_number": "CER-2026-0002",
+      "clearance_number": "2026-0012"
+    },
+    "after_data": {
+      "id": 12,
+      "fee": "100.00",
+      "status": "Pending",
+      "purpose": "",
+      "remarks": null,
+      "resident": 1,
+      "created_by": null,
+      "service_type": 2,
+      "processed_date": null,
+      "document_number": "CER-2026-0002",
+      "clearance_number": "2026-0012"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/12/update-status/",
+    "timestamp": "2026-03-22T02:07:56.059Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 48,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0011 to Rejected.",
+    "target_id": "11",
+    "before_data": {
+      "id": 11,
+      "fee": "100.00",
+      "status": "Rejected",
+      "purpose": "For Enrollment",
+      "remarks": null,
+      "resident": 2,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0002",
+      "clearance_number": "2026-0011"
+    },
+    "after_data": {
+      "id": 11,
+      "fee": "100.00",
+      "status": "Rejected",
+      "purpose": "For Enrollment",
+      "remarks": null,
+      "resident": 2,
+      "created_by": null,
+      "service_type": 1,
+      "processed_date": null,
+      "document_number": "BAR-2026-0002",
+      "clearance_number": "2026-0011"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/11/update-status/",
+    "timestamp": "2026-03-22T02:07:57.567Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 49,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0003.",
+    "target_id": "14",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/14/",
+    "timestamp": "2026-03-22T02:08:02.437Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 50,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:08:11.568Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 51,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:08:49.659Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 52,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:09:14.681Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 53,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:09:19.662Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 54,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:24:35.524Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 55,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:24:41.117Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 56,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Resident",
+    "description": "Updated resident Kiervy Villafania",
+    "target_id": "2",
+    "before_data": {
+      "id": 2,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": null,
+      "household": null,
+      "last_name": "Villafania",
+      "birth_date": "2005-01-14",
+      "first_name": "Kiervy",
+      "indigenous": false,
+      "occupation": null,
+      "middle_name": null,
+      "nationality": null,
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": null,
+      "educational_attainment": ""
+    },
+    "after_data": {
+      "id": 2,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": null,
+      "household": 2,
+      "last_name": "Villafania",
+      "birth_date": "2005-01-14",
+      "first_name": "Kiervy",
+      "indigenous": false,
+      "occupation": null,
+      "middle_name": null,
+      "nationality": null,
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": null,
+      "educational_attainment": ""
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/resident/2/edit/",
+    "timestamp": "2026-03-22T02:36:38.745Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 57,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Resident",
+    "description": "Updated resident Kiervy Villafania",
+    "target_id": "2",
+    "before_data": {
+      "id": 2,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": null,
+      "household": 2,
+      "last_name": "Villafania",
+      "birth_date": "2005-01-14",
+      "first_name": "Kiervy",
+      "indigenous": false,
+      "occupation": null,
+      "middle_name": null,
+      "nationality": null,
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": null,
+      "educational_attainment": ""
+    },
+    "after_data": {
+      "id": 2,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": "iglisya",
+      "household": 2,
+      "last_name": "Villafania",
+      "birth_date": "2005-01-14",
+      "first_name": "Kiervy",
+      "indigenous": false,
+      "occupation": "Mechanic",
+      "middle_name": null,
+      "nationality": "Filipino",
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": "Quezon City",
+      "educational_attainment": "College"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/resident/2/edit/",
+    "timestamp": "2026-03-22T02:37:23.638Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 58,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Resident",
+    "description": "Updated resident ryan maitim",
+    "target_id": "1",
+    "before_data": {
+      "id": 1,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": null,
+      "household": 2,
+      "last_name": "maitim",
+      "birth_date": "2024-04-02",
+      "first_name": "ryan",
+      "indigenous": false,
+      "occupation": null,
+      "middle_name": "jacob",
+      "nationality": null,
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": null,
+      "educational_attainment": ""
+    },
+    "after_data": {
+      "id": 1,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": "Jr",
+      "religion": "iglisya",
+      "household": 2,
+      "last_name": "maitim",
+      "birth_date": "2024-04-02",
+      "first_name": "ryan",
+      "indigenous": true,
+      "occupation": "lalamog Rider",
+      "middle_name": "jacob",
+      "nationality": "Filipino",
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": "Quezon City",
+      "educational_attainment": "College"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/resident/1/edit/",
+    "timestamp": "2026-03-22T02:37:57.091Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 59,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Household",
+    "description": "Set household 2 head to Pine, Princess Julianna.",
+    "target_id": "2",
+    "before_data": {
+      "id": 2,
+      "head": null,
+      "purok": 2,
+      "street": "Macaya",
+      "house_number": "117-E"
+    },
+    "after_data": {
+      "id": 2,
+      "head": 3,
+      "purok": 2,
+      "street": "Macaya",
+      "house_number": "117-E"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/household/2/set-head/3/",
+    "timestamp": "2026-03-22T02:40:46.424Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 60,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Household",
+    "description": "Set household 2 head to Villafania, Kiervy.",
+    "target_id": "2",
+    "before_data": {
+      "id": 2,
+      "head": 3,
+      "purok": 2,
+      "street": "Macaya",
+      "house_number": "117-E"
+    },
+    "after_data": {
+      "id": 2,
+      "head": 2,
+      "purok": 2,
+      "street": "Macaya",
+      "house_number": "117-E"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/household/2/set-head/2/",
+    "timestamp": "2026-03-22T02:40:48.790Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 61,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:51:46.153Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 62,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:51:51.480Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 63,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-22T02:55:26.820Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 64,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:55:49.812Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 65,
+  "fields": {
+    "user": 3,
+    "action": "EXPORT",
+    "model_name": "Resident",
+    "description": "Exported residents CSV (3 records).",
+    "target_id": null,
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/export/residents/",
+    "timestamp": "2026-03-22T02:56:03.256Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 66,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:56:21.681Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 67,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:56:31.224Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 68,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T02:56:38.416Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 69,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T02:56:42.687Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 70,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "Resident",
+    "description": "Added resident Charl Duma",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": {
+      "id": 4,
+      "pwd": true,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": null,
+      "religion": "iglisya",
+      "household": 2,
+      "last_name": "Duma",
+      "birth_date": "2005-03-17",
+      "first_name": "Charl",
+      "indigenous": false,
+      "occupation": "One Day Mythic",
+      "middle_name": "Bastos",
+      "nationality": "Filipino",
+      "solo_parent": true,
+      "civil_status": "Single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": "Biringan",
+      "educational_attainment": "College"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/residents/add/",
+    "timestamp": "2026-03-22T06:04:25.590Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 71,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:18:27.295Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 72,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:18:32.200Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 73,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-22T06:19:35.862Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 74,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:19:44.659Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 75,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:25:30.141Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 76,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:25:35.120Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 77,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-22T06:28:22.297Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 78,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:28:39.105Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 79,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:29:12.322Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 80,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:29:17.131Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 81,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-22T06:29:54.535Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 82,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:30:04.250Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 83,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Barangay ID request for Duma, Charl",
+    "target_id": "15",
+    "before_data": null,
+    "after_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Pending",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": null,
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/create_service_request/4/",
+    "timestamp": "2026-03-22T06:42:40.463Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 84,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0001.",
+    "target_id": "15",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/15/",
+    "timestamp": "2026-03-22T06:42:40.610Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 85,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0015 to Processing.",
+    "target_id": "15",
+    "before_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Pending",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "after_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Processing",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/15/update-status/",
+    "timestamp": "2026-03-22T06:42:58.109Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 86,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0015 to Approved.",
+    "target_id": "15",
+    "before_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Processing",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "after_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Approved",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/15/update-status/",
+    "timestamp": "2026-03-22T06:43:00.413Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 87,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:43:04.765Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 88,
+  "fields": {
+    "user": 4,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ryan' logged in.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:43:15.095Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 89,
+  "fields": {
+    "user": 4,
+    "action": "CREATE",
+    "model_name": "Payment",
+    "description": "Payment recorded for Duma, Charl.",
+    "target_id": "9",
+    "before_data": null,
+    "after_data": {
+      "id": 9,
+      "amount": "0.00",
+      "received_by": null,
+      "collected_by": 4,
+      "receipt_number": "RCPT-2026-0001",
+      "service_request": 15
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/record-payment/15/",
+    "timestamp": "2026-03-22T06:43:20.637Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 90,
+  "fields": {
+    "user": 4,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Request BAR-2026-0001 released after payment.",
+    "target_id": "15",
+    "before_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Approved",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "after_data": {
+      "id": 15,
+      "fee": "0.00",
+      "status": "Released",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 5,
+      "purpose_other": null,
+      "processed_date": "2026-03-22T06:43:20.639Z",
+      "purpose_option": null,
+      "document_number": "BAR-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0015",
+      "emergency_contact_name": "Mike L realisan",
+      "emergency_contact_number": "09910358018",
+      "emergency_contact_address": "123 Chimken Street"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/record-payment/15/",
+    "timestamp": "2026-03-22T06:43:20.641Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 91,
+  "fields": {
+    "user": 4,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0001.",
+    "target_id": "15",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/15/",
+    "timestamp": "2026-03-22T06:43:20.767Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 92,
+  "fields": {
+    "user": 4,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ryan' logged out.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:43:28.327Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 93,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:43:33.143Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 94,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request BAR-2026-0001.",
+    "target_id": "15",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/15/",
+    "timestamp": "2026-03-22T06:43:42.230Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 95,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created QCID request for Pine, Princess Julianna",
+    "target_id": "16",
+    "before_data": null,
+    "after_data": {
+      "id": 16,
+      "fee": "60.00",
+      "status": "Pending",
+      "purpose": null,
+      "remarks": null,
+      "resident": 3,
+      "created_by": 2,
+      "purpose_for": null,
+      "service_type": 4,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "QCI-2026-0001",
+      "residency_since": "2005-05-22",
+      "clearance_number": null,
+      "emergency_contact_name": null,
+      "emergency_contact_number": null,
+      "emergency_contact_address": null
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/create_service_request/3/",
+    "timestamp": "2026-03-22T06:44:14.657Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 96,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request QCI-2026-0001.",
+    "target_id": "16",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/16/",
+    "timestamp": "2026-03-22T06:44:14.781Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 97,
+  "fields": {
+    "user": 2,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created Service Request request for Pine, Princess Julianna",
+    "target_id": "17",
+    "before_data": null,
+    "after_data": {
+      "id": 17,
+      "fee": "0.00",
+      "status": "Pending",
+      "purpose": "Barangay Clearance",
+      "remarks": null,
+      "resident": 3,
+      "created_by": 2,
+      "purpose_for": "Barangay Clearance",
+      "service_type": 6,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": 1,
+      "document_number": "SER-2026-0001",
+      "residency_since": null,
+      "clearance_number": null,
+      "emergency_contact_name": null,
+      "emergency_contact_number": null,
+      "emergency_contact_address": null
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/create_service_request/3/",
+    "timestamp": "2026-03-22T06:44:28.759Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 98,
+  "fields": {
+    "user": 2,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request SER-2026-0001.",
+    "target_id": "17",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/17/",
+    "timestamp": "2026-03-22T06:44:28.883Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 99,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T06:52:56.747Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 100,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:53:01.568Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 101,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-22T06:53:21.189Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 102,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-22T06:53:42.115Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 103,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "ServiceRequest",
+    "description": "Updated request 2026-0017 to Pending.",
+    "target_id": "17",
+    "before_data": {
+      "id": 17,
+      "fee": "0.00",
+      "status": "Pending",
+      "purpose": "Barangay Clearance",
+      "remarks": null,
+      "resident": 3,
+      "created_by": 2,
+      "purpose_for": "Barangay Clearance",
+      "service_type": 6,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": 1,
+      "document_number": "SER-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0017",
+      "emergency_contact_name": null,
+      "emergency_contact_number": null,
+      "emergency_contact_address": null
+    },
+    "after_data": {
+      "id": 17,
+      "fee": "0.00",
+      "status": "Pending",
+      "purpose": "Barangay Clearance",
+      "remarks": null,
+      "resident": 3,
+      "created_by": 2,
+      "purpose_for": "Barangay Clearance",
+      "service_type": 6,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": 1,
+      "document_number": "SER-2026-0001",
+      "residency_since": null,
+      "clearance_number": "2026-0017",
+      "emergency_contact_name": null,
+      "emergency_contact_number": null,
+      "emergency_contact_address": null
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/service-request/17/update-status/",
+    "timestamp": "2026-03-22T06:54:13.221Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 104,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-22T08:34:56.076Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 105,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:03:27.544Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 106,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:03:50.515Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 107,
+  "fields": {
+    "user": null,
+    "action": "LOGIN_FAILED",
+    "model_name": "Authentication",
+    "description": "Failed login attempt for username 'Charl'.",
+    "target_id": "Charl",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:04:42.307Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 108,
+  "fields": {
+    "user": null,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged in.",
+    "target_id": "5",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:05:38.882Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 109,
+  "fields": {
+    "user": null,
+    "action": "CREATE",
+    "model_name": "ServiceRequest",
+    "description": "Created QCID request for Duma, Charl",
+    "target_id": "18",
+    "before_data": null,
+    "after_data": {
+      "id": 18,
+      "fee": "30.00",
+      "status": "Pending",
+      "purpose": null,
+      "remarks": null,
+      "resident": 4,
+      "created_by": 5,
+      "purpose_for": null,
+      "service_type": 4,
+      "purpose_other": null,
+      "processed_date": null,
+      "purpose_option": null,
+      "document_number": "QCI-2026-0002",
+      "residency_since": "2026-03-10",
+      "clearance_number": null,
+      "emergency_contact_name": null,
+      "emergency_contact_number": null,
+      "emergency_contact_address": null
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/portal/service-request/",
+    "timestamp": "2026-03-23T06:06:54.364Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 110,
+  "fields": {
+    "user": null,
+    "action": "PRINT",
+    "model_name": "ServiceRequest",
+    "description": "Generated document for request QCI-2026-0002.",
+    "target_id": "18",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/document/18/",
+    "timestamp": "2026-03-23T06:06:54.548Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 111,
+  "fields": {
+    "user": null,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged out.",
+    "target_id": "5",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:06:57.180Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 112,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:07:01.973Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 113,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:09:19.811Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 114,
+  "fields": {
+    "user": 3,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged in.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:09:24.915Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 115,
+  "fields": {
+    "user": 3,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'princess' logged out.",
+    "target_id": "3",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:09:34.698Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 116,
+  "fields": {
+    "user": null,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged in.",
+    "target_id": "5",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:09:44.411Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 117,
+  "fields": {
+    "user": null,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged out.",
+    "target_id": "5",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:12:25.945Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 118,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:17:02.376Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 119,
+  "fields": {
+    "user": 1,
+    "action": "PERMISSION_CHANGE",
+    "model_name": "Group",
+    "description": "Permissions [37, 61] assigned to group 'Resident'.",
+    "target_id": "4",
+    "before_data": null,
+    "after_data": {
+      "changed_permission_ids": [
+        37,
+        61
+      ]
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/auth/group/add/",
+    "timestamp": "2026-03-23T06:20:55.822Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 120,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-23T06:26:37.776Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 121,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "All groups cleared from user 'Charl'.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": []
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:27:20.717Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 122,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "Groups [4] assigned to user 'Charl'.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": [
+        4
+      ]
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:27:20.729Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 123,
+  "fields": {
+    "user": 6,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged in.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:27:20.749Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 124,
+  "fields": {
+    "user": 6,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged out.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:27:30.218Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 125,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:27:35.006Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 126,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:28:41.461Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 127,
+  "fields": {
+    "user": 6,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged in.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:28:52.185Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 128,
+  "fields": {
+    "user": 6,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged out.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:34:03.111Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 129,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:34:09.387Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 130,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:34:10.069Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 131,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:39:06.791Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 132,
+  "fields": {
+    "user": null,
+    "action": "LOGIN_FAILED",
+    "model_name": "Authentication",
+    "description": "Failed login attempt for username 'Charl'.",
+    "target_id": "Charl",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:39:12.549Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 133,
+  "fields": {
+    "user": null,
+    "action": "LOGIN_FAILED",
+    "model_name": "Authentication",
+    "description": "Failed login attempt for username 'Charl'.",
+    "target_id": "Charl",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:39:20.503Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 134,
+  "fields": {
+    "user": 6,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged in.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:39:26.742Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 135,
+  "fields": {
+    "user": 6,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'Charl' logged out.",
+    "target_id": "6",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:45:11.475Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 136,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "All groups cleared from user 'ryan123'.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": []
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:46:37.856Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 137,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "Groups [4] assigned to user 'ryan123'.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": [
+        4
+      ]
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:46:37.865Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 138,
+  "fields": {
+    "user": 7,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ryan123' logged in.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T06:46:37.882Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 139,
+  "fields": {
+    "user": 7,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ryan123' logged out.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:46:53.116Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 140,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:46:57.720Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 141,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:49:32.769Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 142,
+  "fields": {
+    "user": 7,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ryan123' logged in.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:49:40.233Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 143,
+  "fields": {
+    "user": 7,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ryan123' logged out.",
+    "target_id": "7",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T06:50:15.592Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 144,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T06:50:20.387Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 145,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "Resident",
+    "description": "Updated resident ryan maitim",
+    "target_id": "1",
+    "before_data": {
+      "id": 1,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": "Jr",
+      "precinct": null,
+      "religion": "iglisya",
+      "household": 2,
+      "last_name": "maitim",
+      "birth_date": "2024-04-02",
+      "first_name": "ryan",
+      "indigenous": true,
+      "occupation": "lalamog Rider",
+      "middle_name": "jacob",
+      "nationality": "Filipino",
+      "solo_parent": false,
+      "civil_status": "single",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": "Quezon City",
+      "educational_attainment": "College"
+    },
+    "after_data": {
+      "id": 1,
+      "pwd": false,
+      "email": "testemail@gmail.com",
+      "gender": "Male",
+      "status": "Alive",
+      "suffix": "Jr",
+      "precinct": null,
+      "religion": "iglisya",
+      "household": 2,
+      "last_name": "maitim",
+      "birth_date": "2024-04-02",
+      "first_name": "ryan",
+      "indigenous": true,
+      "occupation": "lalamog Rider",
+      "middle_name": null,
+      "nationality": "Filipino",
+      "solo_parent": false,
+      "civil_status": "Married",
+      "voter_status": true,
+      "contact_number": "09910358018",
+      "place_of_birth": "Quezon City",
+      "educational_attainment": "College"
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/resident/1/edit/",
+    "timestamp": "2026-03-23T06:50:46.057Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 146,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T07:20:25.097Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 147,
+  "fields": {
+    "user": 1,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged in.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T07:20:36.444Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 148,
+  "fields": {
+    "user": 1,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'ritsmund' logged out.",
+    "target_id": "1",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/admin/logout/",
+    "timestamp": "2026-03-23T07:21:50.172Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 149,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T07:22:02.661Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 150,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T07:22:38.832Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 151,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "All groups cleared from user 'julianna'.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": []
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T07:23:41.360Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 152,
+  "fields": {
+    "user": null,
+    "action": "ROLE_CHANGE",
+    "model_name": "User",
+    "description": "Groups [4] assigned to user 'julianna'.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": {
+      "changed_group_ids": [
+        4
+      ]
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T07:23:41.371Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 153,
+  "fields": {
+    "user": 8,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'julianna' logged in.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/register/",
+    "timestamp": "2026-03-23T07:23:41.392Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 154,
+  "fields": {
+    "user": 8,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'julianna' logged out.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T07:24:39.362Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 155,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T07:24:44.137Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 156,
+  "fields": {
+    "user": 2,
+    "action": "UPDATE",
+    "model_name": "UserProfile",
+    "description": "Verified resident (auto match): Linked user julianna to resident 3.",
+    "target_id": "4",
+    "before_data": {
+      "id": 4,
+      "user": 8,
+      "resident": 3,
+      "last_name": "pine",
+      "birth_date": "2005-01-11",
+      "first_name": "Princess Julianna",
+      "is_verified": false,
+      "is_auto_matched": true
+    },
+    "after_data": {
+      "id": 4,
+      "user": 8,
+      "resident": 3,
+      "last_name": "pine",
+      "birth_date": "2005-01-11",
+      "first_name": "Princess Julianna",
+      "is_verified": true,
+      "is_auto_matched": true
+    },
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/secretary/pending-verifications/4/review/",
+    "timestamp": "2026-03-23T07:25:40.043Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 157,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T07:25:44.588Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 158,
+  "fields": {
+    "user": 8,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'julianna' logged in.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-23T07:25:55.431Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 159,
+  "fields": {
+    "user": 8,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'julianna' logged out.",
+    "target_id": "8",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-23T07:26:22.315Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 160,
+  "fields": {
+    "user": 2,
+    "action": "LOGIN",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged in.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/login/",
+    "timestamp": "2026-03-25T02:01:25.336Z"
+  }
+},
+{
+  "model": "residents.auditlog",
+  "pk": 161,
+  "fields": {
+    "user": 2,
+    "action": "LOGOUT",
+    "model_name": "Authentication",
+    "description": "User 'joy' logged out.",
+    "target_id": "2",
+    "before_data": null,
+    "after_data": null,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",
+    "request_path": "/logout/",
+    "timestamp": "2026-03-25T02:04:19.448Z"
+  }
+}
+]
+

@@ -460,6 +460,12 @@
                     </svg>
                     Complaints
                 </a>
+                <a href="{% url 'about_us' %}" class="sb-item{% if request.resolver_match.url_name == 'about_us' %} active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10A8 8 0 112 10a8 8 0 0116 0zm-9-1a1 1 0 100 2h2a1 1 0 100-2H9zm1-4a1 1 0 00-1 1v1a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    About Us
+                </a>
                 {% endif %}
 
             {% endfor %}

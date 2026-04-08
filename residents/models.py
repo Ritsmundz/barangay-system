@@ -1,4 +1,4 @@
-from datetime import date, timezone
+from datetime import date
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -106,7 +106,7 @@ class Resident(models.Model):
         if not self.birth_date:
             return None
 
-        today = date.today()
+        today = timezone.localdate()
 
         age = today.year - self.birth_date.year - (
             (today.month, today.day) <
@@ -315,7 +315,7 @@ class ServiceRequest(models.Model):
         # GENERATE DOCUMENT NUMBER
         if not self.document_number:
 
-            year = date.today().year
+            year = timezone.localdate().year
             prefix = self.service_type.name[:3].upper()
 
             last_request = ServiceRequest.objects.filter(
@@ -351,16 +351,6 @@ class Payment(models.Model):
         blank=True
     )
 
-    received_by = models.ForeignKey(
-        User,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="payments_received"
-
-    )
-
-
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     payment_date = models.DateTimeField(auto_now_add=True)
@@ -377,7 +367,7 @@ class Payment(models.Model):
 
         if not self.receipt_number:
 
-            year = date.today().year
+            year = timezone.localdate().year
 
             last_payment = Payment.objects.filter(
                 receipt_number__startswith=f"RCPT-{year}"

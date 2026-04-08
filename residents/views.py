@@ -51,6 +51,12 @@ def is_staff_user(user):
     return user.groups.filter(name__in=["Captain", "Secretary", "Treasurer", "Staff"]).exists()
 
 
+def can_create_service_requests(user):
+    if user.is_superuser:
+        return True
+    return user.groups.filter(name__in=["Secretary", "Staff"]).exists()
+
+
 def is_resident(user):
     return user.groups.filter(name="Resident").exists()
 
@@ -985,7 +991,7 @@ def scan_resident_id(request):
 @user_passes_test(is_captain)
 def dashboard(request):
 
-    today = date.today()
+    today = timezone.localdate()
 
     residents = Resident.objects.all()
 
@@ -1113,6 +1119,12 @@ def role_redirect(request):
                 return redirect("portal_create_service_request")
             return redirect("portal_pending_verification")
         return redirect('admin/')
+
+
+def about_us(request):
+    if request.user.is_authenticated:
+        return render(request, "about_us.html")
+    return render(request, "about_us_public.html")
 
 
 def resident_register(request):
@@ -1385,7 +1397,7 @@ def secretary_dashboard(request):
 @group_required(is_treasurer)
 def treasurer_dashboard(request):
 
-    today = timezone.now().date()
+    today = timezone.localdate()
     month = today.month
     year = today.year
 
@@ -1470,7 +1482,8 @@ def resident_list(request):
         residents = residents.filter(status=status)
 
     context = {
-        "residents": residents
+        "residents": residents,
+        "can_create_service_requests": can_create_service_requests(request.user),
     }
 
     return render(request, "resident_list.html", context)
@@ -1631,8 +1644,11 @@ def set_household_head(request, household_id, resident_id):
 def create_service_request(request, resident_id):
 
     resident = get_object_or_404(Resident, id=resident_id)
+    is_portal_resident_user = False
 
-    if not is_staff_user(request.user):
+    if can_create_service_requests(request.user):
+        pass
+    elif not is_staff_user(request.user):
         if not is_resident(request.user):
             return HttpResponseForbidden("Only staff or resident accounts can create service requests.")
         profile = get_user_profile(request.user)
@@ -1642,6 +1658,9 @@ def create_service_request(request, resident_id):
         if profile.resident_id != resident.id:
             messages.error(request, "You can only create requests for your own linked resident record.")
             return redirect("portal_create_service_request")
+        is_portal_resident_user = True
+    else:
+        return HttpResponseForbidden("Only the Secretary, Staff, or the verified resident can create service requests.")
 
     service_types = ServiceType.objects.all()
     service_purposes = RequestPurpose.objects.filter(is_active=True)
@@ -1652,6 +1671,7 @@ def create_service_request(request, resident_id):
             "service_types": service_types,
             "service_purposes": service_purposes,
             "posted_data": request.POST if request.method == "POST" else None,
+            "is_portal_resident_user": is_portal_resident_user,
         })
 
     if request.method == "POST":
@@ -1738,6 +1758,10 @@ def create_service_request(request, resident_id):
         service.clearance_number = f"{year}-{service.id:04d}"
         service.save()
 
+        if is_portal_resident_user:
+            messages.success(request, "Your service request was submitted successfully.")
+            return redirect("portal_my_profile")
+
         return redirect("generate_document", request_id=service.id)
 
     return render_request_form()
@@ -1782,6 +1806,8 @@ def update_service_request_status(request, request_id):
 @login_required
 def resident_profile(request, resident_id):
     resident = get_object_or_404(Resident, id=resident_id)
+    is_portal_resident_user = False
+    can_create_requests = False
     if is_resident(request.user):
         profile = get_user_profile(request.user)
         if not profile or not profile.resident or profile.resident_id != resident.id:
@@ -1790,14 +1816,19 @@ def resident_profile(request, resident_id):
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
         services = ServiceRequest.objects.filter(resident=profile.resident)
+        is_portal_resident_user = True
+        can_create_requests = True
     elif is_staff_user(request.user):
         services = ServiceRequest.objects.filter(resident=resident)
+        can_create_requests = can_create_service_requests(request.user)
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
     
     context = {
     "resident": resident,
-    "services": services
+    "services": services,
+    "is_portal_resident_user": is_portal_resident_user,
+    "can_create_service_requests": can_create_requests,
 }
     return render(request, "resident_profile.html", context)
 
@@ -2343,7 +2374,7 @@ def generate_document(request, request_id):
         "service": service,
         "resident": resident,
         "address": address,
-        "today": date.today(),
+        "today": timezone.localdate(),
     }
     log_audit_event(
         action="PRINT",
