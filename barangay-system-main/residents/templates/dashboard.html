@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+
+{% block page_title %}Barangay E-Governance System{% endblock %}
+{% block page_subtitle %}Leadership overview for approvals, service delivery, complaints, and community trends.{% endblock %}
+
+{% block page_header_actions %}
+<a href="{% url 'audit_logs' %}" class="btn-bmis btn-secondary">Audit Logs</a>
+<a href="{% url 'export_summary' %}" class="btn-bmis btn-primary">Export Summary</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .captain-dashboard{display:flex;flex-direction:column;gap:18px}
+    .hero{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;padding:22px 24px;border-radius:24px;background:radial-gradient(circle at top right, rgba(76,131,234,.18), transparent 28%),linear-gradient(180deg,#ffffff,#f7fbff);border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .hero h1{margin:0;font-size:30px;line-height:1.04;letter-spacing:-.03em;color:var(--txt)}
+    .hero p{margin:8px 0 0;color:var(--txt2);font-size:14px;max-width:720px}
+    .hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border-radius:999px;background:#eef4ff;border:1px solid var(--pri-brd);font-size:12px;font-weight:700;color:var(--pri)}
+    .hero-badge::before{content:"";width:8px;height:8px;border-radius:999px;background:#4c83ea}
+    .hero-side{display:grid;grid-template-columns:repeat(2,minmax(140px,1fr));gap:10px;min-width:min(100%,320px)}
+    .mini-kpi{padding:14px 16px;border-radius:18px;background:#fff;border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .mini-kpi-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
+    .mini-kpi-value{font-size:28px;font-weight:700;color:var(--txt);line-height:1.1;margin-top:6px}
+    .mini-kpi-sub{font-size:12px;color:var(--txt2);margin-top:4px}
+    .kpi-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .kpi-card,.panel,.table-card,.quick-card{background:rgba(255,255,255,.96);border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .kpi-card{padding:18px;border-radius:20px;position:relative;overflow:hidden}
+    .kpi-card::before{content:"";position:absolute;inset:0 0 auto 0;height:4px}
+    .kpi-card.blue::before{background:linear-gradient(90deg,#4c83ea,#8eb4ff)}
+    .kpi-card.green::before{background:linear-gradient(90deg,#18a957,#7ee2a8)}
+    .kpi-card.amber::before{background:linear-gradient(90deg,#dd8a17,#ffcf68)}
+    .kpi-card.teal::before{background:linear-gradient(90deg,#12a594,#7fe0d2)}
+    .kpi-card.red::before{background:linear-gradient(90deg,#e35050,#ff9a9a)}
+    .kpi-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
+    .kpi-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;margin-top:10px}
+    .kpi-value{font-size:30px;font-weight:700;color:var(--txt);line-height:1}
+    .kpi-link{display:inline-flex;margin-top:14px;padding-top:12px;border-top:1px solid #edf2f8;font-size:12px;font-weight:600;color:var(--txt2)}
+    .section-head{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .section-title{font-size:16px;font-weight:700;color:var(--txt);margin:0}
+    .section-sub{font-size:12px;color:var(--txt2);margin-top:4px}
+    .split{display:grid;grid-template-columns:1.06fr 1fr;gap:16px}
+    .panel,.table-card{border-radius:22px;padding:18px}
+    .priority-list,.activity-list,.notice-list{display:flex;flex-direction:column;gap:10px}
+    .priority-item,.activity-item,.notice-item{padding:14px 16px;border:1px solid #e5edf7;border-radius:16px;background:linear-gradient(180deg,#fff,#f9fbff)}
+    .priority-item{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .priority-copy strong,.activity-copy strong,.notice-item strong{display:block;font-size:15px;color:var(--txt)}
+    .priority-copy span,.activity-copy p,.notice-item span{display:block;margin-top:4px;font-size:13px;color:var(--txt2)}
+    .priority-count{min-width:58px;padding:10px 12px;border-radius:14px;background:#edf4ff;color:#2558b8;font-weight:700;text-align:center}
+    .activity-item{display:flex;gap:12px;align-items:flex-start}
+    .activity-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:linear-gradient(180deg,#dce7ff,#bfd1ff);color:var(--pri-strong);flex-shrink:0}
+    .activity-time{font-size:12px;color:var(--txt3);margin-top:5px}
+    .trend-grid,.health-grid,.quick-grid{display:grid;gap:12px}
+    .trend-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .health-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .trend-card,.health-card,.quick-card{padding:16px;border-radius:18px}
+    .trend-card.blue{background:linear-gradient(180deg,#eaf2ff,#dce9ff)}
+    .trend-card.amber{background:linear-gradient(180deg,#fff6de,#ffefc3)}
+    .trend-card.teal{background:linear-gradient(180deg,#e7fbf7,#d9f3ee)}
+    .trend-label,.health-label{font-size:12px;font-weight:700;color:var(--txt2)}
+    .trend-value,.health-value{font-size:26px;font-weight:700;color:var(--txt);line-height:1.1;margin-top:8px}
+    .trend-change{margin-top:8px;font-size:12px;font-weight:700}
+    .trend-up{color:#139654}.trend-down{color:#d55151}.trend-flat{color:var(--txt3)}
+    .health-card.red{background:#fff8f8}.health-card.green{background:#f5fff8}.health-card.blue{background:#f6f9ff}.health-card.purple{background:#faf7ff}.health-card.teal{background:#f3fffd}
+    .health-sub{margin-top:6px;font-size:12px;color:var(--txt3)}
+    .charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .chart-card{padding:18px;border-radius:22px;background:#fff;border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .chart-meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+    .chart-badge{padding:7px 11px;border-radius:999px;background:#f2f6fd;border:1px solid var(--brd);font-size:12px;font-weight:700;color:var(--txt2)}
+    .chart-wrap{position:relative;height:220px}
+    .legend-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid #edf2f8}
+    .legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2)}
+    .dot{width:8px;height:8px;border-radius:50%}
+    .status-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .status-card{padding:16px;border-radius:18px;text-align:center;background:#fff;border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .status-card strong{display:block;font-size:30px;color:var(--txt)}
+    .status-card span{font-size:13px;color:var(--txt2)}
+    .lower{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .purok-list{display:flex;flex-direction:column;gap:10px}
+    .purok-item{display:flex;align-items:center;gap:12px}
+    .purok-name{width:120px;font-size:13px;color:var(--txt2);font-weight:600}
+    .purok-track{flex:1;height:10px;background:#edf2f8;border-radius:999px;overflow:hidden}
+    .purok-fill{height:100%;background:linear-gradient(90deg,#4c83ea,#7eaaff)}
+    .purok-count{width:28px;text-align:right;font-size:13px;font-weight:700;color:var(--txt)}
+    .insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .insight-card{padding:16px;border-radius:18px;background:#fff;border:1px solid var(--brd);box-shadow:var(--shadow-md)}
+    .insight-kicker{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3)}
+    .insight-main{font-size:18px;font-weight:700;color:var(--txt);margin-top:8px}
+    .insight-sub{font-size:13px;color:var(--txt2);margin-top:6px}
+    .quick-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .quick-card{display:flex;align-items:center;justify-content:center;min-height:74px;font-size:16px;font-weight:700;text-align:center}
+    .quick-card.red{background:linear-gradient(180deg,#fff1f1,#ffe2e2)}
+    .quick-card.amber{background:linear-gradient(180deg,#fff8e8,#ffefc9)}
+    .quick-card.blue{background:linear-gradient(180deg,#e8f2ff,#d9e8ff)}
+    .quick-card.sky{background:linear-gradient(180deg,#eef7ff,#e0f0ff)}
+    .quick-card.green{background:linear-gradient(180deg,#edfff3,#dcf5e5)}
+    .table-card table{width:100%;border-collapse:collapse}
+    .table-card th,.table-card td{padding:12px 10px;border-bottom:1px solid #edf2f8;text-align:left;font-size:13px}
+    .table-card th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3)}
+    .table-card tr:last-child td{border-bottom:none}
+    .badge{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:700}
+    .badge.pending{background:#fff6df;color:#9c6a16}.badge.processing{background:#edf4ff;color:#275cb8}.badge.approved{background:#eef9f1;color:#1a8749}.badge.released{background:#e9fbf6;color:#11826b}.badge.rejected{background:#fff0f0;color:#b84a4a}.badge.investigating{background:#f5f0ff;color:#6d3fcd}.badge.mediation{background:#eef8ff;color:#2563eb}
+    @media (max-width:1450px){.kpi-grid,.health-grid,.quick-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.charts,.lower{grid-template-columns:1fr}.trend-grid{grid-template-columns:1fr 1fr}}
+    @media (max-width:1080px){.split,.trend-grid,.status-row,.insight-grid,.kpi-grid,.health-grid,.quick-grid{grid-template-columns:1fr 1fr}.hero-side{grid-template-columns:1fr 1fr}}
+    @media (max-width:760px){.hero,.split,.trend-grid,.status-row,.insight-grid,.kpi-grid,.health-grid,.quick-grid{grid-template-columns:1fr;display:grid}.charts,.lower{grid-template-columns:1fr}.hero-side{grid-template-columns:1fr}}
+</style>
+
+<div class="captain-dashboard">
+    <section class="hero">
+        <div>
+            <h1>Captain Dashboard</h1>
+            <p>Barangay-wide snapshot of approvals, service flow, complaints, finances, and community planning signals.</p>
+            <div class="hero-badges">
+                <span class="hero-badge">{{ pending_verification_count }} pending verifications</span>
+                <span class="hero-badge">{{ open_complaints }} open complaints</span>
+                <span class="hero-badge">{{ pending_requests|add:processing_requests }} active service requests</span>
+            </div>
+        </div>
+        <div class="hero-side">
+            <div class="mini-kpi">
+                <div class="mini-kpi-label">This Month Revenue</div>
+                <div class="mini-kpi-value">₱{{ month_revenue }}</div>
+                <div class="mini-kpi-sub">Collections recorded in the current month.</div>
+            </div>
+            <div class="mini-kpi">
+                <div class="mini-kpi-label">Released This Week</div>
+                <div class="mini-kpi-value">{{ released_requests }}</div>
+                <div class="mini-kpi-sub">Documents released across current operations.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="kpi-grid">
+        <article class="kpi-card blue">
+            <div class="kpi-label">Total Residents</div>
+            <div class="kpi-row"><div class="kpi-value">{{ total_residents }}</div></div>
+            <a href="{% url 'export_residents' %}" class="kpi-link">Export Residents CSV</a>
+        </article>
+        <article class="kpi-card green">
+            <div class="kpi-label">Total Households</div>
+            <div class="kpi-row"><div class="kpi-value">{{ total_households }}</div></div>
+            <a href="{% url 'export_households' %}" class="kpi-link">Export Households</a>
+        </article>
+        <article class="kpi-card amber">
+            <div class="kpi-label">Documents Issued</div>
+            <div class="kpi-row"><div class="kpi-value">{{ documents_issued }}</div></div>
+            <a href="{% url 'service_requests' %}" class="kpi-link">Review Requests</a>
+        </article>
+        <article class="kpi-card teal">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-row"><div class="kpi-value">₱{{ total_revenue }}</div></div>
+            <a href="{% url 'export_payments' %}" class="kpi-link">Export Payments</a>
+        </article>
+        <article class="kpi-card red">
+            <div class="kpi-label">Total Complaints</div>
+            <div class="kpi-row"><div class="kpi-value">{{ total_complaints }}</div></div>
+            <a href="{% url 'export_complaints' %}" class="kpi-link">Export Complaints</a>
+        </article>
+    </section>
+
+    <section class="split">
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Priority Actions</h3>
+                    <div class="section-sub">High-priority queues that need captain review or escalation.</div>
+                </div>
+            </div>
+            <div class="priority-list">
+                {% for item in priority_actions %}
+                <a href="{% url item.url %}" class="priority-item">
+                    <div class="priority-copy">
+                        <strong>{{ item.label }}</strong>
+                        <span>{{ item.description }}</span>
+                    </div>
+                    <div class="priority-count">{{ item.count }}</div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Recent Barangay Activity</h3>
+                    <div class="section-sub">Latest movements across records, complaints, and resident services.</div>
+                </div>
+            </div>
+            <div class="activity-list">
+                {% for item in activity_items %}
+                <div class="activity-item">
+                    <div class="activity-avatar">{{ item.name|slice:":1"|upper }}</div>
+                    <div class="activity-copy">
+                        <strong>{{ item.name }}</strong>
+                        <p>{{ item.description }}</p>
+                        <div class="activity-time">{{ item.timestamp|timesince }} ago</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="trend-grid">
+        {% for item in trend_cards %}
+        <article class="trend-card {{ item.tone }}">
+            <div class="trend-label">{{ item.label }}</div>
+            <div class="trend-value">{{ item.value }}</div>
+            <div class="trend-change {% if item.change > 0 %}trend-up{% elif item.change < 0 %}trend-down{% else %}trend-flat{% endif %}">
+                {% if item.change > 0 %}+{% endif %}{{ item.change }} vs previous month
+            </div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="health-grid">
+        {% for item in health_cards %}
+        <article class="health-card {{ item.tone }}">
+            <div class="health-label">{{ item.label }}</div>
+            <div class="health-value">{{ item.value }}</div>
+            <div class="health-sub">{{ item.sub }}</div>
+        </article>
+        {% endfor %}
+    </section>
+
+    <section class="charts">
+        <div class="chart-card">
+            <div class="chart-meta">
+                <div>
+                    <h3 class="section-title" style="font-size:15px">Gender Distribution</h3>
+                    <div class="section-sub">Current resident gender breakdown.</div>
+                </div>
+                <div class="chart-badge">{{ total_residents }} residents</div>
+            </div>
+            <div class="chart-wrap"><canvas id="genderChart"></canvas></div>
+            <div class="legend-row">
+                <div class="legend-item"><span class="dot" style="background:#2563EB"></span>Male: <strong>{{ male_residents }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#EC4899"></span>Female: <strong>{{ female_residents }}</strong></div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-meta">
+                <div>
+                    <h3 class="section-title" style="font-size:15px">Age Group Statistics</h3>
+                    <div class="section-sub">Population breakdown by age group.</div>
+                </div>
+                <div class="chart-badge">{{ children|add:youth|add:adults|add:seniors }} profiled</div>
+            </div>
+            <div class="chart-wrap"><canvas id="ageChart"></canvas></div>
+            <div class="legend-row">
+                <div class="legend-item"><span class="dot" style="background:#2563EB"></span>Children: <strong>{{ children }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#7C3AED"></span>Youth: <strong>{{ youth }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#16A34A"></span>Adults: <strong>{{ adults }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#D97706"></span>Seniors: <strong>{{ seniors }}</strong></div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-meta">
+                <div>
+                    <h3 class="section-title" style="font-size:15px">Complaint Status</h3>
+                    <div class="section-sub">Open and closed complaint movement.</div>
+                </div>
+                <div class="chart-badge">{{ total_complaints }} complaints</div>
+            </div>
+            <div class="chart-wrap"><canvas id="complaintChart"></canvas></div>
+            <div class="legend-row">
+                <div class="legend-item"><span class="dot" style="background:#7C3AED"></span>Under Review: <strong>{{ review_complaints }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#D97706"></span>Scheduled / Mediation: <strong>{{ scheduled_complaints }}</strong></div>
+                <div class="legend-item"><span class="dot" style="background:#16A34A"></span>Resolved: <strong>{{ resolved_complaints }}</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="status-row">
+        <article class="status-card"><strong>{{ alive }}</strong><span>Alive</span></article>
+        <article class="status-card"><strong>{{ moved }}</strong><span>Moved Out</span></article>
+        <article class="status-card"><strong>{{ deceased }}</strong><span>Deceased</span></article>
+    </section>
+
+    <section class="lower">
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Residents per Purok</h3>
+                    <div class="section-sub">Quick area-level view for planning and reporting.</div>
+                </div>
+            </div>
+            <div class="purok-list">
+                {% for purok in purok_stats %}
+                <div class="purok-item">
+                    <div class="purok-name">{{ purok.household__purok__name }}</div>
+                    <div class="purok-track"><div class="purok-fill" style="width:{{ purok.pct }}%"></div></div>
+                    <div class="purok-count">{{ purok.resident_count }}</div>
+                </div>
+                {% empty %}
+                <div class="section-sub">No purok data available yet.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Top Problem Areas</h3>
+                    <div class="section-sub">Where captain attention is most valuable right now.</div>
+                </div>
+            </div>
+            <div class="insight-grid">
+                <article class="insight-card">
+                    <div class="insight-kicker">Most Requested Service</div>
+                    <div class="insight-main">{% if popular_service %}{{ popular_service.service_type__name }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if popular_service %}{{ popular_service.total }} request(s) recorded{% else %}No service requests yet{% endif %}</div>
+                </article>
+                <article class="insight-card">
+                    <div class="insight-kicker">Most Common Complaint</div>
+                    <div class="insight-main">{% if common_complaint %}{{ common_complaint.title }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if common_complaint %}{{ common_complaint.total }} complaint(s) filed{% else %}No complaints yet{% endif %}</div>
+                </article>
+                <article class="insight-card">
+                    <div class="insight-kicker">Highest Resident Purok</div>
+                    <div class="insight-main">{% if top_purok_residents %}{{ top_purok_residents.household__purok__name }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if top_purok_residents %}{{ top_purok_residents.resident_count }} resident(s){% else %}Assign residents to households first{% endif %}</div>
+                </article>
+                <article class="insight-card">
+                    <div class="insight-kicker">Highest Complaint Purok</div>
+                    <div class="insight-main">{% if top_purok_complaints %}{{ top_purok_complaints.resident__household__purok__name }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if top_purok_complaints %}{{ top_purok_complaints.total }} complaint(s){% else %}No complaint hotspot yet{% endif %}</div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="quick-grid">
+        {% for action in quick_actions %}
+        <a href="{% url action.url %}" class="quick-card {{ action.tone }}">{{ action.label }}</a>
+        {% endfor %}
+    </section>
+
+    <section class="split">
+        <div class="table-card">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Recent Service Requests</h3>
+                    <div class="section-sub">Latest request queue movement across services.</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Resident</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in recent_requests %}
+                    <tr>
+                        <td>{{ req.resident }}</td>
+                        <td>{{ req.service_type }}</td>
+                        <td>
+                            <span class="badge {% if req.status == 'Submitted' %}pending{% elif req.status == 'Under Review' %}processing{% elif req.status == 'For Validation' %}approved{% elif req.status == 'Processing' %}processing{% elif req.status == 'Ready for Release' %}approved{% elif req.status == 'Released' %}released{% else %}rejected{% endif %}">
+                                {{ req.status }}
+                            </span>
+                        </td>
+                        <td>{{ req.request_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No recent service requests.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <div class="section-head">
+                <div>
+                    <h3 class="section-title">Notices and Reminders</h3>
+                    <div class="section-sub">Lightweight operational notices that keep the page active but not crowded.</div>
+                </div>
+            </div>
+            <div class="notice-list">
+                {% for note in notices %}
+                <div class="notice-item">
+                    <strong>{{ note.title }}</strong>
+                    <span>{{ note.text }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+const captainFont = { family: "'IBM Plex Sans', sans-serif", size: 11 };
+const captainGrid = { color: 'rgba(29, 49, 86, 0.06)' };
+
+new Chart(document.getElementById("genderChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Male", "Female"],
+        datasets: [{
+            data: [{{ male_residents }}, {{ female_residents }}],
+            backgroundColor: ["#2563EB", "#EC4899"],
+            borderWidth: 0,
+            hoverOffset: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "64%",
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } }
+        }
+    }
+});
+
+new Chart(document.getElementById("ageChart"), {
+    type: "bar",
+    data: {
+        labels: ["Children", "Youth", "Adults", "Seniors"],
+        datasets: [{
+            data: [{{ children }}, {{ youth }}, {{ adults }}, {{ seniors }}],
+            backgroundColor: ["#2563EB", "#7C3AED", "#16A34A", "#D97706"],
+            borderRadius: 8,
+            borderSkipped: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { ticks: { font: captainFont, color: '#60708c' }, grid: { display: false } },
+            y: { ticks: { font: captainFont, color: '#60708c' }, grid: captainGrid, beginAtZero: true }
+        }
+    }
+});
+
+new Chart(document.getElementById("complaintChart"), {
+    type: "doughnut",
+    data: {
+        labels: ["Under Review", "Scheduled / Mediation", "Resolved"],
+        datasets: [{
+            data: [{{ review_complaints }}, {{ scheduled_complaints }}, {{ resolved_complaints }}],
+            backgroundColor: ["#7C3AED", "#D97706", "#16A34A"],
+            borderWidth: 0,
+            hoverOffset: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "62%",
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.raw}` } }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Barangay Gulod</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --text: #16335f;
+            --muted: #627491;
+            --line: #dbe6f2;
+            --blue-deep: #123875;
+            --blue: #2563eb;
+            --blue-soft: #eff6ff;
+            --card: rgba(255, 255, 255, 0.95);
+            --shadow: 0 24px 56px rgba(17, 37, 77, 0.14);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.85), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(96, 165, 250, 0.18), transparent 20%),
+                linear-gradient(180deg, #f5f9ff 0%, #eaf1ff 100%);
+            padding: 28px 18px 36px;
+        }
+
+        .page {
+            width: min(1260px, 100%);
+            margin: 0 auto;
+            display: grid;
+            gap: 18px;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            width: fit-content;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(22, 51, 95, 0.1);
+            color: var(--blue-deep);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            box-shadow: 0 10px 24px rgba(17, 37, 77, 0.08);
+        }
+
+        .hero {
+            position: relative;
+            overflow: hidden;
+            border-radius: 28px;
+            padding: 28px;
+            background:
+                radial-gradient(circle at top right, rgba(147, 197, 253, .34), transparent 28%),
+                linear-gradient(135deg, #10356f 0%, #2563eb 58%, #60a5fa 100%);
+            color: #fff;
+            box-shadow: var(--shadow);
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            right: -90px;
+            bottom: -90px;
+            width: 260px;
+            height: 260px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.08);
+        }
+
+        .hero-body {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .logo {
+            width: 84px;
+            height: 84px;
+            padding: 10px;
+            border-radius: 22px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.24);
+            flex-shrink: 0;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .kicker {
+            font-size: 11px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.74);
+            margin-bottom: 8px;
+        }
+
+        .hero-title {
+            font-size: clamp(30px, 4vw, 42px);
+            line-height: 1.04;
+            font-weight: 700;
+        }
+
+        .hero-copy {
+            margin-top: 10px;
+            max-width: 780px;
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255,255,255,.86);
+        }
+
+        .tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.18);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .tag::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: currentColor;
+            opacity: .88;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .stat-card,
+        .panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 22px;
+            box-shadow: 0 18px 40px rgba(17, 37, 77, 0.08);
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #8b9bb0;
+        }
+
+        .stat-value {
+            margin-top: 8px;
+            font-size: 28px;
+            line-height: 1;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .stat-sub {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6f7f96;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 340px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .column {
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel-head {
+            padding: 18px 22px;
+            border-bottom: 1px solid #e6edf5;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(180deg, rgba(248,251,255,.94), #fff);
+        }
+
+        .panel-head h2 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            color: var(--blue);
+            border: 1px solid #d9e7fb;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .panel-body {
+            padding: 22px;
+        }
+
+        .photo,
+        .school-photo,
+        .official-photo {
+            border-radius: 18px;
+            overflow: hidden;
+            background: #e8f0ff;
+            border: 1px solid var(--line);
+        }
+
+        .photo {
+            aspect-ratio: 1.3 / 1;
+        }
+
+        .school-photo {
+            aspect-ratio: 1.45 / 1;
+        }
+
+        .official-photo {
+            aspect-ratio: 1 / 1;
+        }
+
+        .photo img,
+        .school-photo img,
+        .official-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-fallback {
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            color: #557094;
+            background: linear-gradient(180deg, #eef5ff, #dbe9ff);
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        .contact-list {
+            display: grid;
+            gap: 14px;
+        }
+
+        .contact-list {
+            margin-top: 18px;
+        }
+
+        .contact-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            color: #2b4267;
+            line-height: 1.55;
+        }
+
+        .contact-dot {
+            width: 34px;
+            height: 34px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #eff6ff;
+            border: 1px solid #d9e7fb;
+            color: var(--blue);
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .contact-item strong {
+            color: var(--text);
+        }
+
+        .info-grid,
+        .split-lists {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .info-box,
+        .mini-card,
+        .activity-note {
+            padding: 18px;
+            border-radius: 18px;
+            background: #f9fbfe;
+            border: 1px solid #e6edf5;
+        }
+
+        .info-box h3,
+        .mini-title,
+        .activity-note h3 {
+            font-size: 15px;
+            color: #173f84;
+            margin-bottom: 8px;
+        }
+
+        .info-box p,
+        .activity-note p,
+        .official-copy {
+            color: #5e718e;
+            line-height: 1.7;
+        }
+
+        .activity-photo {
+            aspect-ratio: 1.5 / 1;
+            margin-bottom: 16px;
+        }
+
+        .official-grid {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            gap: 18px;
+        }
+
+        .official-name {
+            font-size: clamp(28px, 3vw, 38px);
+            line-height: 1.04;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .official-role {
+            margin-top: 8px;
+            font-size: 16px;
+            color: #29436b;
+        }
+
+        .official-copy {
+            margin-top: 14px;
+            max-width: 58ch;
+        }
+
+        .bullet-list {
+            padding-left: 18px;
+            display: grid;
+            gap: 8px;
+            color: #32496e;
+            line-height: 1.55;
+        }
+
+        .school-grid {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 18px;
+            align-items: start;
+        }
+
+        .school-table {
+            border-radius: 18px;
+            overflow: hidden;
+            border: 1px solid #e6edf5;
+            background: #fff;
+        }
+
+        .school-head,
+        .school-row {
+            display: grid;
+            grid-template-columns: minmax(220px, 1fr) minmax(280px, 1.35fr);
+        }
+
+        .school-head {
+            background: linear-gradient(90deg, rgba(96,165,250,.18), rgba(96,165,250,.08));
+            color: #1d4b93;
+            font-weight: 700;
+        }
+
+        .school-head div,
+        .school-row div {
+            padding: 16px 18px;
+            border-bottom: 1px solid #e6edf5;
+        }
+
+        .school-row:last-child div {
+            border-bottom: 0;
+        }
+
+        .school-head div:first-child,
+        .school-row div:first-child {
+            border-right: 1px solid #e6edf5;
+        }
+
+        .school-name {
+            font-weight: 700;
+            color: #173f84;
+        }
+
+        .address-text {
+            color: #405675;
+            line-height: 1.55;
+        }
+
+        @media (max-width: 1180px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .layout,
+            .official-grid,
+            .school-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 780px) {
+            body {
+                padding: 16px 12px 24px;
+            }
+
+            .hero {
+                padding: 22px;
+            }
+
+            .brand {
+                align-items: flex-start;
+            }
+
+            .logo {
+                width: 72px;
+                height: 72px;
+            }
+
+            .stats-grid,
+            .info-grid,
+            .split-lists,
+            .school-head,
+            .school-row {
+                grid-template-columns: 1fr;
+            }
+
+            .school-head div:first-child,
+            .school-row div:first-child {
+                border-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <a class="back-link" href="{% url 'login' %}">Back to Login</a>
+
+        <section class="hero">
+            <div class="hero-body">
+                <div>
+                    <div class="brand">
+                        <div class="logo">
+                            <img src="{{ barangay_logo_data_uri }}" alt="Barangay Gulod logo">
+                        </div>
+                        <div>
+                            <div class="kicker">Barangay Gulod E-Governance System</div>
+                            <h1 class="hero-title">Barangay Gulod Profile</h1>
+                        </div>
+                    </div>
+                    <p class="hero-copy">A digital barangay profile page for community information, leadership, contact channels, and local institutions within Barangay Gulod, Novaliches, Quezon City.</p>
+                    <div class="tags">
+                        <span class="tag">Residential Barangay</span>
+                        <span class="tag">Novaliches, Quezon City</span>
+                        <span class="tag">Community Information</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            {% for stat in stats %}
+            <div class="stat-card">
+                <div class="stat-label">{{ stat.label }}</div>
+                <div class="stat-value">{{ stat.value }}</div>
+                <div class="stat-sub">{{ stat.sub }}</div>
+            </div>
+            {% endfor %}
+        </section>
+
+        <div class="layout">
+            <div class="column">
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="icon">i</div>
+                        <h2>Barangay Overview</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="photo">
+                            <img src="{{ barangay_hall_data_uri }}" alt="Barangay Gulod Hall">
+                        </div>
+                        <div class="contact-list">
+                            <div class="contact-item">
+                                <div class="contact-dot">⌂</div>
+                                <div><strong>Address</strong><br>{{ contact_address }}</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-dot">☎</div>
+                                <div><strong>Phone</strong><br>{{ contact_phone }}</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-dot">✉</div>
+                                <div><strong>Email</strong><br>{{ contact_email }}</div>
+                            </div>
+                            <div class="contact-item">
+                                <div class="contact-dot">⏱</div>
+                                <div><strong>Office Hours</strong><br>{{ office_hours }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="icon">◎</div>
+                        <h2>Events and Activities</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="photo activity-photo">
+                            {% if barangay_activities_data_uri %}
+                            <img src="{{ barangay_activities_data_uri }}" alt="Barangay Gulod events and activities">
+                            {% else %}
+                            <div class="photo-fallback">Add `barangay-activities.jpg` to `residents/static/residents/img/`</div>
+                            {% endif %}
+                        </div>
+                        <div class="activity-note">
+                            <h3>Community Milestones</h3>
+                            <p>Showcase successful barangay events, outreach programs, clean-up drives, assemblies, and other activities that reflect community participation.</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="column">
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="icon">👤</div>
+                        <h2>Barangay Officials</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="official-grid">
+                            <div class="official-photo">
+                                {% if barangay_official_data_uri %}
+                                <img src="{{ barangay_official_data_uri }}" alt="{{ official_name }}">
+                                {% else %}
+                                <div class="photo-fallback">Add `rey-aldrin-s-tolentino.png` to `residents/static/residents/img/`</div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="official-name">{{ official_name }}</div>
+                                <div class="official-role">{{ official_title }}</div>
+                                <p class="official-copy">{{ coverage_summary }} {{ system_summary }}</p>
+
+                                <div class="split-lists">
+                                    <div class="mini-card">
+                                        <div class="mini-title">Barangay Councilors</div>
+                                        <ul class="bullet-list">
+                                            {% for councilor in councilors_left %}
+                                            <li>{{ councilor }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    <div class="mini-card">
+                                        <div class="mini-title">Barangay Councilors</div>
+                                        <ul class="bullet-list">
+                                            {% for councilor in councilors_right %}
+                                            <li>{{ councilor }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="icon">🏫</div>
+                        <h2>Schools Within the Area</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="school-grid">
+                            <div class="school-photo">
+                                {% if barangay_school_data_uri %}
+                                <img src="{{ barangay_school_data_uri }}" alt="School within Barangay Gulod">
+                                {% else %}
+                                <div class="photo-fallback">Add `rosa-l-susano-elementary-school.png` to `residents/static/residents/img/`</div>
+                                {% endif %}
+                            </div>
+                            <div class="school-table">
+                                <div class="school-head">
+                                    <div>School Name</div>
+                                    <div>Address</div>
+                                </div>
+                                {% for school in schools %}
+                                <div class="school-row">
+                                    <div class="school-name">{{ school.name }}</div>
+                                    <div class="address-text">{{ school.address }}</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

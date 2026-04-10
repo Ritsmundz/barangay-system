@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block page_title %}Available Services{% endblock %}
+{% block page_subtitle %}Choose from multiple resident services with their own pages, fees, and request requirements.{% endblock %}
+
+{% block content %}
+<style>
+    .catalog-shell { display: flex; flex-direction: column; gap: 22px; }
+    .catalog-hero, .catalog-side-card, .catalog-stat, .catalog-card {
+        background: rgba(255,255,255,.92);
+        border: 1px solid #dbe5f4;
+        box-shadow: 0 18px 36px rgba(16, 33, 67, 0.06);
+    }
+    .catalog-hero {
+        border-radius: 24px;
+        padding: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(255,255,255,.98), transparent 34%),
+            linear-gradient(135deg, #f8fbff 0%, #edf3ff 50%, #f8fbff 100%);
+    }
+    .catalog-hero-top, .catalog-search-row, .catalog-grid, .catalog-card-footer, .recent-top {
+        display: flex;
+        gap: 16px;
+    }
+    .catalog-hero-top, .recent-top { justify-content: space-between; align-items: center; }
+    .catalog-title { font-size: 2rem; font-weight: 700; color: #203357; margin-bottom: 8px; }
+    .catalog-subtitle { max-width: 680px; color: #60708c; font-size: 1rem; line-height: 1.6; }
+    .catalog-welcome {
+        min-width: 260px; border-radius: 20px; padding: 14px 16px; background: rgba(255,255,255,.76);
+        border: 1px solid #dce6f6; display: flex; gap: 12px; align-items: center;
+    }
+    .catalog-avatar {
+        width: 54px; height: 54px; border-radius: 18px; background: linear-gradient(135deg, #2c60d8, #173f9a);
+        color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;
+    }
+    .catalog-welcome small { display: block; color: #8b99af; font-size: .76rem; }
+    .catalog-welcome strong { color: #203357; font-size: 1rem; }
+    .catalog-welcome span { color: #60708c; font-size: .86rem; }
+    .catalog-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .catalog-stat { border-radius: 20px; padding: 18px 20px; }
+    .catalog-stat strong { font-size: 1.85rem; color: #1d3156; line-height: 1; display: block; }
+    .catalog-stat span { display: block; margin-top: 6px; color: #60708c; font-weight: 700; }
+    .catalog-stat small { color: #8c9bb1; display: block; margin-top: 5px; }
+    .catalog-search-row { align-items: center; flex-wrap: wrap; }
+    .catalog-search { flex: 1 1 320px; position: relative; }
+    .catalog-search input {
+        width: 100%; height: 54px; border-radius: 18px; border: 1px solid #d8e1f1; background: rgba(255,255,255,.9);
+        padding: 0 16px 0 50px; font: inherit; color: #1d3156; outline: none;
+    }
+    .catalog-search input:focus { border-color: #3567dd; box-shadow: 0 0 0 4px rgba(53,103,221,.1); }
+    .catalog-search svg { position: absolute; left: 17px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: #91a2bd; }
+    .catalog-tabs { display: flex; gap: 10px; flex-wrap: wrap; }
+    .catalog-tab {
+        border: 1px solid #dbe4f4; background: #fff; color: #60708c; border-radius: 999px; padding: 10px 16px;
+        font: inherit; font-weight: 700; cursor: pointer;
+    }
+    .catalog-tab.active, .catalog-tab:hover { background: #2c60d8; border-color: #2c60d8; color: #fff; }
+    .catalog-grid { align-items: start; }
+    .catalog-main { flex: 1 1 auto; display: flex; flex-direction: column; gap: 18px; }
+    .catalog-side { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+    .catalog-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .catalog-card {
+        border-radius: 22px; padding: 20px; min-height: 240px; display: flex; flex-direction: column; justify-content: space-between;
+        overflow: hidden;
+    }
+    .catalog-card-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    .catalog-card-badge {
+        width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-weight: 700;
+        color: #1d3156;
+    }
+    .catalog-card-fee {
+        font-size: .8rem; font-weight: 700; color: #546680; background: rgba(255,255,255,.76);
+        border: 1px solid rgba(24, 49, 93, .08); border-radius: 999px; padding: 6px 10px;
+    }
+    .catalog-card h3 { font-size: 1.28rem; line-height: 1.15; color: #203357; margin: 16px 0 10px; }
+    .catalog-card p { color: #60708c; line-height: 1.6; font-size: .94rem; }
+    .catalog-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+    .catalog-card li { color: #5f6f88; font-size: .85rem; }
+    .catalog-card li::before { content: "- "; color: inherit; }
+    .catalog-card-footer { align-items: center; justify-content: space-between; margin-top: 16px; }
+    .catalog-card-tag { text-transform: capitalize; font-size: .82rem; font-weight: 700; color: #546680; }
+    .catalog-card-link {
+        text-decoration: none; color: #fff; font-weight: 700; border-radius: 14px; padding: 11px 16px; display: inline-flex; gap: 8px; align-items: center;
+    }
+    .catalog-card-link:hover { text-decoration: none; filter: brightness(.97); }
+    .catalog-side-card { border-radius: 22px; overflow: hidden; }
+    .catalog-side-head { padding: 18px 20px 14px; border-bottom: 1px solid #edf2fa; }
+    .catalog-side-head h3 { font-size: 1.18rem; color: #203357; }
+    .catalog-side-head p { margin-top: 4px; color: #6d7d92; font-size: .9rem; }
+    .catalog-recent-item { padding: 16px 20px; border-top: 1px solid #edf2fa; }
+    .catalog-recent-item:first-child { border-top: 0; }
+    .catalog-recent-name { color: #203357; font-weight: 700; }
+    .catalog-recent-meta { color: #6d7d92; font-size: .86rem; margin-top: 5px; }
+    .catalog-status {
+        background: #eef3ff; color: #315fcc; border-radius: 999px; padding: 5px 9px; font-size: .76rem; font-weight: 700; white-space: nowrap;
+    }
+    .catalog-recent-link { display: inline-block; margin-top: 8px; color: #2c60d8; font-weight: 700; text-decoration: none; }
+    .catalog-tip { padding: 18px 20px; color: #60708c; line-height: 1.65; }
+    .catalog-empty {
+        grid-column: 1 / -1; border-radius: 20px; border: 1px dashed #cfdbee; background: rgba(255,255,255,.7);
+        padding: 28px 18px; text-align: center; color: #60708c; font-weight: 700;
+    }
+    @media (max-width: 1180px) {
+        .catalog-grid { flex-direction: column; }
+        .catalog-side { width: 100%; }
+        .catalog-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .catalog-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 760px) {
+        .catalog-hero { padding: 20px 18px; }
+        .catalog-title { font-size: 1.6rem; }
+        .catalog-cards, .catalog-stats { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="catalog-shell">
+    <section class="catalog-hero">
+        <div class="catalog-hero-top">
+            <div>
+                <h1 class="catalog-title">Available Services</h1>
+                <p class="catalog-subtitle">Residents now see separate cards for clearances, certificates, ID-related requests, and assistance services. Each card opens its own page with the right form.</p>
+            </div>
+            <div class="catalog-welcome">
+                <div class="catalog-avatar">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
+                <div>
+                    <small>Welcome back</small>
+                    <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>
+                    <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}{% if resident.household and resident.household.purok %} | Purok {{ resident.household.purok.name }}{% endif %}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="catalog-stats">
+            <div class="catalog-stat">
+                <strong>{{ recent_requests|length }}</strong>
+                <span>Recent Requests</span>
+                <small>Your latest resident submissions</small>
+            </div>
+            <div class="catalog-stat">
+                <strong>{{ service_cards|length }}</strong>
+                <span>Online Services</span>
+                <small>Visible service cards in the portal</small>
+            </div>
+            <div class="catalog-stat">
+                <strong>{% if resident.voter_status %}Voter{% else %}Non-Voter{% endif %}</strong>
+                <span>Resident Pricing</span>
+                <small>Fees adjust to your resident status</small>
+            </div>
+            <div class="catalog-stat">
+                <strong>24/7</strong>
+                <span>Portal Access</span>
+                <small>Submit requests anytime online</small>
+            </div>
+        </div>
+    </section>
+
+    <div class="catalog-search-row">
+        <div class="catalog-search">
+            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.5 3a5.5 5.5 0 013.993 9.282l3.612 3.613a1 1 0 01-1.414 1.414l-3.613-3.612A5.5 5.5 0 118.5 3zm0 2a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" clip-rule="evenodd"/></svg>
+            <input id="service-search" type="search" placeholder="Search services">
+        </div>
+        <div class="catalog-tabs" id="service-tabs">
+            {% for category in service_categories %}
+            <button type="button" class="catalog-tab {% if category.key == 'all' %}active{% endif %}" data-category="{{ category.key }}">{{ category.label }}</button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="catalog-grid">
+        <section class="catalog-main">
+            <div class="catalog-cards" id="service-card-grid">
+                {% for item in service_cards %}
+                <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
+                    <div>
+                        <div class="catalog-card-top">
+                            <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
+                            <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+                        </div>
+                        <h3>{{ item.name }}</h3>
+                        <p>{{ item.description }}</p>
+                        <ul>
+                            <li>{{ item.summary }}</li>
+                            {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
+                            {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
+                            {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
+                        </ul>
+                    </div>
+                    <div class="catalog-card-footer">
+                        <span class="catalog-card-tag">{{ item.category }}</span>
+                        <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        </a>
+                    </div>
+                </article>
+                {% empty %}
+                <div class="catalog-empty">No service types are available yet.</div>
+                {% endfor %}
+                <div class="catalog-empty" id="service-empty-state" style="display:none;">No services match your search or selected category.</div>
+            </div>
+        </section>
+
+        <aside class="catalog-side">
+            <section class="catalog-side-card">
+                <div class="catalog-side-head">
+                    <h3>Recent Requests</h3>
+                    <p>Your latest service activity</p>
+                </div>
+                {% for request_item in recent_requests %}
+                <div class="catalog-recent-item">
+                    <div class="recent-top">
+                        <div class="catalog-recent-name">{{ request_item.service_type.name }}</div>
+                        <span class="catalog-status">{{ request_item.status }}</span>
+                    </div>
+                    <div class="catalog-recent-meta">Requested on {{ request_item.request_date|date:"F j, Y" }}</div>
+                    <a class="catalog-recent-link" href="{% url 'service_request_detail' request_item.id %}">View request</a>
+                </div>
+                {% empty %}
+                <div class="catalog-tip">No requests yet. Choose a service card to start your first online request.</div>
+                {% endfor %}
+            </section>
+
+            <section class="catalog-side-card">
+                <div class="catalog-side-head">
+                    <h3>Portal Tip</h3>
+                </div>
+                <div class="catalog-tip">Many of these cards are resident-facing service pages mapped to your current backend request types. That means the portal already feels broader, while the data stays manageable.</div>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const tabs = document.querySelectorAll(".catalog-tab");
+        const search = document.getElementById("service-search");
+        const cards = document.querySelectorAll(".catalog-card");
+        const emptyState = document.getElementById("service-empty-state");
+        let activeCategory = "all";
+
+        function filterCards() {
+            const term = (search.value || "").toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach((card) => {
+                const category = card.dataset.category || "";
+                const searchText = card.dataset.search || "";
+                const matchesCategory = activeCategory === "all" || activeCategory === category;
+                const matchesSearch = !term || searchText.includes(term);
+                const show = matchesCategory && matchesSearch;
+                card.style.display = show ? "flex" : "none";
+                if (show) visibleCount += 1;
+            });
+
+            if (emptyState) {
+                emptyState.style.display = visibleCount ? "none" : "block";
+            }
+        }
+
+        tabs.forEach((tab) => {
+            tab.addEventListener("click", function () {
+                activeCategory = this.dataset.category || "all";
+                tabs.forEach((item) => item.classList.remove("active"));
+                this.classList.add("active");
+                filterCards();
+            });
+        });
+
+        if (search) {
+            search.addEventListener("input", filterCards);
+        }
+
+        filterCards();
+    })();
+</script>
+{% endblock %}

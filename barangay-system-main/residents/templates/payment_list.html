@@ -1,0 +1,427 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* ── Breadcrumb ── */
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--txt3);
+        margin-bottom: 16px;
+    }
+    .breadcrumb a { color: var(--txt2); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--pri2); }
+    .breadcrumb svg { width: 12px; height: 12px; }
+    .breadcrumb .cur { color: var(--txt); font-weight: 500; }
+
+    /* ── Page header ── */
+    .page-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .page-title { font-size: 18px; font-weight: 600; color: var(--txt); }
+    .page-subtitle { font-size: 12px; color: var(--txt2); margin-top: 2px; }
+
+    /* ── Stats cards ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        background: linear-gradient(180deg, #fff, var(--card-soft));
+        border: 1px solid var(--brd);
+        border-radius: 10px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .stat-icon svg { width: 20px; height: 20px; }
+    .stat-content { flex: 1; }
+    .stat-label { font-size: 11px; color: var(--txt3); font-weight: 500; }
+    .stat-value { font-size: 20px; font-weight: 600; color: var(--txt); margin-top: 2px; }
+
+    /* Icon colors */
+    .stat-icon.pending { background: var(--warn-lt); }
+    .stat-icon.pending svg { color: var(--warn); }
+    .stat-icon.paid { background: var(--accent-lt); }
+    .stat-icon.paid svg { color: var(--accent); }
+    .stat-icon.released { background: var(--pri-lt); }
+    .stat-icon.released svg { color: var(--pri2); }
+
+    /* ── Table card ── */
+    .table-card {
+        background: linear-gradient(180deg, #fff, var(--card-soft));
+        border: 1px solid var(--brd);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+    .table-card-header {
+        background: linear-gradient(135deg, var(--pri) 0%, var(--pri2) 100%);
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .table-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .table-card-title svg { width: 18px; height: 18px; }
+
+    /* ── Table ── */
+    .payments-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .payments-table thead {
+        background: var(--bg-soft);
+        border-bottom: 1px solid var(--brd);
+    }
+    .payments-table th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--txt2);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .payments-table td {
+        padding: 14px 16px;
+        font-size: 13px;
+        color: var(--txt);
+        border-bottom: 1px solid var(--brd);
+    }
+    .payments-table tr:last-child td { border-bottom: none; }
+    .payments-table tbody tr:hover { background: var(--bg-soft); }
+
+    /* ── Status badges ── */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .status-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+    
+    .status-approved { background: var(--accent-lt); color: var(--accent-strong); }
+    .status-ready { background: var(--warn-lt); color: var(--warn-strong); }
+    .status-released { background: var(--pri-lt); color: var(--pri-hover); }
+
+    /* ── Buttons ── */
+    .btn-bmis {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all .15s;
+        border: none;
+        white-space: nowrap;
+    }
+    .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
+    
+    .btn-record { background: var(--accent); color: #fff; }
+    .btn-record:hover {
+        background: var(--accent-strong);
+        text-decoration: none;
+        color: #fff;
+    }
+    
+    .released-text {
+        color: var(--accent);
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .released-text svg { width: 14px; height: 14px; }
+    .ready-text {
+        color: var(--warn-strong);
+        font-size: 12px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .ready-text svg { width: 14px; height: 14px; }
+
+    /* ── Empty state ── */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+    .empty-state-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 16px;
+        border-radius: 50%;
+        background: #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .empty-state-icon svg {
+        width: 32px;
+        height: 32px;
+        color: #94A3B8;
+    }
+    .empty-state-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1E293B;
+        margin-bottom: 6px;
+    }
+    .empty-state-text {
+        font-size: 13px;
+        color: #64748B;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 1200px) {
+        .payments-table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'dashboard' %}">Dashboard</a>
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+    <span class="cur">Payment Management</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Payment Management</div>
+        <div class="page-subtitle">Process payments and release documents</div>
+    </div>
+</div>
+
+<!-- Stats grid -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon pending">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Pending Payment</div>
+            <div class="stat-value">{{ approved_requests|length }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon paid">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Payments Recorded</div>
+            <div class="stat-value">{{ payments|length }}</div>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon released">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="stat-content">
+            <div class="stat-label">Ready for Release</div>
+            <div class="stat-value">0</div>
+        </div>
+    </div>
+</div>
+
+<!-- Pending Payments Table -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+            Pending Payments
+        </div>
+    </div>
+
+    {% if approved_requests %}
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Doc No.</th>
+                <th>Resident</th>
+                <th>Service Type</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sr in approved_requests %}
+            <tr>
+                <td><strong>{{ sr.document_number }}</strong></td>
+                <td>{{ sr.resident }}</td>
+                <td>{{ sr.service_type }}</td>
+                <td><strong style="color: var(--warn);">₱{{ sr.fee|floatformat:2 }}</strong></td>
+                <td>
+                    <form method="POST" action="{% url 'record_payment' sr.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-bmis btn-record">
+                            <svg viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                            </svg>
+                            Receive Payment & Release
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="empty-state-title">No pending payments</div>
+        <div class="empty-state-text">All approved service requests have been paid.</div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Payment Records Table -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+            Payment Records
+        </div>
+    </div>
+
+    {% if payments %}
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Doc No.</th>
+                <th>Resident</th>
+                <th>Service Type</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+                <th>Collected By</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td><strong>{{ payment.service_request.document_number }}</strong></td>
+                <td>
+                    {{ payment.service_request.resident.first_name }}
+                    {{ payment.service_request.resident.last_name }}
+                </td>
+                <td>{{ payment.service_request.service_type }}</td>
+                <td><strong style="color: var(--accent);">₱{{ payment.amount|floatformat:2 }}</strong></td>
+                <td>{{ payment.payment_date|date:"M d, Y - h:i A" }}</td>
+                <td>{{ payment.collected_by }}</td>
+                <td>
+                    {% if payment.service_request.status == "Ready for Release" %}
+                    <span class="status-badge status-approved">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Ready for Release
+                    </span>
+                    {% elif payment.service_request.status == "Released" %}
+                    <span class="status-badge status-released">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                        </svg>
+                        Released
+                    </span>
+                    {% else %}
+                    <span class="status-badge status-approved">
+                        {{ payment.service_request.status }}
+                    </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if payment.service_request.status == "Ready for Release" %}
+                    <span class="ready-text">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v3a1 1 0 102 0V4h8v3a1 1 0 102 0V4a2 2 0 00-2-2H6zm-2 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2h-1v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H6a2 2 0 01-2-2v-4zm3 1a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
+                        </svg>
+                        Paid, awaiting release
+                    </span>
+                    {% elif payment.service_request.status == "Released" %}
+                    <span class="released-text">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        Released
+                    </span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <div class="empty-state-title">No payment records</div>
+        <div class="empty-state-text">Payment transactions will appear here once they are recorded.</div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

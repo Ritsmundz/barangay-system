@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block page_title %}Resident Profile{% endblock %}
+{% block page_subtitle %}View complete resident details, requests, and barangay record summary.{% endblock %}
+
+{% block page_header_actions %}{% endblock %}
+
+{% block content %}
+<style>
+    .profile-page { display:grid; gap:22px; }
+    .crumbs { display:flex; gap:8px; flex-wrap:wrap; font-size:12px; color:#7b8ba4; }
+    .crumbs a { color:#5d6e85; text-decoration:none; }
+    .crumbs a:hover, .field-link:hover { color:#2563eb; text-decoration:underline; }
+    .hero {
+        position:relative; overflow:hidden; border-radius:22px; padding:28px;
+        background:radial-gradient(circle at top right, rgba(147,197,253,.34), transparent 28%), linear-gradient(135deg, #10356f 0%, #2563eb 58%, #3b82f6 100%);
+        color:#fff; box-shadow:0 24px 56px rgba(17,37,77,.18);
+    }
+    .hero::after { content:""; position:absolute; right:-80px; bottom:-80px; width:240px; height:240px; border-radius:999px; background:rgba(255,255,255,.08); }
+    .hero-body { position:relative; z-index:1; display:flex; justify-content:space-between; gap:20px; align-items:flex-start; flex-wrap:wrap; }
+    .identity { display:flex; gap:18px; align-items:center; }
+    .avatar {
+        width:88px; height:88px; border-radius:24px; display:flex; align-items:center; justify-content:center;
+        background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.28); font-size:30px; font-weight:700; flex-shrink:0;
+    }
+    .kicker { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:rgba(255,255,255,.74); margin-bottom:8px; }
+    .hero-name { font-size:clamp(26px, 4vw, 34px); line-height:1.05; font-weight:700; margin:0; }
+    .hero-sub { margin-top:9px; font-size:14px; color:rgba(255,255,255,.82); max-width:760px; }
+    .tags, .hero-cta { display:flex; gap:10px; flex-wrap:wrap; }
+    .tags { margin-top:14px; }
+    .tag, .badge {
+        display:inline-flex; align-items:center; gap:7px; padding:7px 12px; border-radius:999px; font-size:12px; font-weight:700; line-height:1;
+    }
+    .tag { background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.18); color:#fff; }
+    .tag::before, .badge::before { content:""; width:8px; height:8px; border-radius:999px; background:currentColor; opacity:.9; }
+    .tag-alive { color:#86efac; } .tag-moved { color:#fde68a; } .tag-deceased { color:#fecaca; } .tag-neutral { color:#dbeafe; }
+    .hero-cta { align-self:center; justify-content:flex-end; }
+    .hero-cta .btn-bmis { min-height:42px; border-radius:12px; }
+    .hero-cta .btn-secondary { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.22); }
+    .hero-cta .btn-secondary:hover { background:rgba(255,255,255,.18); color:#fff; }
+    .hero-cta .btn-primary { background:#fff; color:#15366d; }
+    .hero-cta .btn-primary:hover { background:#eff6ff; color:#15366d; }
+    .stats { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; }
+    .stat, .panel {
+        background:rgba(255,255,255,.96); border:1px solid #dbe6f2; border-radius:20px; box-shadow:0 18px 40px rgba(17,37,77,.08);
+    }
+    .stat { padding:18px; display:flex; align-items:center; gap:14px; }
+    .stat-icon {
+        width:46px; height:46px; border-radius:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .stat-icon svg { width:20px; height:20px; }
+    .stat-info .stat-icon { background:#eff6ff; color:#2563eb; }
+    .stat-success .stat-icon { background:#f0fdf4; color:#16a34a; }
+    .stat-warning .stat-icon { background:#fff7ed; color:#ea580c; }
+    .stat-value { font-size:28px; font-weight:700; color:#16243d; line-height:1; }
+    .stat-label { font-size:12px; color:#6b7a90; margin-top:6px; }
+    .content-grid { display:grid; grid-template-columns:minmax(0, 1.55fr) minmax(320px, .95fr); gap:18px; align-items:start; }
+    .column { display:grid; gap:18px; }
+    .panel-head {
+        padding:18px 22px; border-bottom:1px solid #e6edf5; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center;
+        background:linear-gradient(180deg, rgba(248,251,255,.92), #fff);
+    }
+    .panel-title { font-size:16px; font-weight:700; color:#16243d; }
+    .panel-sub { font-size:12px; color:#7b8ba4; margin-top:3px; }
+    .panel-body { padding:22px; }
+    .detail-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+    .detail-grid.single { grid-template-columns:1fr; }
+    .field {
+        display:flex; gap:12px; align-items:flex-start; padding:14px 15px; border-radius:16px; background:#f9fbfe; border:1px solid #e7eef6; min-height:86px;
+    }
+    .field-icon {
+        width:40px; height:40px; border-radius:12px; background:#fff; border:1px solid #dfe9f4; display:flex; align-items:center; justify-content:center; color:#2563eb; flex-shrink:0;
+    }
+    .field-icon svg { width:18px; height:18px; }
+    .field-label { font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#8b9bb0; margin-bottom:6px; }
+    .field-value { font-size:14px; font-weight:600; color:#1c2d47; line-height:1.45; word-break:break-word; }
+    .field-muted { color:#7b8ba4; font-weight:500; }
+    .field-link { color:#2563eb; text-decoration:none; }
+    .toolbar { display:flex; justify-content:space-between; gap:12px; align-items:center; flex-wrap:wrap; }
+    .filters { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .filters select {
+        min-width:170px; padding:10px 12px; border-radius:12px; border:1px solid #d9e4f0; background:#fff; color:#22324d; font:inherit; outline:none;
+    }
+    .filters select:focus { border-color:#93c5fd; box-shadow:0 0 0 4px rgba(37,99,235,.10); }
+    .table-wrap { overflow-x:auto; }
+    .table { width:100%; border-collapse:separate; border-spacing:0; }
+    .table th { padding:14px 22px; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:#7b8ba4; text-align:left; border-bottom:1px solid #e6edf5; white-space:nowrap; }
+    .table td { padding:18px 22px; border-bottom:1px solid #eef3f8; font-size:14px; color:#20314c; vertical-align:middle; }
+    .table tbody tr:hover { background:#fbfdff; }
+    .table tbody tr:last-child td { border-bottom:none; }
+    .table-type { font-weight:700; }
+    .table-meta { display:block; color:#7b8ba4; font-size:12px; margin-top:3px; }
+    .badge-pending { background:#fff7ed; color:#ea580c; }
+    .badge-processing, .badge-approved { background:#eff6ff; color:#2563eb; }
+    .badge-ready { background:#fff7e8; color:#b7791f; }
+    .badge-released { background:#f0fdf4; color:#16a34a; }
+    .badge-rejected { background:#fef2f2; color:#dc2626; }
+    .empty { padding:42px 24px; text-align:center; }
+    .empty-icon {
+        width:56px; height:56px; border-radius:18px; margin:0 auto 14px; display:flex; align-items:center; justify-content:center; background:#f3f7fb; color:#9aa9bb;
+    }
+    .empty-icon svg { width:24px; height:24px; }
+    .empty h3 { font-size:16px; color:#1c2d47; margin-bottom:6px; }
+    .empty p { font-size:13px; color:#7b8ba4; max-width:420px; margin:0 auto; }
+    @media (max-width:1120px) { .content-grid { grid-template-columns:1fr; } }
+    @media (max-width:900px) { .stats, .detail-grid { grid-template-columns:1fr; } .identity { align-items:flex-start; } }
+    @media (max-width:640px) {
+        .hero, .panel-head, .panel-body { padding-left:16px; padding-right:16px; }
+        .hero { padding-top:22px; padding-bottom:22px; }
+        .avatar { width:72px; height:72px; border-radius:20px; font-size:24px; }
+        .hero-name { font-size:24px; }
+        .table th, .table td { padding-left:16px; padding-right:16px; }
+    }
+</style>
+
+<div class="profile-page">
+    <div class="crumbs">
+        <a href="{% url 'resident_list' %}">Residents</a>
+        <span>></span>
+        <span>{{ resident.first_name }} {{ resident.last_name }}</span>
+    </div>
+
+    <section class="hero">
+        <div class="hero-body">
+            <div class="identity">
+                <div class="avatar">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
+                <div>
+                    <div class="kicker">Barangay Gulod Resident Record</div>
+                    <h1 class="hero-name">
+                        {{ resident.first_name }} {% if resident.middle_name %}{{ resident.middle_name }} {% endif %}{{ resident.last_name }}{% if resident.suffix %} {{ resident.suffix }}{% endif %}
+                    </h1>
+                    <div class="hero-sub">Resident profile summary with personal details, household assignment, voter record, and service request activity.</div>
+                    <div class="tags">
+                        {% if resident.status == "Alive" %}
+                        <span class="tag tag-alive">Alive</span>
+                        {% elif resident.status == "Moved" %}
+                        <span class="tag tag-moved">Moved Out</span>
+                        {% else %}
+                        <span class="tag tag-deceased">{{ resident.status }}</span>
+                        {% endif %}
+                        <span class="tag tag-neutral">{{ resident.age_group }}</span>
+                        <span class="tag tag-neutral">{{ resident.gender|default:"Resident" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-cta">
+                <a href="{% url 'edit_resident' resident.id %}" class="btn-bmis btn-secondary">Edit Profile</a>
+                {% if resident.status == "Alive" %}
+                <a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-primary">Create Request</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="stats">
+        <article class="stat stat-info">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 5a1 1 0 000 2h6a1 1 0 100-2H7zm0 4a1 1 0 000 2h4a1 1 0 100-2H7z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ total_requests }}</div><div class="stat-label">Total Requests</div></div>
+        </article>
+        <article class="stat stat-success">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ released_count }}</div><div class="stat-label">Documents Released</div></div>
+        </article>
+        <article class="stat stat-warning">
+            <div class="stat-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 101.414-1.414L11 9.586V7z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ resident.age }}</div><div class="stat-label">Age - {{ pending_count }} Pending</div></div>
+        </article>
+    </section>
+
+    <section class="content-grid">
+        <div class="column">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Personal Information</div>
+                        <div class="panel-sub">Essential identity, contact, and address details for this resident.</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="detail-grid">
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Gender</div><div class="field-value">{{ resident.gender|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 7a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Birthdate</div><div class="field-value">{{ resident.birth_date|date:"F j, Y" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Age</div><div class="field-value">{{ resident.age }} years old</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/></svg></div><div><div class="field-label">Contact Number</div><div class="field-value">{{ resident.contact_number|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg></div><div><div class="field-label">Email</div><div class="field-value">{{ resident.email|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Address</div><div class="field-value">{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}, Purok {{ resident.household.purok }}{% else %}<span class="field-muted">No household address assigned</span>{% endif %}</div></div></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Service Request History</div>
+                        <div class="panel-sub">Track all document and certificate requests associated with this resident.</div>
+                    </div>
+                    <form method="get" class="toolbar">
+                        <div class="filters">
+                            <select name="status" aria-label="Filter by request status">
+                                <option value="">All Statuses</option>
+                                {% for value, label in status_choices %}
+                                <option value="{{ value }}"{% if status_filter == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <select name="sort" aria-label="Sort requests">
+                                <option value="newest"{% if sort_filter == "newest" %} selected{% endif %}>Newest First</option>
+                                <option value="oldest"{% if sort_filter == "oldest" %} selected{% endif %}>Oldest First</option>
+                                <option value="status"{% if sort_filter == "status" %} selected{% endif %}>Sort by Status</option>
+                            </select>
+                            <button type="submit" class="btn-bmis btn-secondary">Apply</button>
+                        </div>
+                        {% if resident.status == "Alive" %}
+                        <a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-primary">New Request</a>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="panel-body" style="padding:0;">
+                    {% if services %}
+                    <div class="table-wrap">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Service Type</th>
+                                    <th>Purpose</th>
+                                    <th>Status</th>
+                                    <th>Date Requested</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in services %}
+                                <tr>
+                                    <td><a class="table-type" href="{% url 'service_request_detail' service.id %}">{{ service.service_type }}</a><span class="table-meta">Request #{{ service.id }}</span></td>
+                                    <td>{{ service.purpose_display|default:"-" }}</td>
+                                    <td>
+                                        {% if service.status == "Submitted" %}<span class="badge badge-pending">Submitted</span>
+                                        {% elif service.status == "Under Review" %}<span class="badge badge-processing">Under Review</span>
+                                        {% elif service.status == "For Validation" %}<span class="badge badge-approved">For Validation</span>
+                                        {% elif service.status == "Processing" %}<span class="badge badge-approved">Processing</span>
+                                        {% elif service.status == "Ready for Release" %}<span class="badge badge-ready">Ready for Release</span>
+                                        {% elif service.status == "Released" %}<span class="badge badge-released">Released</span>
+                                        {% elif service.status == "Rejected" %}<span class="badge badge-rejected">Rejected</span>
+                                        {% elif service.status == "Cancelled" %}<span class="badge badge-rejected">Cancelled</span>
+                                        {% elif service.status == "On Hold" %}<span class="badge badge-ready">On Hold</span>
+                                        {% elif service.status == "Pending Requirements" %}<span class="badge badge-ready">Pending Requirements</span>
+                                        {% else %}<span class="badge badge-processing">{{ service.status }}</span>{% endif %}
+                                    </td>
+                                    <td>{{ service.request_date|date:"F j, Y, g:i a" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty">
+                        <div class="empty-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 5a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg></div>
+                        <h3>No request history yet</h3>
+                        <p>This resident does not have any matching service requests for the selected filters.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+
+        <div class="column">
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <div class="panel-title">Additional Information</div>
+                        <div class="panel-sub">Barangay, civil, and demographic information in one place.</div>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="detail-grid single">
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 5a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2H4zm2 3a1 1 0 000 2h8a1 1 0 100-2H6zm0 4a1 1 0 100 2h5a1 1 0 100-2H6z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Civil Status</div><div class="field-value">{{ resident.civil_status|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a1 1 0 00-1 1v2H7a2 2 0 00-2 2v2h10V7a2 2 0 00-2-2h-2V3a1 1 0 00-1-1z"/><path d="M4 11a1 1 0 011-1h10a1 1 0 011 1v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4z"/></svg></div><div><div class="field-label">Occupation</div><div class="field-value">{{ resident.occupation|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 7a2 2 0 012-2h12a2 2 0 012 2v7a2 2 0 01-2 2h-1v-5H5v5H4a2 2 0 01-2-2V7z"/><path d="M7 16v-3h6v3H7z"/></svg></div><div><div class="field-label">Household</div><div class="field-value">{% if resident.household %}<a class="field-link" href="{% url 'household_detail' resident.household.id %}">{{ resident.household }}</a>{% else %}<span class="field-muted">Not assigned</span>{% endif %}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Voter Status</div><div class="field-value">{{ resident.voter_status|yesno:"Registered Voter,Not a Registered Voter" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 101.414-1.414L11 9.586V7z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Resident Status</div><div class="field-value">{{ resident.status|default:"Not set" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V7.414A2 2 0 0017.414 6L14 2.586A2 2 0 0012.586 2H4z"/><path d="M8 10a1 1 0 000 2h4a1 1 0 100-2H8z"/></svg></div><div><div class="field-label">Place of Birth</div><div class="field-value">{{ resident.place_of_birth|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a7 7 0 00-7 7c0 2.124 1.239 4.031 3.172 5.139L10 18l3.828-3.861A6.986 6.986 0 0017 9a7 7 0 00-7-7z"/></svg></div><div><div class="field-label">Religion</div><div class="field-value">{{ resident.religion|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v10a1 1 0 001.447.894L10 13.118l5.553 2.776A1 1 0 0017 15V5a2 2 0 00-2-2H5z"/></svg></div><div><div class="field-label">Nationality</div><div class="field-value">{{ resident.nationality|default:"Not provided" }}</div></div></div>
+                        <div class="field"><div class="field-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v2H4a2 2 0 00-2 2v7a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v2H7V3a1 1 0 00-1-1z" clip-rule="evenodd"/></svg></div><div><div class="field-label">Barangay Precinct</div><div class="field-value">{{ resident.precinct|default:"Not provided" }}</div></div></div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+{% endblock %}

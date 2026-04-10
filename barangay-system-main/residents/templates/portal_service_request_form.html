@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block page_title %}{{ selected_service.name }} Request{% endblock %}
+{% block page_subtitle %}Fill out the required details for this specific service.{% endblock %}
+
+{% block content %}
+<style>
+    .portal-form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; align-items: start; }
+    .portal-form-card, .portal-side-panel {
+        background: rgba(255,255,255,.94); border: 1px solid #dbe5f4; border-radius: 24px;
+        box-shadow: 0 18px 36px rgba(16, 33, 67, 0.06); overflow: hidden;
+    }
+    .portal-form-head { padding: 24px 28px; color: #fff; }
+    .portal-back-link { color: rgba(255,255,255,.88); text-decoration: none; font-weight: 700; }
+    .portal-back-link:hover { color: #fff; text-decoration: none; }
+    .portal-form-head h1 { margin: 16px 0 8px; font-size: 1.8rem; line-height: 1.1; }
+    .portal-form-head p { max-width: 620px; color: rgba(255,255,255,.86); line-height: 1.65; }
+    .portal-form-body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 22px; }
+    .portal-message { background: #fff1f1; border: 1px solid #ffced1; color: #a42e34; border-radius: 14px; padding: 12px 14px; font-weight: 600; }
+    .portal-section { display: flex; flex-direction: column; gap: 14px; }
+    .portal-section h2 { font-size: 1.06rem; color: #203357; }
+    .portal-section p { color: #60708c; line-height: 1.6; }
+    .portal-info-grid, .portal-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .portal-info-item {
+        background: #f7faff; border: 1px solid #e2eaf6; border-radius: 16px; padding: 14px 16px;
+    }
+    .portal-info-item small { display: block; color: #8b9ab1; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
+    .portal-info-item strong { display: block; margin-top: 6px; color: #203357; }
+    .portal-fee-row {
+        display: flex; justify-content: space-between; gap: 14px; align-items: center; border-radius: 18px;
+        padding: 16px 18px; background: #f4f8ff; border: 1px solid #dae4f5;
+    }
+    .portal-fee-row span { color: #60708c; font-weight: 700; }
+    .portal-fee-row strong { font-size: 1.45rem; color: #214eb5; }
+    .portal-field { display: flex; flex-direction: column; gap: 8px; }
+    .portal-field.full { grid-column: 1 / -1; }
+    .portal-field label { color: #203357; font-weight: 700; }
+    .portal-field label span { color: #d43b3b; }
+    .portal-field input, .portal-field select {
+        width: 100%; height: 48px; border-radius: 14px; border: 1px solid #d8e1f1; background: #fbfdff;
+        padding: 0 14px; font: inherit; color: #1d3156; outline: none;
+    }
+    .portal-field input:focus, .portal-field select:focus { border-color: #3567dd; box-shadow: 0 0 0 4px rgba(53,103,221,.1); }
+    .portal-field small { color: #7b8ca6; line-height: 1.5; }
+    .portal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+    .portal-btn {
+        height: 48px; padding: 0 18px; border-radius: 14px; font: inherit; font-weight: 700; text-decoration: none;
+        display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d8e1f1;
+    }
+    .portal-btn-light { background: #fff; color: #60708c; }
+    .portal-btn-solid { color: #fff; border-color: transparent; }
+    .portal-side-panel { padding: 0; }
+    .portal-side-panel + .portal-side-panel { margin-top: 16px; }
+    .portal-side-head { padding: 18px 20px 14px; border-bottom: 1px solid #edf2fa; }
+    .portal-side-head h3 { color: #203357; font-size: 1.06rem; }
+    .portal-side-body { padding: 18px 20px 20px; }
+    .portal-side-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .portal-side-list li { color: #60708c; line-height: 1.6; padding-left: 16px; position: relative; }
+    .portal-side-list li::before {
+        content: ""; width: 8px; height: 8px; border-radius: 999px; background: {{ selected_service_theme.accent_color }};
+        position: absolute; left: 0; top: 8px;
+    }
+    .portal-resident { display: flex; gap: 12px; align-items: center; }
+    .portal-resident-badge {
+        width: 52px; height: 52px; border-radius: 16px; background: {{ selected_service_theme.accent_color }};
+        color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700;
+    }
+    .portal-resident strong { color: #203357; display: block; }
+    .portal-resident span, .portal-note { color: #60708c; line-height: 1.6; }
+    @media (max-width: 1040px) { .portal-form-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 720px) { .portal-info-grid, .portal-fields { grid-template-columns: 1fr; } .portal-form-head, .portal-form-body { padding-left: 18px; padding-right: 18px; } }
+</style>
+
+<div class="portal-form-grid">
+    <section class="portal-form-card">
+        <div class="portal-form-head" style="background: linear-gradient(135deg, {{ selected_service_theme.accent_color }}, #17376d);">
+            <a class="portal-back-link" href="{% url 'portal_create_service_request' %}">← Back to available services</a>
+            <h1>{{ selected_service.name }}</h1>
+            <p>{{ selected_service_theme.description }}</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="service_type" value="{{ selected_service.id }}">
+
+            <div class="portal-form-body">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="portal-message">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+
+                <section class="portal-section">
+                    <div>
+                        <h2>Resident Information</h2>
+                        <p>Your linked resident record will be used for this request.</p>
+                    </div>
+                    <div class="portal-info-grid">
+                        <div class="portal-info-item"><small>Full Name</small><strong>{{ resident.first_name }} {{ resident.middle_name|default:"" }} {{ resident.last_name }}</strong></div>
+                        <div class="portal-info-item"><small>Birthdate</small><strong>{{ resident.birth_date|date:"F j, Y" }}</strong></div>
+                        <div class="portal-info-item"><small>Address</small><strong>{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% else %}No household address on file{% endif %}</strong></div>
+                        <div class="portal-info-item"><small>Contact Number</small><strong>{{ resident.contact_number|default:"No contact number on file" }}</strong></div>
+                    </div>
+                </section>
+
+                <section class="portal-section">
+                    <div>
+                        <h2>Request Details</h2>
+                        <p>{{ selected_service_theme.summary }}</p>
+                    </div>
+                    <div class="portal-fee-row">
+                        <span>Service fee for {% if resident.voter_status %}voters{% else %}non-voters{% endif %}</span>
+                        <strong>Php {% if resident.voter_status %}{{ selected_service.voter_fee }}{% else %}{{ selected_service.non_voter_fee }}{% endif %}</strong>
+                    </div>
+
+                    <div class="portal-fields">
+                        {% if selected_service_rules.requires_purpose %}
+                        <div class="portal-field full">
+                            <label for="portal_purpose">What is this request for? <span>*</span></label>
+                            <select id="portal_purpose" name="portal_purpose" required>
+                                <option value="">Select purpose</option>
+                                {% for purpose in selected_service_purposes %}
+                                <option value="{{ purpose }}" data-requires-other="{% if purpose == 'Other' %}1{% else %}0{% endif %}" {% if posted_data and posted_data.portal_purpose == purpose %}selected{% endif %}>{{ purpose }}</option>
+                                {% endfor %}
+                            </select>
+                            <small>Only purposes suitable for {{ selected_service.name|lower }} are shown here.</small>
+                        </div>
+                        <div class="portal-field full" id="purpose-other-wrap" style="display:none;">
+                            <label for="purpose_other">Other purpose details <span>*</span></label>
+                            <input id="purpose_other" name="purpose_other" type="text" value="{% if posted_data %}{{ posted_data.purpose_other }}{% endif %}" placeholder="State the specific purpose">
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service_rules.requires_emergency %}
+                        <div class="portal-field">
+                            <label for="emergency_contact_name">Emergency contact name <span>*</span></label>
+                            <input id="emergency_contact_name" name="emergency_contact_name" type="text" value="{% if posted_data %}{{ posted_data.emergency_contact_name }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="emergency_contact_number">Emergency contact number <span>*</span></label>
+                            <input id="emergency_contact_number" name="emergency_contact_number" type="text" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="emergency_contact_address">Emergency contact address <span>*</span></label>
+                            <input id="emergency_contact_address" name="emergency_contact_address" type="text" value="{% if posted_data %}{{ posted_data.emergency_contact_address }}{% endif %}" required>
+                            <small>Barangay ID requests require complete emergency contact details.</small>
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service_rules.requires_residency %}
+                        <div class="portal-field full">
+                            <label for="residency_since">Residency since <span>*</span></label>
+                            <input id="residency_since" name="residency_since" type="date" value="{% if posted_data %}{{ posted_data.residency_since }}{% endif %}" required>
+                            <small>Enter when you started residing in the barangay.</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <div class="portal-actions">
+                    <a class="portal-btn portal-btn-light" href="{% url 'portal_create_service_request' %}">Cancel</a>
+                    <button class="portal-btn portal-btn-solid" type="submit" style="background: {{ selected_service_theme.accent_color }};">Submit Request</button>
+                </div>
+            </div>
+        </form>
+    </section>
+
+    <aside>
+        <section class="portal-side-panel">
+            <div class="portal-side-head"><h3>Requesting Resident</h3></div>
+            <div class="portal-side-body">
+                <div class="portal-resident">
+                    <div class="portal-resident-badge">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
+                    <div>
+                        <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>
+                        <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}{% if resident.household and resident.household.purok %} · Purok {{ resident.household.purok.name }}{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="portal-side-panel">
+            <div class="portal-side-head"><h3>Needed Information</h3></div>
+            <div class="portal-side-body">
+                <ul class="portal-side-list">
+                    {% for item in selected_service_theme.requirements %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+
+        <section class="portal-side-panel">
+            <div class="portal-side-head"><h3>Reminder</h3></div>
+            <div class="portal-side-body">
+                <p class="portal-note">After submission, your request starts in <strong>Submitted</strong> status and will move through review, validation, processing, and release.</p>
+            </div>
+        </section>
+    </aside>
+</div>
+
+{% if selected_service_rules.requires_purpose %}
+<script>
+    (function () {
+        const purposeSelect = document.getElementById("portal_purpose");
+        const purposeOtherWrap = document.getElementById("purpose-other-wrap");
+        const purposeOther = document.getElementById("purpose_other");
+        if (!purposeSelect || !purposeOtherWrap || !purposeOther) return;
+
+        function syncOtherField() {
+            const option = purposeSelect.options[purposeSelect.selectedIndex];
+            const show = option && option.dataset.requiresOther === "1";
+            purposeOtherWrap.style.display = show ? "flex" : "none";
+            purposeOther.required = !!show;
+            if (!show) purposeOther.value = "";
+        }
+
+        purposeSelect.addEventListener("change", syncOtherField);
+        syncOtherField();
+    })();
+</script>
+{% endif %}
+{% endblock %}

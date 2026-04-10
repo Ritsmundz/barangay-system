@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block page_title %}Verification Pending{% endblock %}
+{% block page_subtitle %}Your resident portal account is under review while the barangay secretary confirms your identity and record linkage.{% endblock %}
+
+{% block content %}
+<style>
+    .pp-shell {
+        max-width: 920px;
+        margin: 0 auto;
+        display: grid;
+        gap: 18px;
+    }
+    .pp-card {
+        background: rgba(255,255,255,.96);
+        border: 1px solid var(--brd);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+    }
+    .pp-head {
+        padding: 22px 24px;
+        background: linear-gradient(135deg, var(--pri), var(--pri2));
+        color: #fff;
+    }
+    .pp-head h2 {
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: -.02em;
+    }
+    .pp-head p {
+        margin-top: 6px;
+        color: rgba(255,255,255,.8);
+        font-size: 13px;
+    }
+    .pp-body {
+        padding: 22px 24px 24px;
+    }
+    .pp-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+    }
+    .pp-item {
+        background: linear-gradient(180deg, #fbfdff, #f5f9ff);
+        border: 1px solid var(--brd);
+        border-radius: 16px;
+        padding: 14px;
+    }
+    .pp-label {
+        color: var(--txt3);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .12em;
+        text-transform: uppercase;
+    }
+    .pp-value {
+        margin-top: 6px;
+        color: var(--txt);
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .pp-id {
+        margin-top: 18px;
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid var(--brd);
+        background: #f8fbff;
+    }
+    .pp-id img {
+        display: block;
+        width: 100%;
+        max-height: 320px;
+        object-fit: contain;
+        border-radius: 14px;
+        background: #fff;
+        border: 1px solid var(--brd);
+    }
+    .pp-id-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+    }
+    .pp-id-meta span {
+        color: var(--txt2);
+        font-size: 12px;
+    }
+    .pp-steps {
+        display: grid;
+        gap: 12px;
+    }
+    .pp-step {
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid var(--brd);
+        background: rgba(255,255,255,.94);
+        display: grid;
+        gap: 6px;
+    }
+    .pp-step strong {
+        color: var(--txt);
+        font-size: 14px;
+    }
+    .pp-step span {
+        color: var(--txt2);
+        font-size: 13px;
+    }
+</style>
+
+<div class="pp-shell">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="ui-alert info">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="pp-card">
+        <div class="pp-head">
+            <h2>Your account is waiting for barangay verification</h2>
+            <p>The secretary will review your submitted details, compare them with barangay records, and either link your account or create a new resident record if needed.</p>
+        </div>
+        <div class="pp-body">
+            <div class="pp-grid">
+                <div class="pp-item">
+                    <div class="pp-label">Portal Username</div>
+                    <div class="pp-value">{{ profile.user.username }}</div>
+                </div>
+                <div class="pp-item">
+                    <div class="pp-label">Submitted Name</div>
+                    <div class="pp-value">{{ profile.first_name }} {{ profile.last_name }}</div>
+                </div>
+                <div class="pp-item">
+                    <div class="pp-label">Birthdate</div>
+                    <div class="pp-value">{{ profile.birth_date }}</div>
+                </div>
+                <div class="pp-item">
+                    <div class="pp-label">Address</div>
+                    <div class="pp-value">{{ profile.address|default:"No address submitted" }}</div>
+                </div>
+            </div>
+
+            {% if profile.valid_id_image %}
+            <div class="pp-id">
+                <div class="pp-label">Uploaded Valid ID</div>
+                <img src="{{ profile.valid_id_image.url }}" alt="Uploaded valid ID">
+                <div class="pp-id-meta">
+                    <span>Your uploaded ID is visible to the barangay secretary for verification.</span>
+                    <a href="{{ profile.valid_id_image.url }}" target="_blank" rel="noopener" class="btn-bmis btn-secondary">Open Full Image</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="pp-steps">
+        <div class="pp-step">
+            <strong>Step 1: Identity review</strong>
+            <span>The secretary reviews your uploaded ID, name, birthdate, and submitted address.</span>
+        </div>
+        <div class="pp-step">
+            <strong>Step 2: Barangay record matching</strong>
+            <span>If you already have a resident record, your portal account will be linked to it.</span>
+        </div>
+        <div class="pp-step">
+            <strong>Step 3: Activation</strong>
+            <span>After approval, your resident portal can access service requests and other barangay features.</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

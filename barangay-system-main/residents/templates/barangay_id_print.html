@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<center>
+<h3>Republic of the Philippines</h3>
+<h3>Province of ______</h3>
+<h3>Municipality of ______</h3>
+<h2>Barangay ______</h2>
+<h1>BARANGAY ID REQUEST DETAILS</h1>
+</center>
+
+<p><b>Date:</b> {{ today|date:"m-d-Y" }}</p>
+<p><b>Serial:</b> {{ service.document_number }}</p>
+<p><b>Name:</b> {{ resident.first_name }} {{ resident.middle_name }} {{ resident.last_name }}</p>
+<p><b>Address:</b> {{ address }}</p>
+<p><b>Birthdate:</b> {{ resident.birth_date }}</p>
+<p><b>Precinct:</b> {{ resident.precinct|default:"-" }}</p>
+
+<h3>Person to be notified in case of emergency</h3>
+<p><b>Name:</b> {{ service.emergency_contact_name|default:"-" }}</p>
+<p><b>Address:</b> {{ service.emergency_contact_address|default:"-" }}</p>
+<p><b>Contact:</b> {{ service.emergency_contact_number|default:"-" }}</p>
+
+<button onclick="window.print()">Print Barangay ID Details</button>
+
+{% endblock %}

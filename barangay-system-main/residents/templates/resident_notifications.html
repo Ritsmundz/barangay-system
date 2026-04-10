@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Review every update about your requests and account activity in one place, with a timestamp for each notification.{% endblock %}
+
+{% block content %}
+<style>
+    .notif-page{display:grid;gap:18px}
+    .notif-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .notif-card{background:linear-gradient(180deg,#fff,var(--card-soft));border:1px solid var(--brd);border-radius:22px;box-shadow:var(--shadow-md);overflow:hidden}
+    .notif-card-head{padding:18px 20px;border-bottom:1px solid #e8eef7;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .notif-card-title{font-size:18px;font-weight:700;color:var(--txt)}
+    .notif-page-btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:none;border-radius:12px;background:#edf4ff;color:#2b5ec7;font-weight:700;cursor:pointer}
+    .notif-page-list{display:grid}
+    .notif-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;padding:18px 20px;border-bottom:1px solid #eef3fa;align-items:start}
+    .notif-row:last-child{border-bottom:none}
+    .notif-row.unread{background:#f6faff}
+    .notif-dot{width:12px;height:12px;border-radius:50%;margin-top:7px;background:#4c92ff}
+    .notif-copy strong{display:block;font-size:15px;color:var(--txt)}
+    .notif-copy p{margin:6px 0 0;color:var(--txt2);font-size:13px;line-height:1.6}
+    .notif-meta{min-width:150px;text-align:right}
+    .notif-time{font-size:12px;color:var(--txt3)}
+    .notif-link{display:inline-flex;align-items:center;justify-content:center;margin-top:10px;padding:8px 12px;border-radius:10px;background:#edf4ff;color:#2b5ec7;font-size:12px;font-weight:700;text-decoration:none}
+    .notif-link:hover{text-decoration:none;color:#204ea7}
+    .notif-empty{padding:56px 20px;text-align:center;color:var(--txt2)}
+    @media (max-width:860px){.notif-row{grid-template-columns:auto 1fr}.notif-meta{min-width:0;text-align:left}}
+</style>
+
+<div class="notif-page">
+    <div class="notif-toolbar">
+        <div class="notif-card-title">Notification Center</div>
+        <form action="{% url 'mark_all_notifications_read' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="notif-page-btn">Mark All as Read</button>
+        </form>
+    </div>
+
+    <section class="notif-card">
+        <div class="notif-card-head">
+            <div class="notif-card-title">Recent Updates</div>
+            <div style="font-size:12px;color:var(--txt2)">Each notification includes the exact date and time it was sent.</div>
+        </div>
+
+        {% if notifications %}
+        <div class="notif-page-list">
+            {% for notification in notifications %}
+            <div class="notif-row {% if not notification.is_read %}unread{% endif %}">
+                <div class="notif-dot"></div>
+                <div class="notif-copy">
+                    <strong>{{ notification.title }}</strong>
+                    <p>{{ notification.message }}</p>
+                </div>
+                <div class="notif-meta">
+                    <div class="notif-time">{{ notification.created_at|date:"M d, Y" }}</div>
+                    <div class="notif-time">{{ notification.created_at|date:"g:i a" }}</div>
+                    <a href="{% url 'open_notification' notification.id %}" class="notif-link">{% if notification.target_url %}Open{% else %}View{% endif %}</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="notif-empty">No notifications yet. Updates about your requests will appear here automatically.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block page_title %}Submit Online Complaint{% endblock %}
+{% block page_subtitle %}Report a concern online first, then wait for secretary review, verification, and hearing schedule updates through the resident portal.{% endblock %}
+{% block page_header_actions %}{% endblock %}
+
+{% block content %}
+<style>
+    .complaint-page{display:grid;gap:20px;max-width:1240px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .complaint-layout{display:grid;grid-template-columns:minmax(0,1.35fr) 320px;gap:18px;align-items:start}
+    .left-col,.right-col{display:grid;gap:18px}
+    .ui-panel{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)}
+    .hero{padding:22px 24px;background:radial-gradient(circle at top right, rgba(245,158,11,.12), transparent 34%),radial-gradient(circle at left, rgba(37,99,235,.10), transparent 28%),linear-gradient(180deg,#fff,#f9fbff)}
+    .hero h1{font-size:28px;line-height:1.1;margin:0;color:#16243d}
+    .hero p{margin:8px 0 0;color:#66768d;font-size:14px;max-width:760px}
+    .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;font-weight:700}
+    .hero-tag.safe{background:#eff6ff;border-color:#dbeafe;color:#1d4ed8}
+    .hero-tag.ok{background:#ecfdf5;border-color:#bbf7d0;color:#0f766e}
+    .form-card{overflow:hidden}
+    .form-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .form-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .form-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+    .pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor}
+    .form-body{padding:20px;display:grid;gap:18px}
+    .field{display:grid;gap:7px}
+    .field label{font-size:12px;font-weight:700;color:#41526d}
+    .req{color:#dc2626}
+    .field small{font-size:11px;color:#8b9bb0}
+    .input-card{padding:16px;border:1px solid #e7eef6;border-radius:16px;background:#fcfdff}
+    .bmis-input,.bmis-select{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s}
+    textarea.bmis-input{min-height:160px;padding:12px 14px;resize:vertical}
+    .bmis-input:focus,.bmis-select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .field-error{font-size:11px;color:#dc2626}
+    .info-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .footer-bar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:16px 20px;border-top:1px solid #e7eef6;background:linear-gradient(180deg,#fff,#f9fbff)}
+    .footer-note{font-size:12px;color:#6b7a90}
+    .footer-note strong{color:#1d2d47}
+    .footer-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .side-card{padding:18px}
+    .side-card h3{margin:0 0 12px;font-size:16px;color:#16243d}
+    .notice{background:linear-gradient(180deg,#fffaf0,#fff7e6);border:1px solid #fed7aa}
+    .notice p,.guide-list li,.preview-list .value{font-size:13px;color:#465873;line-height:1.6}
+    .guide-list,.preview-list{display:grid;gap:12px}
+    .guide-list li,.preview-item{list-style:none;padding-bottom:12px;border-bottom:1px solid #edf2f7}
+    .guide-list li:last-child,.preview-item:last-child{padding-bottom:0;border-bottom:none}
+    .guide-list li::before{content:"•";color:#0f9f8f;font-weight:700;margin-right:8px}
+    .preview-top{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1px solid #e7eef6}
+    .preview-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#f59e0b,#f97316);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+    .preview-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .preview-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .preview-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+    .value{font-size:14px;color:#1e293b;font-weight:600;line-height:1.45}
+    .sticky-bar{position:sticky;bottom:14px;z-index:20;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;border:1px solid #dbe6f2;border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(17,37,77,.12)}
+    .sticky-note{font-size:12px;color:#6b7a90}.sticky-note strong{color:#1d2d47}
+    .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
+    @media (max-width:1040px){.complaint-layout{grid-template-columns:1fr}.right-col{grid-template-columns:1fr 1fr}}
+    @media (max-width:720px){.info-row,.right-col{grid-template-columns:1fr}}
+</style>
+
+<div class="complaint-page">
+    <div class="crumbs">
+        <a href="{% url 'complaint_list' %}">Complaints</a><span>&gt;</span>
+        <span>File Complaint</span>
+    </div>
+
+    <div class="complaint-layout">
+        <div class="left-col">
+            <section class="ui-panel hero">
+                <h1>Submit Online Complaint</h1>
+                <p>Your complaint will be received by the Secretary, reviewed for completeness, verified, and scheduled for face-to-face mediation if the case is qualified for hearing. Keep your report factual, complete, and easy to understand.</p>
+                <div class="hero-tags">
+                    <span class="hero-tag">Submitted online first</span>
+                    <span class="hero-tag safe">Secretary-reviewed workflow</span>
+                    <span class="hero-tag ok">Hearing details sent by notification</span>
+                </div>
+            </section>
+
+            <form method="POST" class="ui-panel form-card" id="complaint-form">
+                {% csrf_token %}
+                <div class="form-head">
+                    <div>
+                        <div class="form-title">Complaint Details</div>
+                        <div class="form-sub">Provide complete and accurate information so the Secretary can review the issue properly before any face-to-face hearing is scheduled.</div>
+                    </div>
+                    <div class="pill" id="complaint-pill">Draft in progress</div>
+                </div>
+
+                <div class="form-body">
+                    {% if form.non_field_errors %}
+                    <div class="ui-alert danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
+
+                    <div class="input-card">
+                        <div class="info-row">
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_resident">Complainant <span class="req">*</span></label>
+                                {% if is_resident_user %}
+                                <input type="text" class="bmis-input" value="{{ resident_profile.resident }}" readonly>
+                                {{ form.resident }}
+                                <small>Complaint will be submitted under your verified resident profile.</small>
+                                {% else %}
+                                {{ form.resident }}
+                                {% if form.resident.errors %}<div class="field-error">{{ form.resident.errors.0 }}</div>{% endif %}
+                                <small>Select the resident who is filing this complaint.</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_title">Complaint Title <span class="req">*</span></label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}
+                                <small>Use a short but specific summary that clearly identifies the concern.</small>
+                            </div>
+
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_description">Description <span class="req">*</span></label>
+                                {{ form.description }}
+                                {% if form.description.errors %}<div class="field-error">{{ form.description.errors.0 }}</div>{% endif %}
+                                <small>Include the incident details, date, location, people involved, and any supporting facts or witnesses.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-bar">
+                    <div class="footer-note"><strong>Process note:</strong> After submission, you will receive portal notifications when your complaint is received, reviewed, verified, or scheduled for hearing.</div>
+                    <div class="footer-actions">
+                        <a href="{% url 'complaint_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-bmis btn-primary" id="submit-complaint-btn">Submit Complaint</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="sticky-bar">
+                <div class="sticky-note"><strong>Before submitting:</strong> make sure the title is clear and the description explains the issue, people involved, and facts the Secretary can verify.</div>
+                <div class="sticky-actions">
+                    <a href="{% url 'complaint_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                    <button type="submit" form="complaint-form" class="btn-bmis btn-primary" id="sticky-complaint-btn">Submit Complaint</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <section class="ui-panel side-card notice">
+                <h3>Important Notice</h3>
+                <p>Filing a false complaint is a serious offense. Complaints may be submitted online, but settlement and issue handling still happen through barangay review and face-to-face mediation.</p>
+            </section>
+
+            <section class="ui-panel side-card">
+                <h3>Complaint Preview</h3>
+                <div class="preview-top">
+                    <div class="preview-avatar">C</div>
+                    <div>
+                        <div class="preview-name" id="preview-title">Complaint draft</div>
+                        <div class="preview-sub">Live summary while you type</div>
+                    </div>
+                </div>
+                <div class="preview-list" style="margin-top:14px;">
+                    <div class="preview-item">
+                        <div class="preview-label">Complainant</div>
+                        <div class="value" id="pv-resident">{% if is_resident_user %}{{ resident_profile.resident }}{% else %}Not selected{% endif %}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Title</div>
+                        <div class="value" id="pv-title">Not yet provided</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Description Status</div>
+                        <div class="value" id="pv-description">Waiting for details</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ui-panel side-card">
+                <h3>What Happens Next</h3>
+                <ul class="guide-list">
+                    <li>Your complaint starts as <strong>Submitted</strong> and becomes visible to the Secretary.</li>
+                    <li>The Secretary reviews and verifies the complaint before scheduling any hearing.</li>
+                    <li>If the issue is valid for mediation, you will receive the meeting date, time, location, and purpose by notification.</li>
+                    <li>Write only verifiable facts and include names, location, and timeline when possible.</li>
+                    <li>Face-to-face mediation is still required for complaint resolution under barangay policy.</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const resident = document.getElementById("id_resident");
+    const title = document.getElementById("id_title");
+    const description = document.getElementById("id_description");
+    const pvResident = document.getElementById("pv-resident");
+    const pvTitle = document.getElementById("pv-title");
+    const pvDescription = document.getElementById("pv-description");
+    const previewTitle = document.getElementById("preview-title");
+    const pill = document.getElementById("complaint-pill");
+    const submitButtons = [document.getElementById("submit-complaint-btn"), document.getElementById("sticky-complaint-btn")].filter(Boolean);
+
+    function updatePreview() {
+        if (resident && pvResident) {
+            const option = resident.selectedOptions && resident.selectedOptions[0];
+            pvResident.textContent = option && option.value ? option.text : "Not selected";
+        }
+        const titleText = (title?.value || "").trim();
+        const descText = (description?.value || "").trim();
+        pvTitle.textContent = titleText || "Not yet provided";
+        previewTitle.textContent = titleText || "Complaint draft";
+        pvDescription.textContent = descText.length >= 40 ? "Detailed enough for review" : descText ? "Needs more detail" : "Waiting for details";
+        pill.textContent = titleText && descText ? "Ready for review" : "Draft in progress";
+    }
+
+    [resident, title, description].forEach((el) => {
+        if (!el) return;
+        ["input", "change"].forEach((evt) => el.addEventListener(evt, updatePreview));
+    });
+
+    submitButtons.forEach((btn) => btn.addEventListener("click", () => {
+        setTimeout(() => {
+            submitButtons.forEach((button) => {
+                button.disabled = true;
+                button.textContent = "Submitting...";
+            });
+        }, 0);
+    }));
+
+    updatePreview();
+})();
+</script>
+{% endblock %}

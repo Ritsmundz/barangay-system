@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block page_title %}Add New Household{% endblock %}
+{% block page_subtitle %}Enter household details to create a new address record{% endblock %}
+
+{% block page_header_actions %}{% endblock %}
+
+{% block content %}
+<style>
+    .household-page{display:grid;gap:20px;max-width:1280px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .household-layout{display:grid;grid-template-columns:minmax(0,1.45fr) 330px;gap:18px;align-items:start}
+    .left-col,.right-col{display:grid;gap:18px}
+    .ui-panel{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)}
+    .hero{padding:22px 24px;background:radial-gradient(circle at top right, rgba(147,197,253,.22), transparent 32%),linear-gradient(180deg,#fff,#f7fbff)}
+    .hero h1{font-size:28px;line-height:1.1;margin:0;color:#16243d}
+    .hero p{margin:8px 0 0;color:#66768d;font-size:14px}
+    .hint{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border:1px solid #dbe7f7;border-radius:16px;background:#f8fbff;font-size:13px;color:#46607e}
+    .hint strong{color:#1d2d47}
+    .summary-card{padding:18px}
+    .summary-card h3,.preview-card h3,.guide-card h3{margin:0 0 14px;font-size:16px;color:#16243d}
+    .summary-list,.preview-list,.guide-list{display:grid;gap:12px}
+    .summary-item,.preview-item,.guide-item{padding-bottom:12px;border-bottom:1px solid #edf2f7}
+    .summary-item:last-child,.preview-item:last-child,.guide-item:last-child{padding-bottom:0;border-bottom:none}
+    .label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+    .value{font-size:14px;color:#1e293b;font-weight:600;line-height:1.45}
+    .section{overflow:hidden}
+    .section-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .section-title{font-size:15px;font-weight:700;color:#1c2d47}
+    .section-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .section-body{padding:18px 20px}
+    .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .field{display:grid;gap:7px}
+    .field.span-2{grid-column:span 2}
+    .field label{font-size:12px;font-weight:700;color:#41526d}
+    .req{color:#dc2626}
+    .field small,.inline-note{font-size:11px;color:#8b9bb0}
+    .bmis-input,.bmis-select{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s}
+    .bmis-input:focus,.bmis-select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .field-error{font-size:11px;color:#dc2626}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+    .pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor}
+    .preview-card{padding:18px}
+    .preview-top{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1px solid #e7eef6}
+    .preview-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#6c9df0,#5988db);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+    .preview-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .preview-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .guide-card{padding:18px}
+    .guide-item{font-size:12px;color:#465873;line-height:1.55}
+    .guide-item strong{color:#1d2d47;display:block;margin-bottom:2px}
+    .sticky-bar{position:sticky;bottom:14px;z-index:20;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;border:1px solid #dbe6f2;border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(17,37,77,.12)}
+    .sticky-note{font-size:12px;color:#6b7a90}.sticky-note strong{color:#1d2d47}
+    .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
+    @media (max-width:1100px){.household-layout{grid-template-columns:1fr}.right-col{grid-template-columns:1fr 1fr}}
+    @media (max-width:760px){.grid-2,.right-col{grid-template-columns:1fr}.field.span-2{grid-column:auto}}
+</style>
+
+<div class="household-page">
+    <div class="crumbs">
+        <a href="{% url 'dashboard' %}">Dashboard</a><span>&gt;</span>
+        <a href="{% url 'household_list' %}">Households</a><span>&gt;</span>
+        <span>Add Household</span>
+    </div>
+
+    <div class="household-layout">
+        <div class="left-col">
+            <section class="ui-panel hero">
+                <h1>Add New Household</h1>
+                <p>Create a new household address record with a cleaner, more guided form that matches the resident registration experience.</p>
+                <div class="hint" style="margin-top:18px;">
+                    <div><strong>About households</strong><br>A household groups residents by address. After saving, you can assign residents living at this location and optionally set a household head.</div>
+                </div>
+            </section>
+
+            <form id="household-form" method="POST">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                <div class="ui-alert" style="margin-bottom:16px;">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <section class="ui-panel section">
+                    <div class="section-head">
+                        <div>
+                            <div class="section-title">Address Information</div>
+                            <div class="section-sub">Basic location details used for household and resident records.</div>
+                        </div>
+                        <div class="pill" id="address-pill">Address incomplete</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="grid-2">
+                            <div class="field">
+                                <label for="id_house_number">House Number <span class="req">*</span></label>
+                                {{ form.house_number }}
+                                <small>Use the official house number or identifier for this address.</small>
+                                {% if form.house_number.errors %}<div class="field-error">{{ form.house_number.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="field">
+                                <label for="id_street">Street <span class="req">*</span></label>
+                                {{ form.street }}
+                                <small>Street, road, or sitio name for this location.</small>
+                                {% if form.street.errors %}<div class="field-error">{{ form.street.errors.0 }}</div>{% endif %}
+                            </div>
+                            <div class="field span-2">
+                                <label for="id_purok">Purok / Zone <span class="req">*</span></label>
+                                {{ form.purok }}
+                                <small>Select the purok to help categorize household records and reporting.</small>
+                                {% if form.purok.errors %}<div class="field-error">{{ form.purok.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ui-panel section">
+                    <div class="section-head">
+                        <div>
+                            <div class="section-title">Household Head</div>
+                            <div class="section-sub">Optional for now. You can assign the head immediately or after adding residents.</div>
+                        </div>
+                        <div class="pill" id="head-pill">Optional</div>
+                    </div>
+                    <div class="section-body">
+                        <div class="grid-2">
+                            <div class="field span-2">
+                                <label for="head-search">Search Resident</label>
+                                <input type="text" id="head-search" class="bmis-input" placeholder="Search resident name...">
+                                <small>Only residents not yet assigned to another household are available here.</small>
+                            </div>
+                            <div class="field span-2">
+                                <label for="id_head">Select Household Head</label>
+                                {{ form.head }}
+                                <small>The selected resident will become the head of this household record.</small>
+                                {% if form.head.errors %}<div class="field-error">{{ form.head.errors.0 }}</div>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </form>
+
+            <div class="sticky-bar">
+                <div class="sticky-note"><strong>Ready to save?</strong> Review the live preview and confirm the address details before creating the household.</div>
+                <div class="sticky-actions">
+                    <a href="{% url 'household_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                    <button form="household-form" type="submit" class="btn-bmis btn-primary" id="sticky-save-household">Save Household</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-col">
+            <section class="ui-panel preview-card">
+                <h3>New Household Preview</h3>
+                <div class="preview-top">
+                    <div class="preview-avatar" id="household-avatar">H</div>
+                    <div>
+                        <div class="preview-name" id="preview-title">New Household</div>
+                        <div class="preview-sub">Live preview updates while you fill out the form</div>
+                    </div>
+                </div>
+                <div class="preview-list">
+                    <div class="preview-item"><div class="label">House Number</div><div class="value" id="pv-house-number">Not yet provided</div></div>
+                    <div class="preview-item"><div class="label">Street</div><div class="value" id="pv-street">Not yet provided</div></div>
+                    <div class="preview-item"><div class="label">Purok</div><div class="value" id="pv-purok">Not selected</div></div>
+                    <div class="preview-item"><div class="label">Household Head</div><div class="value" id="pv-head">Not assigned</div></div>
+                    <div class="preview-item"><div class="label">Address Label</div><div class="value" id="pv-address">Incomplete address</div></div>
+                </div>
+            </section>
+
+            <section class="ui-panel summary-card">
+                <h3>Record Summary</h3>
+                <div class="summary-list">
+                    <div class="summary-item"><div class="label">Barangay</div><div class="value">Barangay Gulod</div></div>
+                    <div class="summary-item"><div class="label">City / Municipality</div><div class="value">Uses barangay-wide setting</div></div>
+                    <div class="summary-item"><div class="label">Validation</div><div class="value" id="pv-validation">Waiting for required fields</div></div>
+                </div>
+            </section>
+
+            <section class="ui-panel guide-card">
+                <h3>Helpful Tips</h3>
+                <div class="guide-list">
+                    <div class="guide-item"><strong>Keep house numbers consistent</strong>Use the same identifier format across records to avoid duplicates.</div>
+                    <div class="guide-item"><strong>Assign the head when ready</strong>If you do not know the head yet, save the household first and assign one later.</div>
+                    <div class="guide-item"><strong>Use purok for reporting</strong>Purok assignment helps household listing, filtering, and demographic summaries.</div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    const searchInput = document.getElementById("head-search");
+    const headSelect = document.getElementById("id_head");
+    const houseNumber = document.getElementById("id_house_number");
+    const street = document.getElementById("id_street");
+    const purok = document.getElementById("id_purok");
+    const topSave = document.getElementById("top-save-household");
+    const stickySave = document.getElementById("sticky-save-household");
+    if (!headSelect) return;
+
+    const options = Array.from(headSelect.options).map((opt) => ({
+        value: opt.value,
+        text: opt.text,
+        selected: opt.selected,
+    }));
+
+    function rebuildOptions(filter) {
+        const term = (filter || "").trim().toLowerCase();
+        const currentValue = headSelect.value;
+        headSelect.innerHTML = "";
+
+        options.forEach((opt) => {
+            const matches = !term || opt.text.toLowerCase().includes(term);
+            if (!matches) return;
+            const optionEl = document.createElement("option");
+            optionEl.value = opt.value;
+            optionEl.text = opt.text;
+            if (opt.value === currentValue) optionEl.selected = true;
+            headSelect.appendChild(optionEl);
+        });
+        updatePreview();
+    }
+
+    function initials() {
+        const house = (houseNumber?.value || "").trim();
+        return (house[0] || "H").toUpperCase();
+    }
+
+    function updatePreview() {
+        const house = (houseNumber?.value || "").trim();
+        const streetVal = (street?.value || "").trim();
+        const purokLabel = purok?.selectedOptions?.[0]?.value ? purok.selectedOptions[0].text : "Not selected";
+        const headLabel = headSelect?.selectedOptions?.[0]?.value ? headSelect.selectedOptions[0].text : "Not assigned";
+        const addressComplete = house && streetVal && purok?.value;
+
+        document.getElementById("household-avatar").textContent = initials();
+        document.getElementById("preview-title").textContent = house ? "Household " + house : "New Household";
+        document.getElementById("pv-house-number").textContent = house || "Not yet provided";
+        document.getElementById("pv-street").textContent = streetVal || "Not yet provided";
+        document.getElementById("pv-purok").textContent = purokLabel;
+        document.getElementById("pv-head").textContent = headLabel;
+        document.getElementById("pv-address").textContent = addressComplete ? (house + " " + streetVal + ", " + purokLabel) : "Incomplete address";
+        document.getElementById("pv-validation").textContent = addressComplete ? "Required fields complete" : "Waiting for required fields";
+        document.getElementById("address-pill").textContent = addressComplete ? "Address complete" : "Address incomplete";
+        document.getElementById("head-pill").textContent = headSelect?.value ? "Head selected" : "Optional";
+    }
+
+    if (searchInput) searchInput.addEventListener("input", (e) => rebuildOptions(e.target.value));
+    [houseNumber, street, purok, headSelect].forEach((el) => {
+        if (!el) return;
+        ["input", "change"].forEach((evt) => el.addEventListener(evt, updatePreview));
+    });
+
+    [topSave, stickySave].forEach((btn) => btn && btn.addEventListener("click", () => {
+        setTimeout(() => {
+            [topSave, stickySave].forEach((b) => {
+                if (b) {
+                    b.disabled = true;
+                    b.textContent = "Saving...";
+                }
+            });
+        }, 0);
+    }));
+
+    updatePreview();
+})();
+</script>
+
+{% endblock %}
