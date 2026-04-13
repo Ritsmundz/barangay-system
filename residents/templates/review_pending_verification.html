@@ -6,7 +6,7 @@
 {% block content %}
 
 <style>
-    /* ── Breadcrumb ── */
+    /* â”€â”€ Breadcrumb â”€â”€ */
     .breadcrumb {
         display: flex;
         align-items: center;
@@ -20,7 +20,7 @@
     .breadcrumb svg { width: 12px; height: 12px; }
     .breadcrumb .cur { color: #1E293B; font-weight: 500; }
 
-    /* ── Page header ── */
+    /* â”€â”€ Page header â”€â”€ */
     .page-header {
         display: flex;
         align-items: flex-start;
@@ -32,7 +32,7 @@
     .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
     .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
 
-    /* ── Layout ── */
+    /* â”€â”€ Layout â”€â”€ */
     .rv-layout {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -45,7 +45,7 @@
         .rv-layout { grid-template-columns: 1fr; }
     }
 
-    /* ── Messages ── */
+    /* â”€â”€ Messages â”€â”€ */
     .messages-container {
         max-width: 1400px;
         margin: 0 auto 20px;
@@ -85,7 +85,7 @@
         list-style: disc;
     }
 
-    /* ── Cards ── */
+    /* â”€â”€ Cards â”€â”€ */
     .rv-card {
         background: #fff;
         border: 1px solid #E2E8F0;
@@ -110,7 +110,7 @@
         padding: 24px;
     }
 
-    /* ── Info items ── */
+    /* â”€â”€ Info items â”€â”€ */
     .rv-item {
         margin-bottom: 14px;
         padding-bottom: 14px;
@@ -134,7 +134,7 @@
         font-weight: 500;
     }
 
-    /* ── Form fields ── */
+    /* â”€â”€ Form fields â”€â”€ */
     .rv-field {
         margin-bottom: 16px;
     }
@@ -188,14 +188,14 @@
         accent-color: #2563EB;
     }
 
-    /* ── Section separator ── */
+    /* â”€â”€ Section separator â”€â”€ */
     .rv-separator {
         height: 1px;
         background: #E2E8F0;
         margin: 20px 0;
     }
 
-    /* ── Actions ── */
+    /* â”€â”€ Actions â”€â”€ */
     .rv-actions {
         display: flex;
         gap: 8px;
@@ -241,7 +241,7 @@
         background: #B91C1C;
     }
 
-    /* ── Back link ── */
+    /* â”€â”€ Back link â”€â”€ */
     .rv-back {
         display: inline-flex;
         align-items: center;
@@ -322,7 +322,7 @@
                 <div class="rv-field">
                     <label for="resident_id">Link to existing resident record</label>
                     <select name="resident_id" id="resident_id" required>
-                        <option value="">— Select a resident —</option>
+                        <option value="">â€” Select a resident â€”</option>
                         {% for resident in suggested_residents %}
                         <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>
                             {{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}

@@ -7,9 +7,11 @@ import shutil
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 from functools import wraps
+import logging
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http import HttpResponseForbidden
+from django.http import HttpResponseNotAllowed
 from django.utils import timezone
 from django.db import transaction
 from django.db.models import Q, Sum, Count
@@ -17,7 +19,9 @@ from django.db.models.functions import ExtractMonth
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
+from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile
 from .forms import (
@@ -29,6 +33,8 @@ from .forms import (
     ResidentVerificationCreateForm,
 )
 from .audit import log_audit_event, snapshot_instance
+
+logger = logging.getLogger(__name__)
 
 def is_captain(user):
     return user.groups.filter(name='Captain').exists()
@@ -75,6 +81,21 @@ def group_required(test_func):
 
 def get_user_profile(user):
     return UserProfile.objects.filter(user=user).select_related("resident").first()
+
+
+def logout_view(request):
+    if request.method not in ("GET", "POST"):
+        return HttpResponseNotAllowed(["GET", "POST"])
+
+    try:
+        auth_logout(request)
+    except Exception:
+        logger.exception("Logout failed; forcing session cleanup.")
+        if hasattr(request, "session"):
+            request.session.flush()
+        request.user = AnonymousUser()
+
+    return redirect("login")
 
 
 def _get_secretary_dashboard_report_context(user):
@@ -1243,7 +1264,7 @@ def resident_register(request):
         return redirect("role_redirect")
 
     if request.method == "POST":
-        form = ResidentPortalRegistrationForm(request.POST)
+        form = ResidentPortalRegistrationForm(request.POST, request.FILES)
         if form.is_valid():
             with transaction.atomic():
                 user = form.save(commit=False)
@@ -1258,6 +1279,8 @@ def resident_register(request):
                 first_name = form.cleaned_data["first_name"].strip()
                 last_name = form.cleaned_data["last_name"].strip()
                 birth_date = form.cleaned_data["birthdate"]
+                address = form.cleaned_data["address"].strip()
+                valid_id_image = form.cleaned_data["valid_id_image"]
 
                 linked_resident = Resident.objects.filter(
                     first_name__iexact=first_name,
@@ -1272,6 +1295,8 @@ def resident_register(request):
                     first_name=first_name,
                     last_name=last_name,
                     birth_date=birth_date,
+                    address=address,
+                    valid_id_image=valid_id_image,
                     is_verified=False,
                     is_auto_matched=bool(linked_resident),
                 )

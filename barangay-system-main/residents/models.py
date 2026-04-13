@@ -288,6 +288,19 @@ class ServiceRequest(models.Model):
     )
 
     remarks = models.TextField(blank=True, null=True)
+    requirements_note = models.TextField(blank=True, null=True)
+    requirements_submission_instructions = models.TextField(blank=True, null=True)
+    requirements_deadline = models.DateField(blank=True, null=True)
+    requirements_requested_at = models.DateTimeField(blank=True, null=True)
+    requirements_requested_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="requested_service_requirements",
+    )
+    resident_response_note = models.TextField(blank=True, null=True)
+    resident_responded_at = models.DateTimeField(blank=True, null=True)
 
     clearance_number = models.CharField(max_length=20, blank=True, null=True)
 
@@ -338,6 +351,31 @@ class ServiceRequest(models.Model):
             self.document_number = f"{prefix}-{year}-{new_number:04d}"
 
         super().save(*args, **kwargs)
+
+
+class ServiceRequestAttachment(models.Model):
+    service_request = models.ForeignKey(
+        ServiceRequest,
+        on_delete=models.CASCADE,
+        related_name="attachments"
+    )
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="service_request_attachments"
+    )
+    file = models.FileField(upload_to="service_request_attachments/")
+    original_name = models.CharField(max_length=255, blank=True)
+    note = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return self.original_name or f"Attachment {self.pk}"
 
 #PAYMENT
 #PAYMENT

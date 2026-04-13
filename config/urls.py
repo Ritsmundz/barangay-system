@@ -55,7 +55,7 @@ urlpatterns = [
 ),
 
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('logout/', views.logout_view, name='logout'),
     path('about-us/', views.about_us, name='about_us'),
     path('register/', views.resident_register, name='resident_register'),
     path('portal/pending-verification/', views.portal_pending_verification, name='portal_pending_verification'),

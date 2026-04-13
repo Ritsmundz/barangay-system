@@ -240,3 +240,40 @@ class ComplaintForm(forms.ModelForm):
     class Meta:
         model = Complaint
         fields = ["resident", "title", "description"]
+
+
+class ServiceRequestRequirementsForm(forms.Form):
+    requirements_note = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 5}),
+        label="Needed requirements",
+    )
+    requirements_submission_instructions = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        label="Submission instructions",
+    )
+    requirements_deadline = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        label="Deadline",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing} bmis-input".strip()
+
+
+class ServiceRequestResidentSubmissionForm(forms.Form):
+    resident_response_note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        label="Resident note",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing} bmis-input".strip()

@@ -78,10 +78,34 @@ class ResidentPortalRegistrationForm(UserCreationForm):
     first_name = forms.CharField(max_length=100)
     last_name = forms.CharField(max_length=100)
     birthdate = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    address = forms.CharField(
+        max_length=255,
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    valid_id_image = forms.ImageField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["username"].widget.attrs.setdefault("autocomplete", "username")
+        self.fields["first_name"].widget.attrs.setdefault("autocomplete", "given-name")
+        self.fields["last_name"].widget.attrs.setdefault("autocomplete", "family-name")
+        self.fields["birthdate"].widget.attrs.setdefault("autocomplete", "bday")
+        self.fields["address"].widget.attrs.setdefault("autocomplete", "street-address")
+        self.fields["password1"].widget.attrs.setdefault("autocomplete", "new-password")
+        self.fields["password2"].widget.attrs.setdefault("autocomplete", "new-password")
 
     class Meta:
         model = User
-        fields = ["username", "first_name", "last_name", "birthdate", "password1", "password2"]
+        fields = [
+            "username",
+            "first_name",
+            "last_name",
+            "birthdate",
+            "address",
+            "valid_id_image",
+            "password1",
+            "password2",
+        ]
 
 
 class ResidentVerificationCreateForm(forms.ModelForm):

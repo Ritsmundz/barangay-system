@@ -82,6 +82,21 @@
     .notify-copy{margin-top:8px;font-size:12px;color:var(--txt2);line-height:1.55}
     .callout{margin-top:14px;padding:14px 16px;border-radius:16px;border:1px solid #dce6f5;background:#f8fbff;font-size:13px;color:var(--txt2);line-height:1.6}
     .callout strong{color:var(--txt)}
+    .action-panel{margin-top:14px;padding:16px;border:1px solid #dce6f5;border-radius:18px;background:#fcfdff}
+    .action-panel h4{margin:0 0 10px;font-size:15px;color:var(--txt)}
+    .action-panel p{margin:0 0 12px;font-size:13px;color:var(--txt2);line-height:1.55}
+    .field-stack{display:grid;gap:12px}
+    .field-stack label{display:grid;gap:6px;font-size:12px;font-weight:700;color:var(--txt2)}
+    .field-stack input,.field-stack textarea{width:100%;padding:11px 12px;border:1px solid #d7e3f4;border-radius:12px;background:#fff;color:var(--txt);outline:none}
+    .field-help{font-size:12px;color:var(--txt3)}
+    .requirement-box{margin-top:14px;padding:14px;border-radius:16px;background:#fff7e8;border:1px solid #f2dfb8}
+    .requirement-box strong{display:block;font-size:12px;color:#9a6615;text-transform:uppercase;letter-spacing:.05em}
+    .requirement-box span{display:block;margin-top:6px;font-size:13px;color:#7a5a21;line-height:1.6}
+    .attachment-list{display:grid;gap:10px;margin-top:12px}
+    .attachment-item{padding:12px;border:1px solid #e5edf8;border-radius:14px;background:#fcfdff}
+    .attachment-item a{font-weight:700}
+    .attachment-meta{margin-top:5px;font-size:12px;color:var(--txt3)}
+    .errorlist{margin:6px 0 0;padding-left:18px;color:#be3d3d;font-size:12px}
     @media (max-width:1180px){.detail-layout{grid-template-columns:1fr}.grid-two{grid-template-columns:1fr}.side-stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media (max-width:780px){.step-track{grid-template-columns:repeat(2,minmax(0,1fr))}.info-grid,.side-stack{grid-template-columns:1fr}.timeline-item{grid-template-columns:18px 1fr}}
 </style>
@@ -166,6 +181,24 @@
                             <strong>Resident update:</strong> {{ resident_action_text }}
                         </div>
                         {% endif %}
+                        {% if service_request.requirements_note %}
+                        <div class="requirement-box">
+                            <strong>Needed Requirements</strong>
+                            <span>{{ service_request.requirements_note|linebreaksbr }}</span>
+                        </div>
+                        {% endif %}
+                        {% if service_request.requirements_submission_instructions %}
+                        <div class="requirement-box">
+                            <strong>Where / How To Submit</strong>
+                            <span>{{ service_request.requirements_submission_instructions|linebreaksbr }}</span>
+                        </div>
+                        {% endif %}
+                        {% if service_request.requirements_deadline %}
+                        <div class="requirement-box">
+                            <strong>Deadline</strong>
+                            <span>{{ service_request.requirements_deadline|date:"F j, Y" }}</span>
+                        </div>
+                        {% endif %}
                         {% if can_manage and allowed_statuses %}
                         <form method="post" action="{% url 'update_service_request_status' service_request.id %}" class="status-form">
                             {% csrf_token %}
@@ -178,6 +211,87 @@
                         </form>
                         {% elif is_view_only %}
                         <div class="status-note">View only: only the Secretary can update the workflow status.</div>
+                        {% endif %}
+                        {% if can_request_requirements and has_active_requirement_request and not show_requirement_request_form %}
+                        <div class="action-panel">
+                            <h4>Active Requirements Request</h4>
+                            <p>The resident already has one active requirements request. Update it only if the missing items or deadline changed.</p>
+                            <div class="mini-list">
+                                <div class="mini-item">
+                                    <strong>Sent</strong>
+                                    <span>{{ service_request.requirements_requested_at|date:"M d, Y, g:i a" }}</span>
+                                </div>
+                                {% if service_request.requirements_deadline %}
+                                <div class="mini-item">
+                                    <strong>Deadline</strong>
+                                    <span>{{ service_request.requirements_deadline|date:"F j, Y" }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="status-form">
+                                <a href="{% url 'service_request_detail' service_request.id %}?edit_requirements=1" class="btn btn-soft">Edit Request</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if show_requirement_request_form %}
+                        <div class="action-panel">
+                            <h4>{% if is_editing_requirement_request %}Edit Missing Requirements{% else %}Request Missing Requirements{% endif %}</h4>
+                            <p>
+                                {% if is_editing_requirement_request %}
+                                Update the active requirements request instead of sending a separate one.
+                                {% else %}
+                                Send the exact list of documents or details the resident still needs to submit.
+                                {% endif %}
+                            </p>
+                            <form method="post" class="field-stack">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="request_requirements">
+                                <label>
+                                    {{ requirement_form.requirements_note.label }}
+                                    {{ requirement_form.requirements_note }}
+                                    {{ requirement_form.requirements_note.errors }}
+                                </label>
+                                <label>
+                                    {{ requirement_form.requirements_submission_instructions.label }}
+                                    {{ requirement_form.requirements_submission_instructions }}
+                                    <span class="field-help">Example: Upload here in the portal, or bring originals to the barangay office.</span>
+                                    {{ requirement_form.requirements_submission_instructions.errors }}
+                                </label>
+                                <label>
+                                    {{ requirement_form.requirements_deadline.label }}
+                                    {{ requirement_form.requirements_deadline }}
+                                    {{ requirement_form.requirements_deadline.errors }}
+                                </label>
+                                <div class="status-form">
+                                    <button type="submit" class="btn btn-primary">{% if is_editing_requirement_request %}Update Requirements Request{% else %}Send Requirements To Resident{% endif %}</button>
+                                    {% if is_editing_requirement_request %}
+                                    <a href="{% url 'service_request_detail' service_request.id %}" class="btn btn-soft">Cancel Edit</a>
+                                    {% endif %}
+                                </div>
+                            </form>
+                        </div>
+                        {% endif %}
+                        {% if can_submit_requirements %}
+                        <div class="action-panel">
+                            <h4>Upload Your Requirements</h4>
+                            <p>Attach the requested files here so the Secretary can continue reviewing your request.</p>
+                            <form method="post" enctype="multipart/form-data" class="field-stack">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="submit_requirements">
+                                <label>
+                                    {{ resident_submission_form.resident_response_note.label }}
+                                    {{ resident_submission_form.resident_response_note }}
+                                    <span class="field-help">Add a short note describing the files you attached.</span>
+                                    {{ resident_submission_form.resident_response_note.errors }}
+                                </label>
+                                <label>
+                                    Upload files
+                                    <input type="file" name="requirement_files" multiple>
+                                    <span class="field-help">You can upload one or more supporting files.</span>
+                                </label>
+                                <button type="submit" class="btn btn-primary">Submit Requirements</button>
+                            </form>
+                        </div>
                         {% endif %}
                         {% if can_print_release %}
                         <div class="status-form">
@@ -268,6 +382,21 @@
                     {% endfor %}
                 </div>
             </section>
+
+            {% if requirement_attachments %}
+            <section class="panel side-card">
+                <div class="section-title">Submitted Files</div>
+                <div class="section-sub">Files uploaded for this request are listed here for both the resident and the Secretary.</div>
+                <div class="attachment-list">
+                    {% for item in requirement_attachments %}
+                    <div class="attachment-item">
+                        <a href="{{ item.file.url }}" target="_blank">{{ item.original_name|default:"Attachment" }}</a>
+                        <div class="attachment-meta">Uploaded by {{ item.uploaded_by|default:"Resident" }} on {{ item.created_at|date:"M d, Y, g:i a" }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
         </aside>
     </div>
 </div>

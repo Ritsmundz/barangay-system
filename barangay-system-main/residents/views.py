@@ -25,7 +25,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.text import slugify
-from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile, Notification
+from .models import Resident, Household, ServiceRequest, ServiceRequestAttachment, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile, Notification
 from .forms import (
     ResidentForm,
     HouseholdForm,
@@ -33,6 +33,8 @@ from .forms import (
     ClearanceRequestForm,
     ResidentPortalRegistrationForm,
     ResidentVerificationCreateForm,
+    ServiceRequestRequirementsForm,
+    ServiceRequestResidentSubmissionForm,
 )
 from .audit import log_audit_event, snapshot_instance
 
@@ -3126,6 +3128,10 @@ def update_service_request_status(request, request_id):
             messages.error(request, "That status change is not allowed from the current workflow stage.")
             return redirect(request.META.get("HTTP_REFERER"))
 
+        if new_status == "Pending Requirements":
+            messages.error(request, "Use the requirements form so the resident can see exactly what to submit.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
         if new_status in dict(ServiceRequest.STATUS_CHOICES):
             service_request.status = new_status
             service_request.save()
@@ -4066,7 +4072,12 @@ def print_and_release_document(request, request_id):
 @login_required
 def service_request_detail(request, request_id):
     service_request = get_object_or_404(
-        ServiceRequest.objects.select_related("resident__household__purok", "service_type", "created_by"),
+        ServiceRequest.objects.select_related(
+            "resident__household__purok",
+            "service_type",
+            "created_by",
+            "requirements_requested_by",
+        ).prefetch_related("attachments__uploaded_by"),
         id=request_id,
     )
 
@@ -4079,6 +4090,119 @@ def service_request_detail(request, request_id):
             return redirect("portal_pending_verification")
     elif not is_staff_user(request.user):
         return HttpResponseForbidden("You do not have permission to access this page.")
+
+    can_manage = is_secretary(request.user)
+    is_resident_user = is_resident(request.user)
+
+    requirement_initial = {
+        "requirements_note": service_request.requirements_note,
+        "requirements_submission_instructions": service_request.requirements_submission_instructions,
+        "requirements_deadline": service_request.requirements_deadline,
+    }
+    resident_initial = {
+        "resident_response_note": service_request.resident_response_note,
+    }
+    requirement_form = ServiceRequestRequirementsForm(initial=requirement_initial)
+    resident_submission_form = ServiceRequestResidentSubmissionForm(initial=resident_initial)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "request_requirements":
+            if not can_manage:
+                return HttpResponseForbidden("Only the Secretary can request additional requirements.")
+            if service_request.status not in {"Under Review", "Pending Requirements"}:
+                messages.error(request, "Requirements can only be requested while the service request is under review.")
+                return redirect("service_request_detail", request_id=service_request.id)
+
+            requirement_form = ServiceRequestRequirementsForm(request.POST)
+            if requirement_form.is_valid():
+                is_updating_existing_request = service_request.status == "Pending Requirements" and bool(
+                    service_request.requirements_requested_at
+                )
+                before_data = snapshot_instance(service_request)
+                service_request.requirements_note = requirement_form.cleaned_data["requirements_note"]
+                service_request.requirements_submission_instructions = requirement_form.cleaned_data["requirements_submission_instructions"]
+                service_request.requirements_deadline = requirement_form.cleaned_data["requirements_deadline"]
+                service_request.requirements_requested_at = timezone.now()
+                service_request.requirements_requested_by = request.user
+                service_request.status = "Pending Requirements"
+                service_request.save()
+                log_audit_event(
+                    action="UPDATE",
+                    model_name="ServiceRequest",
+                    description=(
+                        f"Updated the active requirements request for {service_request.document_number}."
+                        if is_updating_existing_request
+                        else f"Requested additional requirements for {service_request.document_number}."
+                    ),
+                    user=request.user,
+                    target_id=service_request.id,
+                    before_data=before_data,
+                    after_data=snapshot_instance(service_request),
+                    request=request,
+                )
+                notify_resident_for_service_request(
+                    service_request,
+                    title="Requirements Request Updated" if is_updating_existing_request else "Additional Requirements Needed",
+                    message=(
+                        f"The Secretary updated the missing requirements for your {service_request.service_type.name} request."
+                        if is_updating_existing_request
+                        else f"The Secretary sent the missing requirements for your {service_request.service_type.name} request."
+                    ),
+                )
+                messages.success(
+                    request,
+                    "The active requirements request was updated."
+                    if is_updating_existing_request
+                    else "The missing requirements were sent to the resident.",
+                )
+                return redirect("service_request_detail", request_id=service_request.id)
+
+        elif action == "submit_requirements":
+            if not is_resident_user:
+                return HttpResponseForbidden("Only the resident can submit requirement files for this request.")
+            if service_request.status != "Pending Requirements":
+                messages.error(request, "This request is not currently waiting for resident requirements.")
+                return redirect("service_request_detail", request_id=service_request.id)
+
+            resident_submission_form = ServiceRequestResidentSubmissionForm(request.POST)
+            uploaded_files = request.FILES.getlist("requirement_files")
+            if resident_submission_form.is_valid():
+                response_note = resident_submission_form.cleaned_data["resident_response_note"].strip()
+                if not response_note and not uploaded_files:
+                    resident_submission_form.add_error("resident_response_note", "Add a short note or upload at least one file.")
+                else:
+                    before_data = snapshot_instance(service_request)
+                    service_request.resident_response_note = response_note
+                    service_request.resident_responded_at = timezone.now()
+                    service_request.status = "Under Review"
+                    service_request.save()
+                    for uploaded_file in uploaded_files:
+                        ServiceRequestAttachment.objects.create(
+                            service_request=service_request,
+                            uploaded_by=request.user,
+                            file=uploaded_file,
+                            original_name=uploaded_file.name,
+                            note=response_note[:255],
+                        )
+                    log_audit_event(
+                        action="UPDATE",
+                        model_name="ServiceRequest",
+                        description=f"Resident submitted additional requirements for {service_request.document_number}.",
+                        user=request.user,
+                        target_id=service_request.id,
+                        before_data=before_data,
+                        after_data=snapshot_instance(service_request),
+                        request=request,
+                    )
+                    notify_resident_for_service_request(
+                        service_request,
+                        title="Requirements Submitted",
+                        message=f"Your additional files for the {service_request.service_type.name} request were submitted to the Secretary.",
+                    )
+                    messages.success(request, "Your files and note were submitted. The request is back under review.")
+                    return redirect("service_request_detail", request_id=service_request.id)
 
     status_history = get_service_request_status_history(service_request)
     progress_status = get_service_request_progress_status(service_request.status)
@@ -4121,6 +4245,29 @@ def service_request_detail(request, request_id):
             "actor": item["actor"],
             "tone": SERVICE_REQUEST_STATUS_COLORS.get(item["status"], "blue"),
         })
+    if service_request.requirements_requested_at and service_request.requirements_note:
+        timeline_items.append({
+            "title": "Additional requirements requested",
+            "meta": service_request.requirements_requested_at,
+            "description": service_request.requirements_note,
+            "actor": service_request.requirements_requested_by,
+            "tone": "gold",
+        })
+    if service_request.resident_responded_at:
+        response_parts = []
+        if service_request.resident_response_note:
+            response_parts.append(service_request.resident_response_note)
+        attachment_count = service_request.attachments.count()
+        if attachment_count:
+            response_parts.append(f"{attachment_count} file(s) uploaded.")
+        timeline_items.append({
+            "title": "Resident submitted requirements",
+            "meta": service_request.resident_responded_at,
+            "description": " ".join(response_parts) if response_parts else "The resident submitted the requested requirements.",
+            "actor": resident,
+            "tone": "teal",
+        })
+    timeline_items.sort(key=lambda item: item["meta"])
 
     current_handler_name = "Secretary Workspace"
     if latest_secretary_log and latest_secretary_log.user:
@@ -4128,9 +4275,19 @@ def service_request_detail(request, request_id):
 
     last_status_entry = status_history[-1] if status_history else None
     elapsed_days = max((timezone.now() - service_request.request_date).days, 0)
-    can_manage = is_secretary(request.user)
     can_print_release = is_secretary(request.user) and service_request.status == "Ready for Release"
-    next_step = get_service_request_allowed_statuses(service_request.status)[0] if get_service_request_allowed_statuses(service_request.status) else None
+    allowed_statuses = get_service_request_allowed_statuses(service_request.status)
+    non_requirement_statuses = [status for status in allowed_statuses if status != "Pending Requirements"]
+    next_step = non_requirement_statuses[0] if non_requirement_statuses else None
+    has_active_requirement_request = (
+        service_request.status == "Pending Requirements"
+        and bool(service_request.requirements_requested_at and service_request.requirements_note)
+    )
+    is_editing_requirement_request = (
+        can_manage
+        and request.GET.get("edit_requirements") == "1"
+        and service_request.status == "Pending Requirements"
+    )
     resident_action_text = None
     if service_request.status == "Pending Requirements":
         resident_action_text = "Resident action required: submit the missing information or documents so processing can continue."
@@ -4155,7 +4312,7 @@ def service_request_detail(request, request_id):
     elif service_request.status == "Pending Requirements":
         notification_items.append({
             "title": "Action Needed",
-            "message": "Please submit the missing requirements so the Secretary can continue processing your request.",
+            "message": service_request.requirements_note or "Please submit the missing requirements so the Secretary can continue processing your request.",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
             "tone": "gold",
         })
@@ -4209,14 +4366,24 @@ def service_request_detail(request, request_id):
         "current_stage_since": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
         "estimated_processing_text": SERVICE_REQUEST_ESTIMATES.get(service_request.status, "Processing time will depend on request completeness."),
         "elapsed_days": elapsed_days,
-        "allowed_statuses": get_service_request_allowed_statuses(service_request.status),
+        "allowed_statuses": non_requirement_statuses,
         "next_step": next_step,
         "resident_action_text": resident_action_text,
         "notification_items": notification_items,
         "current_status_tone": SERVICE_REQUEST_STATUS_COLORS.get(service_request.status, "blue"),
         "can_manage": can_manage,
         "can_print_release": can_print_release,
-        "is_view_only": not is_secretary(request.user),
+        "is_view_only": not can_manage,
+        "requirement_form": requirement_form,
+        "resident_submission_form": resident_submission_form,
+        "requirement_attachments": service_request.attachments.all(),
+        "can_request_requirements": can_manage and service_request.status in {"Under Review", "Pending Requirements"},
+        "has_active_requirement_request": has_active_requirement_request,
+        "show_requirement_request_form": can_manage and (
+            service_request.status == "Under Review" or is_editing_requirement_request
+        ),
+        "is_editing_requirement_request": is_editing_requirement_request,
+        "can_submit_requirements": is_resident_user and service_request.status == "Pending Requirements",
     }
     return render(request, "service_request_detail.html", context)
 

@@ -155,6 +155,8 @@ class UserProfile(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
     birth_date = models.DateField()
+    address = models.CharField(max_length=255, blank=True)
+    valid_id_image = models.ImageField(upload_to="valid_ids/", blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     is_auto_matched = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

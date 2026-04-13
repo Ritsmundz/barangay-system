@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,348 +6,304 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Barangay E-Governance System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+        :root {
+            --ink: #17314f;
+            --muted: #61738f;
+            --line: rgba(23, 49, 79, 0.16);
+            --panel: rgba(255, 255, 255, 0.93);
+            --left-overlay: rgba(20, 64, 128, 0.62);
+            --primary: #2b66cf;
+            --primary-deep: #193f84;
+            --pill: rgba(255, 255, 255, 0.16);
+            --danger-bg: #fff2f2;
+            --danger-line: #f3caca;
+            --danger-text: #a33232;
+            --shadow: 0 28px 70px rgba(9, 22, 46, 0.24);
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            font-family: 'IBM Plex Sans', sans-serif;
+            color: var(--ink);
+            background:
+                linear-gradient(rgba(235, 242, 250, 0.18), rgba(235, 242, 250, 0.18)),
+                url("{% static 'residents/img/barangay-gulod-hall.png' %}") center center / cover no-repeat fixed;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 24px 16px;
         }
 
-        /* ── Login container ── */
-        .login-container {
-            width: 100%;
-            max-width: 420px;
+        .shell {
+            width: min(940px, 100%);
+            display: grid;
+            grid-template-columns: minmax(280px, 0.92fr) minmax(320px, 1.08fr);
+            border-radius: 26px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.54);
+            box-shadow: var(--shadow);
+            background: rgba(255,255,255,0.22);
+            backdrop-filter: blur(8px);
         }
 
-        /* ── Logo/Brand card ── */
-        .brand-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 16px 16px 0 0;
-            padding: 32px 32px 24px;
-            text-align: center;
-            border-bottom: 3px solid #2563EB;
-        }
-
-        .brand-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 16px;
-            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-        }
-
-        .brand-icon svg {
-            width: 36px;
-            height: 36px;
+        .intro {
+            min-height: 600px;
+            padding: 28px 26px;
             color: #fff;
+            background:
+                linear-gradient(180deg, var(--left-overlay), rgba(41, 102, 199, 0.52)),
+                url("{% static 'residents/img/barangay-gulod-hall.png' %}") center center / cover no-repeat;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .brand-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: #1E293B;
-            margin-bottom: 4px;
-        }
-
-        .brand-subtitle {
-            font-size: 13px;
-            color: #64748B;
-            font-weight: 500;
-        }
-
-        /* ── Login form card ── */
-        .login-card {
-            background: #fff;
-            border-radius: 0 0 16px 16px;
-            padding: 32px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .login-header {
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 24px;
         }
 
-        .login-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #1E293B;
-            margin-bottom: 6px;
+        .logo-box {
+            width: 58px;
+            height: 58px;
+            padding: 8px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.18);
         }
 
-        .login-description {
-            font-size: 13px;
-            color: #64748B;
-        }
-
-        /* ── Form fields ── */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
+        .logo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            margin-bottom: 8px;
         }
 
-        .form-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 1.5px solid #E2E8F0;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #1E293B;
-            background: #F8FAFC;
-            transition: all 0.2s;
-            outline: none;
-        }
-
-        .form-input:focus {
-            border-color: #2563EB;
-            background: #fff;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        }
-
-        .form-input::placeholder {
-            color: #94A3B8;
-        }
-
-        /* ── Error messages ── */
-        .error-message {
-            margin-top: 6px;
-            font-size: 12px;
-            color: #DC2626;
-            display: flex;
+        .pill {
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: var(--pill);
+            border: 1px solid rgba(255,255,255,0.18);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
-        .error-message svg {
-            width: 14px;
-            height: 14px;
-            flex-shrink: 0;
+        .intro h1 {
+            font-size: clamp(2rem, 4vw, 3.1rem);
+            line-height: 0.96;
+            letter-spacing: -0.05em;
+            max-width: 8ch;
         }
 
-        .errorlist {
-            list-style: none;
-            margin: 6px 0 0 0;
-            padding: 0;
-        }
-
-        .errorlist li {
-            font-size: 12px;
-            color: #DC2626;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 4px;
-        }
-
-        /* ── Submit button ── */
-        .submit-btn {
-            width: 100%;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-            color: #fff;
-            border: none;
-            border-radius: 10px;
+        .intro p {
+            margin-top: 14px;
+            max-width: 28ch;
             font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+            line-height: 1.65;
+            color: rgba(255,255,255,0.92);
+        }
+
+        .mini-card {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.18);
+            backdrop-filter: blur(6px);
+        }
+
+        .mini-card + .mini-card { margin-top: 12px; }
+        .mini-card strong { display: block; margin-bottom: 6px; font-size: 14px; }
+        .mini-card span { font-size: 12px; line-height: 1.55; color: rgba(255,255,255,0.84); }
+
+        .form-side {
+            background: var(--panel);
+            padding: 34px 34px 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            margin-top: 24px;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
-        }
+        .form-panel { width: min(360px, 100%); }
 
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .submit-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* ── Footer ── */
-        .login-footer {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid #E2E8F0;
-            text-align: center;
-        }
-
-        .footer-text {
+        .form-head { margin-bottom: 20px; }
+        .eyebrow {
             font-size: 12px;
-            color: #64748B;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary);
+        }
+        .form-head h2 {
+            margin-top: 10px;
+            font-size: clamp(1.85rem, 3vw, 2.5rem);
+            line-height: 1;
+            letter-spacing: -0.05em;
+        }
+        .form-head p {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+        }
+
+        .err-list {
+            list-style: none;
+            margin-bottom: 16px;
+            padding: 13px 14px;
+            border-radius: 16px;
+            background: var(--danger-bg);
+            border: 1px solid var(--danger-line);
+            color: var(--danger-text);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        form { display: grid; gap: 14px; }
+        .field { display: grid; gap: 7px; }
+        label { font-size: 13px; font-weight: 700; }
+
+        .form-input {
+            width: 100%;
+            min-height: 48px;
+            padding: 0 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: #f5f8fd;
+            color: var(--ink);
+            font: inherit;
+            outline: none;
+            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+
+        .form-input:focus {
+            background: #fff;
+            border-color: rgba(43, 102, 207, 0.58);
+            box-shadow: 0 0 0 4px rgba(43, 102, 207, 0.12);
+        }
+
+        .hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+        .submit-btn {
+            width: 100%;
+            min-height: 50px;
+            border: 0;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 14px 28px rgba(43, 102, 207, 0.22);
+        }
+
+        .submit-btn:hover { filter: brightness(1.03); }
+
+        .login-footer {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
         }
 
         .footer-link {
-            color: #2563EB;
+            color: var(--primary-deep);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 700;
         }
 
-        .footer-link:hover {
-            text-decoration: underline;
-        }
+        .footer-link:hover { text-decoration: underline; }
 
-        /* ── Hide Django's default form rendering ── */
-        form > p {
-            display: none;
-        }
-
-        form > ul {
-            display: none;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 480px) {
-            .login-card {
-                padding: 24px;
+        @media (max-width: 900px) {
+            .shell {
+                width: min(500px, 100%);
+                grid-template-columns: 1fr;
             }
 
-            .brand-card {
-                padding: 24px 24px 20px;
+            .intro {
+                min-height: 280px;
+                padding: 22px;
             }
 
-            .brand-title {
-                font-size: 20px;
-            }
+            .intro-footer { display: none; }
+            .form-side { padding: 24px 22px; }
         }
     </style>
 </head>
-
 <body>
-
-    <div class="login-container">
-        <!-- Brand Card -->
-        <div class="brand-card">
-            <div class="brand-icon">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-                </svg>
-            </div>
-            <div class="brand-title">Barangay Gulod</div>
-            <div class="brand-subtitle">E-Governance System</div>
-        </div>
-
-        <!-- Login Card -->
-        <div class="login-card">
-            <div class="login-header">
-                <h2 class="login-title">Welcome Back</h2>
-                <p class="login-description">Sign in to access the barangay system</p>
-            </div>
-
-            <form method="POST">
-                {% csrf_token %}
-
-                <!-- Username Field -->
-                <div class="form-group">
-                    <label for="id_username" class="form-label">Username</label>
-                    <input 
-                        type="text" 
-                        name="username" 
-                        id="id_username"
-                        class="form-input"
-                        placeholder="Enter your username"
-                        autofocus
-                        required
-                    >
-                    {% if form.username.errors %}
-                        {% for error in form.username.errors %}
-                        <div class="error-message">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            {{ error }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-
-                <!-- Password Field -->
-                <div class="form-group">
-                    <label for="id_password" class="form-label">Password</label>
-                    <input 
-                        type="password" 
-                        name="password" 
-                        id="id_password"
-                        class="form-input"
-                        placeholder="Enter your password"
-                        required
-                    >
-                    {% if form.password.errors %}
-                        {% for error in form.password.errors %}
-                        <div class="error-message">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            {{ error }}
-                        </div>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-
-                <!-- Non-field errors (e.g., invalid credentials) -->
-                {% if form.non_field_errors %}
-                    {% for error in form.non_field_errors %}
-                    <div class="error-message" style="margin-bottom: 16px;">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                        </svg>
-                        {{ error }}
+    <main class="shell">
+        <section class="intro">
+            <div>
+                <div class="brand-row">
+                    <div class="logo-box">
+                        <img src="{{ barangay_logo_data_uri }}" alt="Barangay Gulod logo">
                     </div>
+                    <div class="pill">Barangay Gulod</div>
+                </div>
+                <h1>Sign in to the barangay system.</h1>
+                <p>Access resident services, pending requests, and your barangay account in one secure portal.</p>
+            </div>
+
+            <div class="intro-footer">
+                <div class="mini-card">
+                    <strong>Barangay Gulod Hall</strong>
+                    <span>The real Barangay Gulod Hall image is now the page background and the left split panel background.</span>
+                </div>
+                <div class="mini-card">
+                    <strong>Resident Access</strong>
+                    <span>Use the same account for portal requests, verification tracking, and notifications.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-side">
+            <div class="form-panel">
+                <div class="form-head">
+                    <div class="eyebrow">Barangay E-Governance</div>
+                    <h2>Welcome back</h2>
+                    <p>Enter your username and password to continue to the system dashboard or resident portal.</p>
+                </div>
+
+                {% if form.errors %}
+                <ul class="err-list">
+                    {% for field in form %}
+                        {% for error in field.errors %}<li>{{ field.label }}: {{ error }}</li>{% endfor %}
                     {% endfor %}
+                    {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
+                </ul>
                 {% endif %}
 
-                <!-- Submit Button -->
-                <button type="submit" class="submit-btn">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Sign In
-                </button>
-            </form>
+                <form method="post">
+                    {% csrf_token %}
 
-            <!-- Footer -->
-            <div class="login-footer">
-                <p class="footer-text">
-                    © 2024 Barangay Gulod. All rights reserved.
-                </p>
-                <p class="footer-text" style="margin-top: 8px;">
-                    <a class="footer-link" href="{% url 'about_us' %}">About Us</a>
-                </p>
-                <p class="footer-text" style="margin-top: 8px;">
-                    Resident account? <a href="{% url 'resident_register' %}">Register here</a>
-                </p>
+                    <div class="field">
+                        <label for="id_username">Username</label>
+                        <input class="form-input" type="text" name="username" id="id_username" value="{{ form.username.value|default:'' }}" autocomplete="username" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="id_password">Password</label>
+                        <input class="form-input" type="password" name="password" id="id_password" autocomplete="current-password" required>
+                        <div class="hint">Use the same account details you created during resident registration.</div>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Sign In</button>
+                </form>
+
+                <div class="login-footer">
+                    Resident account? <a class="footer-link" href="{% url 'resident_register' %}">Create one here</a>
+                </div>
             </div>
-        </div>
-    </div>
-
+        </section>
+    </main>
 </body>
 </html>
-
-

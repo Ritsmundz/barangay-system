@@ -732,22 +732,6 @@
                     Households
                 </a>
 
-                <div class="sb-section">Analytics</div>
-                <a href="{% url 'secretary_dashboard' %}" class="sb-item {% if request.resolver_match.url_name == 'secretary_dashboard' %}active{% endif %}">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M4 15h2V8H4v7zm5 0h2V5H9v10zm5 0h2v-4h-2v4zM2 17h16v1H2z"/>
-                    </svg>
-                    Analytics
-                </a>
-                <div class="sb-submenu">
-                    <a href="{% url 'secretary_dashboard' %}#analytics-residents" class="sb-subitem">Residents Analytics</a>
-                    <a href="{% url 'secretary_dashboard' %}#analytics-households" class="sb-subitem">Households Analytics</a>
-                    <a href="{% url 'secretary_dashboard' %}#analytics-services" class="sb-subitem">Service Requests Analytics</a>
-                    <a href="{% url 'secretary_dashboard' %}#analytics-complaints" class="sb-subitem">Complaints Analytics</a>
-                    <a href="{% url 'secretary_dashboard' %}#analytics-verifications" class="sb-subitem">Verifications/Certifications</a>
-                    <a href="{% url 'secretary_dashboard' %}#analytics-monthly" class="sb-subitem">Monthly Reports</a>
-                </div>
-
                 <div class="sb-section">Services</div>
                 <a href="{% url 'complaint_list' %}" class="sb-item {% if request.resolver_match.url_name == 'complaint_list' or request.resolver_match.url_name == 'complaint_detail' or request.resolver_match.url_name == 'file_complaint' %}active{% endif %}">
                     <svg viewBox="0 0 20 20" fill="currentColor">
