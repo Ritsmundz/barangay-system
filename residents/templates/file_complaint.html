@@ -1,643 +1,234 @@
 {% extends "base.html" %}
 
-{% block page_title %}File a Complaint{% endblock %}
-{% block page_subtitle %}Submit a formal complaint to the barangay{% endblock %}
+{% block page_title %}Submit Online Complaint{% endblock %}
+{% block page_subtitle %}Report a concern online first, then wait for secretary review, verification, and hearing schedule updates through the resident portal.{% endblock %}
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
 <style>
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
-    }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    .complaint-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 320px;
-        gap: 18px;
-        align-items: start;
-        max-width: 1180px;
-        margin: 0 auto;
-    }
-    @media (max-width: 980px) {
-        .complaint-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .form-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-    }
-    .form-card-hdr {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 18px 22px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .form-card-hdr-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 12px;
-        background: rgba(255,255,255,.18);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
-    .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
-    .form-card-hdr-sub { font-size: 11.5px; color: rgba(255,255,255,.78); margin-top: 2px; }
-
-    .form-body {
-        padding: 20px 22px;
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-    }
-    .form-intro {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-    }
-    .intro-card {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-        border: 1px solid #DCE7F5;
-        border-radius: 12px;
-        padding: 14px 15px;
-        position: relative;
-        overflow: hidden;
-    }
-    .intro-card::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 4px;
-        height: 100%;
-    }
-    .intro-card:nth-child(1)::before { background: linear-gradient(180deg, #2563EB, #60A5FA); }
-    .intro-card:nth-child(2)::before { background: linear-gradient(180deg, #16A34A, #4ADE80); }
-    .intro-card:nth-child(3)::before { background: linear-gradient(180deg, #D97706, #FBBF24); }
-    .intro-label {
-        font-size: 10px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        margin-bottom: 7px;
-    }
-    .intro-value {
-        font-size: 14px;
-        font-weight: 600;
-        color: #1E293B;
-        line-height: 1.4;
-    }
-    .intro-sub {
-        margin-top: 5px;
-        font-size: 11px;
-        color: #64748B;
-        line-height: 1.5;
-    }
-
-    .form-section {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-    }
-    .section-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #E2E8F0;
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E293B;
-    }
-    .section-title svg { width: 15px; height: 15px; color: #2563EB; }
-
-    .field-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-    }
-    .field-full { grid-column: 1 / -1; }
-    .field-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .field-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #334155;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .field-required { color: #DC2626; }
-    .field-hint {
-        font-size: 11px;
-        color: #94A3B8;
-        line-height: 1.5;
-    }
-    .field-error {
-        font-size: 11px;
-        color: #DC2626;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .field-error svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-    .bmis-input,
-    .bmis-select,
-    .bmis-textarea {
-        width: 100%;
-        padding: 0 12px;
-        height: 42px;
-        border: 1px solid #D6E0EE;
-        border-radius: 10px;
-        font-size: 13px;
-        font-family: inherit;
-        color: #1E293B;
-        background: #F8FAFC;
-        outline: none;
-        transition: border-color .15s, background .15s, box-shadow .15s;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-    .bmis-textarea {
-        height: auto;
-        min-height: 170px;
-        padding: 12px;
-        resize: vertical;
-        line-height: 1.7;
-    }
-    .bmis-input:focus,
-    .bmis-select:focus,
-    .bmis-textarea:focus {
-        border-color: #2563EB;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
-    }
-    .bmis-input:hover,
-    .bmis-select:hover,
-    .bmis-textarea:hover {
-        border-color: #CBD5E1;
-    }
-
-    .select-wrap {
-        position: relative;
-    }
-    .select-wrap::after {
-        content: '';
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 5px solid #94A3B8;
-        pointer-events: none;
-    }
-    .select-wrap .bmis-select {
-        padding-right: 34px;
-        cursor: pointer;
-    }
-    .select-wrap select {
-        width: 100%;
-        padding-right: 34px;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-image: none;
-    }
-    .select-wrap select::-ms-expand {
-        display: none;
-    }
-    .resident-picker {
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-    }
-    .resident-search {
-        padding-right: 12px;
-        background-image: none;
-    }
-    .resident-native-select {
-        display: none;
-    }
-
-    .form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 22px;
-        border-top: 1px solid #E2E8F0;
-        background: #FAFBFC;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .footer-note {
-        font-size: 11.5px;
-        color: #94A3B8;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .footer-note svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .footer-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        line-height: 1;
-        white-space: nowrap;
-        border: none;
-    }
-    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .btn-primary { background: #2563EB; color: #fff; }
-    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
-    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
-    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-
-    .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    .notice-card {
-        background: #FFFBEB;
-        border: 1px solid #FCD34D;
-        border-radius: 12px;
-        padding: 16px 18px;
-        display: flex;
-        gap: 12px;
-    }
-    .notice-card svg {
-        width: 18px;
-        height: 18px;
-        color: #D97706;
-        flex-shrink: 0;
-        margin-top: 1px;
-    }
-    .notice-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #92400E;
-        margin-bottom: 6px;
-    }
-    .notice-text {
-        font-size: 12px;
-        color: #78350F;
-        line-height: 1.7;
-    }
-
-    .sidebar-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .sidebar-card-header {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 14px 18px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .sidebar-card-icon {
-        width: 30px;
-        height: 30px;
-        border-radius: 9px;
-        background: rgba(255,255,255,.18);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .sidebar-card-icon svg { width: 15px; height: 15px; color: #fff; }
-    .sidebar-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #fff;
-    }
-    .sidebar-card-body {
-        padding: 16px 18px;
-    }
-    .tips-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 11px;
-    }
-    .tips-list li {
-        font-size: 12px;
-        color: #475569;
-        display: flex;
-        gap: 8px;
-        line-height: 1.55;
-    }
-    .tips-list li svg {
-        width: 14px;
-        height: 14px;
-        color: #10B981;
-        flex-shrink: 0;
-        margin-top: 2px;
-    }
-
-    .feature-note {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-        border: 1px solid #DCE7F5;
-        border-radius: 12px;
-        padding: 14px 16px;
-    }
-    .feature-title {
-        font-size: 12px;
-        font-weight: 600;
-        color: #1E40AF;
-        margin-bottom: 6px;
-    }
-    .feature-text {
-        font-size: 11.5px;
-        color: #64748B;
-        line-height: 1.6;
-    }
-
-    @media (max-width: 820px) {
-        .form-intro,
-        .field-grid {
-            grid-template-columns: 1fr;
-        }
-        .field-full {
-            grid-column: auto;
-        }
-    }
+    .complaint-page{display:grid;gap:20px;max-width:1240px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .complaint-layout{display:grid;grid-template-columns:minmax(0,1.35fr) 320px;gap:18px;align-items:start}
+    .left-col,.right-col{display:grid;gap:18px}
+    .ui-panel{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)}
+    .hero{padding:22px 24px;background:radial-gradient(circle at top right, rgba(245,158,11,.12), transparent 34%),radial-gradient(circle at left, rgba(37,99,235,.10), transparent 28%),linear-gradient(180deg,#fff,#f9fbff)}
+    .hero h1{font-size:28px;line-height:1.1;margin:0;color:#16243d}
+    .hero p{margin:8px 0 0;color:#66768d;font-size:14px;max-width:760px}
+    .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-size:12px;font-weight:700}
+    .hero-tag.safe{background:#eff6ff;border-color:#dbeafe;color:#1d4ed8}
+    .hero-tag.ok{background:#ecfdf5;border-color:#bbf7d0;color:#0f766e}
+    .form-card{overflow:hidden}
+    .form-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .form-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .form-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+    .pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor}
+    .form-body{padding:20px;display:grid;gap:18px}
+    .field{display:grid;gap:7px}
+    .field label{font-size:12px;font-weight:700;color:#41526d}
+    .req{color:#dc2626}
+    .field small{font-size:11px;color:#8b9bb0}
+    .input-card{padding:16px;border:1px solid #e7eef6;border-radius:16px;background:#fcfdff}
+    .bmis-input,.bmis-select{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s}
+    textarea.bmis-input{min-height:160px;padding:12px 14px;resize:vertical}
+    .bmis-input:focus,.bmis-select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .field-error{font-size:11px;color:#dc2626}
+    .info-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .footer-bar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:16px 20px;border-top:1px solid #e7eef6;background:linear-gradient(180deg,#fff,#f9fbff)}
+    .footer-note{font-size:12px;color:#6b7a90}
+    .footer-note strong{color:#1d2d47}
+    .footer-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .side-card{padding:18px}
+    .side-card h3{margin:0 0 12px;font-size:16px;color:#16243d}
+    .notice{background:linear-gradient(180deg,#fffaf0,#fff7e6);border:1px solid #fed7aa}
+    .notice p,.guide-list li,.preview-list .value{font-size:13px;color:#465873;line-height:1.6}
+    .guide-list,.preview-list{display:grid;gap:12px}
+    .guide-list li,.preview-item{list-style:none;padding-bottom:12px;border-bottom:1px solid #edf2f7}
+    .guide-list li:last-child,.preview-item:last-child{padding-bottom:0;border-bottom:none}
+    .guide-list li::before{content:"•";color:#0f9f8f;font-weight:700;margin-right:8px}
+    .preview-top{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1px solid #e7eef6}
+    .preview-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#f59e0b,#f97316);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+    .preview-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .preview-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .preview-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+    .value{font-size:14px;color:#1e293b;font-weight:600;line-height:1.45}
+    .sticky-bar{position:sticky;bottom:14px;z-index:20;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;border:1px solid #dbe6f2;border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(17,37,77,.12)}
+    .sticky-note{font-size:12px;color:#6b7a90}.sticky-note strong{color:#1d2d47}
+    .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
+    @media (max-width:1040px){.complaint-layout{grid-template-columns:1fr}.right-col{grid-template-columns:1fr 1fr}}
+    @media (max-width:720px){.info-row,.right-col{grid-template-columns:1fr}}
 </style>
 
-<div class="breadcrumb">
-    <a href="{% url 'complaint_list' %}">Complaints</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">File Complaint</span>
-</div>
+<div class="complaint-page">
+    <div class="crumbs">
+        <a href="{% url 'complaint_list' %}">Complaints</a><span>&gt;</span>
+        <span>File Complaint</span>
+    </div>
 
-<div class="complaint-layout">
-    <div class="form-card">
-        <div class="form-card-hdr">
-            <div class="form-card-hdr-icon">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                </svg>
-            </div>
-            <div>
-                <div class="form-card-hdr-title">Complaint Form</div>
-                <div class="form-card-hdr-sub">Provide complete and truthful information for barangay review</div>
-            </div>
-        </div>
+    <div class="complaint-layout">
+        <div class="left-col">
+            <section class="ui-panel hero">
+                <h1>Submit Online Complaint</h1>
+                <p>Your complaint will be received by the Secretary, reviewed for completeness, verified, and scheduled for face-to-face mediation if the case is qualified for hearing. Keep your report factual, complete, and easy to understand.</p>
+                <div class="hero-tags">
+                    <span class="hero-tag">Submitted online first</span>
+                    <span class="hero-tag safe">Secretary-reviewed workflow</span>
+                    <span class="hero-tag ok">Hearing details sent by notification</span>
+                </div>
+            </section>
 
-        <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-body">
-                <div class="form-intro">
-                    <div class="intro-card">
-                        <div class="intro-label">Filing Channel</div>
-                        <div class="intro-value">Barangay Complaint Desk</div>
-                        <div class="intro-sub">All submitted cases are routed for secretary review and documentation.</div>
+            <form method="POST" class="ui-panel form-card" id="complaint-form">
+                {% csrf_token %}
+                <div class="form-head">
+                    <div>
+                        <div class="form-title">Complaint Details</div>
+                        <div class="form-sub">Provide complete and accurate information so the Secretary can review the issue properly before any face-to-face hearing is scheduled.</div>
                     </div>
-                    <div class="intro-card">
-                        <div class="intro-label">Current Workflow</div>
-                        <div class="intro-value">Initial Intake</div>
-                        <div class="intro-sub">Complaints are recorded first, then assessed for investigation or mediation.</div>
-                    </div>
-                    <div class="intro-card">
-                        <div class="intro-label">Expected Input</div>
-                        <div class="intro-value">Resident, title, and description</div>
-                        <div class="intro-sub">Use a clear title and a complete incident description to avoid delays.</div>
-                    </div>
+                    <div class="pill" id="complaint-pill">Draft in progress</div>
                 </div>
 
-                <div class="form-section">
-                    <div class="section-title">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-                        Complaint Information
-                    </div>
+                <div class="form-body">
+                    {% if form.non_field_errors %}
+                    <div class="ui-alert danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
 
-                    <div class="field-grid">
-                        <div class="field-group field-full">
-                            <label class="field-label" for="id_resident">
-                                Complainant <span class="field-required">*</span>
-                            </label>
-                            {% if is_resident_user %}
+                    <div class="input-card">
+                        <div class="info-row">
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_resident">Complainant <span class="req">*</span></label>
+                                {% if is_resident_user %}
                                 <input type="text" class="bmis-input" value="{{ resident_profile.resident }}" readonly>
                                 {{ form.resident }}
-                                <div class="field-hint">Complaint will be filed using your linked resident profile.</div>
-                            {% else %}
-                                <div class="resident-picker">
-                                    <div>
-                                        <input type="text" id="resident-search" class="bmis-input resident-search" placeholder="Type complainant name" list="resident-options" autocomplete="off">
-                                    </div>
-                                    <datalist id="resident-options"></datalist>
-                                    <div class="select-wrap resident-native-select">
-                                        {{ form.resident }}
-                                    </div>
-                                </div>
-                                {% if form.resident.errors %}
-                                    <div class="field-error">
-                                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                        {{ form.resident.errors.0 }}
-                                    </div>
+                                <small>Complaint will be submitted under your verified resident profile.</small>
                                 {% else %}
-                                    <div class="field-hint">Provide the name of the resident who is submitting the complaint.</div>
+                                {{ form.resident }}
+                                {% if form.resident.errors %}<div class="field-error">{{ form.resident.errors.0 }}</div>{% endif %}
+                                <small>Select the resident who is filing this complaint.</small>
                                 {% endif %}
-                            {% endif %}
-                        </div>
+                            </div>
 
-                        <div class="field-group field-full">
-                            <label class="field-label" for="id_title">
-                                Complaint Title <span class="field-required">*</span>
-                            </label>
-                            {{ form.title }}
-                            {% if form.title.errors %}
-                                <div class="field-error">
-                                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                    {{ form.title.errors.0 }}
-                                </div>
-                            {% else %}
-                                <div class="field-hint">Use a short and specific title, such as illegal vendor, noise disturbance, or harassment complaint.</div>
-                            {% endif %}
-                        </div>
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_title">Complaint Title <span class="req">*</span></label>
+                                {{ form.title }}
+                                {% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}
+                                <small>Use a short but specific summary that clearly identifies the concern.</small>
+                            </div>
 
-                        <div class="field-group field-full">
-                            <label class="field-label" for="id_description">
-                                Description <span class="field-required">*</span>
-                            </label>
-                            {{ form.description }}
-                            {% if form.description.errors %}
-                                <div class="field-error">
-                                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                                    {{ form.description.errors.0 }}
-                                </div>
-                            {% else %}
-                                <div class="field-hint">Describe what happened, when it happened, where it happened, and who was involved.</div>
-                            {% endif %}
+                            <div class="field" style="grid-column:1/-1;">
+                                <label for="id_description">Description <span class="req">*</span></label>
+                                {{ form.description }}
+                                {% if form.description.errors %}<div class="field-error">{{ form.description.errors.0 }}</div>{% endif %}
+                                <small>Include the incident details, date, location, people involved, and any supporting facts or witnesses.</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-footer">
-                <div class="footer-note">
-                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                    Complaint entries are reviewed by barangay officials before further action.
+                <div class="footer-bar">
+                    <div class="footer-note"><strong>Process note:</strong> After submission, you will receive portal notifications when your complaint is received, reviewed, verified, or scheduled for hearing.</div>
+                    <div class="footer-actions">
+                        <a href="{% url 'complaint_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-bmis btn-primary" id="submit-complaint-btn">Submit Complaint</button>
+                    </div>
                 </div>
-                <div class="footer-actions">
-                    <a href="{% url 'complaint_list' %}" class="btn-bmis btn-ghost">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/></svg>
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn-bmis btn-primary">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
-                        Submit Complaint
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
+            </form>
 
-    <div class="sidebar">
-        <div class="notice-card">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
-            <div>
-                <div class="notice-title">Important Notice</div>
-                <div class="notice-text">Filing a false complaint is a serious offense. Please ensure all details submitted to the barangay are truthful, complete, and accurate.</div>
+            <div class="sticky-bar">
+                <div class="sticky-note"><strong>Before submitting:</strong> make sure the title is clear and the description explains the issue, people involved, and facts the Secretary can verify.</div>
+                <div class="sticky-actions">
+                    <a href="{% url 'complaint_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                    <button type="submit" form="complaint-form" class="btn-bmis btn-primary" id="sticky-complaint-btn">Submit Complaint</button>
+                </div>
             </div>
         </div>
 
-        <div class="sidebar-card">
-            <div class="sidebar-card-header">
-                <div class="sidebar-card-icon">
-                    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+        <div class="right-col">
+            <section class="ui-panel side-card notice">
+                <h3>Important Notice</h3>
+                <p>Filing a false complaint is a serious offense. Complaints may be submitted online, but settlement and issue handling still happen through barangay review and face-to-face mediation.</p>
+            </section>
+
+            <section class="ui-panel side-card">
+                <h3>Complaint Preview</h3>
+                <div class="preview-top">
+                    <div class="preview-avatar">C</div>
+                    <div>
+                        <div class="preview-name" id="preview-title">Complaint draft</div>
+                        <div class="preview-sub">Live summary while you type</div>
+                    </div>
                 </div>
-                <div class="sidebar-card-title">Filing Guidelines</div>
-            </div>
-            <div class="sidebar-card-body">
-                <ul class="tips-list">
-                    <li><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Provide a clear and concise complaint title.</li>
-                    <li><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Include the date, location, and people involved whenever possible.</li>
-                    <li><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>State the incident facts in a calm and objective manner.</li>
-                    <li><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Keep a copy of the complaint details for follow-up reference.</li>
+                <div class="preview-list" style="margin-top:14px;">
+                    <div class="preview-item">
+                        <div class="preview-label">Complainant</div>
+                        <div class="value" id="pv-resident">{% if is_resident_user %}{{ resident_profile.resident }}{% else %}Not selected{% endif %}</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Title</div>
+                        <div class="value" id="pv-title">Not yet provided</div>
+                    </div>
+                    <div class="preview-item">
+                        <div class="preview-label">Description Status</div>
+                        <div class="value" id="pv-description">Waiting for details</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ui-panel side-card">
+                <h3>What Happens Next</h3>
+                <ul class="guide-list">
+                    <li>Your complaint starts as <strong>Submitted</strong> and becomes visible to the Secretary.</li>
+                    <li>The Secretary reviews and verifies the complaint before scheduling any hearing.</li>
+                    <li>If the issue is valid for mediation, you will receive the meeting date, time, location, and purpose by notification.</li>
+                    <li>Write only verifiable facts and include names, location, and timeline when possible.</li>
+                    <li>Face-to-face mediation is still required for complaint resolution under barangay policy.</li>
                 </ul>
-            </div>
-        </div>
-
-        <div class="sidebar-card">
-            <div class="sidebar-card-header">
-                <div class="sidebar-card-icon">
-                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zm2-5a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zm3 10a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1z"/></svg>
-                </div>
-                <div class="sidebar-card-title">Professional Filing Tips</div>
-            </div>
-            <div class="sidebar-card-body">
-                <div class="feature-note">
-                    <div class="feature-title">Current Complaint Form Scope</div>
-                    <div class="feature-text">This page currently records the resident, complaint title, and full description. Additional case fields like category, attachments, priority, and notification preferences can be added later if you want them wired into the backend too.</div>
-                </div>
-            </div>
+            </section>
         </div>
     </div>
 </div>
 
-{% if not is_resident_user %}
 <script>
-    (function () {
-        const searchInput = document.getElementById("resident-search");
-        const residentSelect = document.getElementById("id_resident");
-        const residentOptions = document.getElementById("resident-options");
-        if (!searchInput || !residentSelect) return;
+(() => {
+    const resident = document.getElementById("id_resident");
+    const title = document.getElementById("id_title");
+    const description = document.getElementById("id_description");
+    const pvResident = document.getElementById("pv-resident");
+    const pvTitle = document.getElementById("pv-title");
+    const pvDescription = document.getElementById("pv-description");
+    const previewTitle = document.getElementById("preview-title");
+    const pill = document.getElementById("complaint-pill");
+    const submitButtons = [document.getElementById("submit-complaint-btn"), document.getElementById("sticky-complaint-btn")].filter(Boolean);
 
-        const originalOptions = Array.from(residentSelect.options).map((option) => ({
-            value: option.value,
-            text: option.text,
-            selected: option.selected,
-        }));
-
-        const syncDataList = (query) => {
-            const normalized = query.trim().toLowerCase();
-            residentOptions.innerHTML = "";
-
-            originalOptions.forEach((option) => {
-                const shouldShow = option.value !== "" && (!normalized || option.text.toLowerCase().includes(normalized));
-                if (!shouldShow) return;
-
-                const nextOption = document.createElement("option");
-                nextOption.value = option.text;
-                residentOptions.appendChild(nextOption);
-            });
-        };
-
-        const syncSelectValue = (typedValue) => {
-            const normalized = typedValue.trim().toLowerCase();
-            const matched = originalOptions.find((option) => option.value !== "" && option.text.toLowerCase() === normalized);
-            if (matched) {
-                residentSelect.value = matched.value;
-                return;
-            }
-
-            const partial = originalOptions.find((option) => option.value !== "" && option.text.toLowerCase().includes(normalized));
-            if (partial && normalized) {
-                residentSelect.value = partial.value;
-                return;
-            }
-
-            residentSelect.value = "";
-        };
-
-        searchInput.addEventListener("input", function () {
-            syncDataList(this.value);
-            syncSelectValue(this.value);
-        });
-
-        searchInput.addEventListener("change", function () {
-            syncSelectValue(this.value);
-        });
-
-        const selectedOption = originalOptions.find((option) => option.selected && option.value);
-        if (selectedOption) {
-            searchInput.value = selectedOption.text;
-            residentSelect.value = selectedOption.value;
+    function updatePreview() {
+        if (resident && pvResident) {
+            const option = resident.selectedOptions && resident.selectedOptions[0];
+            pvResident.textContent = option && option.value ? option.text : "Not selected";
         }
-        syncDataList(searchInput.value);
-    })();
+        const titleText = (title?.value || "").trim();
+        const descText = (description?.value || "").trim();
+        pvTitle.textContent = titleText || "Not yet provided";
+        previewTitle.textContent = titleText || "Complaint draft";
+        pvDescription.textContent = descText.length >= 40 ? "Detailed enough for review" : descText ? "Needs more detail" : "Waiting for details";
+        pill.textContent = titleText && descText ? "Ready for review" : "Draft in progress";
+    }
+
+    [resident, title, description].forEach((el) => {
+        if (!el) return;
+        ["input", "change"].forEach((evt) => el.addEventListener(evt, updatePreview));
+    });
+
+    submitButtons.forEach((btn) => btn.addEventListener("click", () => {
+        setTimeout(() => {
+            submitButtons.forEach((button) => {
+                button.disabled = true;
+                button.textContent = "Submitting...";
+            });
+        }, 0);
+    }));
+
+    updatePreview();
+})();
 </script>
-{% endif %}
 {% endblock %}

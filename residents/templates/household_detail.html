@@ -1,636 +1,220 @@
 {% extends "base.html" %}
 
 {% block page_title %}Household Dashboard{% endblock %}
-{% block page_subtitle %}{{ household.street }}, Purok {{ household.purok }}{% endblock %}
-{% block page_header_actions %}
-<a href="{% url 'household_list' %}" class="btn-bmis btn-ghost">
-    <svg viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-    </svg>
-    Back to List
-</a>
-<a href="{% url 'add_resident_to_household' household.id %}" class="btn-bmis btn-primary">
-    <svg viewBox="0 0 20 20" fill="currentColor">
-        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
-    </svg>
-    Add Resident
-</a>
-{% endblock %}
+{% block page_subtitle %}Review address information, member composition, and household actions from one dashboard.{% endblock %}
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
 <style>
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
+    .household-page{display:grid;gap:20px;max-width:1280px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .hero-card,.stat-card,.info-card,.table-card{
+        background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)
     }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        border: none;
-        white-space: nowrap;
-    }
-    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .btn-primary { background: #2563EB; color: #fff; }
-    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
-    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
-    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-
-    .household-dashboard {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        max-width: 1240px;
-        margin: 0 auto;
-    }
-
-    .household-hero {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 14px;
-        overflow: hidden;
-        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
-    }
-    .household-hero-main {
-        display: grid;
-        grid-template-columns: 236px 1fr;
-    }
-    .household-identity {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        color: #fff;
-        padding: 20px 18px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-    }
-    .household-avatar {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.16);
-        border: 3px solid rgba(255,255,255,.32);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 12px;
-    }
-    .household-avatar svg {
-        width: 30px;
-        height: 30px;
-        color: #fff;
-    }
-    .household-name {
-        font-size: 22px;
-        line-height: 1.2;
-        font-weight: 700;
-        margin-bottom: 6px;
-    }
-    .household-subtitle {
-        font-size: 13px;
-        line-height: 1.5;
-        color: rgba(255,255,255,.84);
-        max-width: 180px;
-    }
-    .household-status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 12px;
-        padding: 5px 11px;
-        border-radius: 999px;
-        font-size: 10.5px;
-        font-weight: 600;
-        background: rgba(255,255,255,.15);
-        color: #DBEAFE;
-    }
-    .household-status-pill::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #4ADE80;
-    }
-
-    .household-info-grid {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        padding: 10px 12px;
-    }
-    .household-info-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 9px;
-        padding: 12px 14px;
-        border-right: 1px solid #F1F5F9;
-        border-bottom: 1px solid #F1F5F9;
-    }
-    .household-info-item:nth-child(3n) { border-right: none; }
-    .household-info-item:nth-last-child(-n + 3) { border-bottom: none; }
-    .household-info-icon {
-        width: 30px;
-        height: 30px;
-        border-radius: 10px;
-        background: #F8FAFC;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .household-info-icon svg { width: 15px; height: 15px; color: #64748B; }
-    .info-label {
-        font-size: 10px;
-        color: #94A3B8;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        margin-bottom: 4px;
-    }
-    .info-value {
-        font-size: 13px;
-        font-weight: 500;
-        color: #1E293B;
-        line-height: 1.45;
-    }
-    .info-value-muted {
-        color: #94A3B8;
-        font-style: italic;
-    }
-
-    .stats-card,
-    .table-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
-        width: 100%;
-    }
-    .stats-card-header,
-    .table-card-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-        padding: 11px 14px;
-        border-bottom: 1px solid #E2E8F0;
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-    }
-    .stats-card-title,
-    .table-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E293B;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .stats-card-title svg,
-    .table-card-title svg {
-        width: 15px;
-        height: 15px;
-        color: #2563EB;
-    }
-    .table-card-count {
-        font-size: 11px;
-        color: #2563EB;
-        background: #DBEAFE;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-weight: 600;
-    }
-
-    .stats-card-body {
-        padding: 14px;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-    }
-    .stat-item {
-        background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
-        border: 1px solid #DCE7F5;
-        border-radius: 12px;
-        padding: 14px 15px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,.72);
-    }
-    .stat-item::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 4px;
-        height: 100%;
-    }
-    .stat-item::after {
-        content: '';
-        position: absolute;
-        right: -18px;
-        top: -18px;
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
-        opacity: .55;
-    }
-    .stat-item:nth-child(1)::before { background: linear-gradient(180deg, #2563EB, #60A5FA); }
-    .stat-item:nth-child(1)::after { background: rgba(37, 99, 235, 0.08); }
-    .stat-item:nth-child(2)::before { background: linear-gradient(180deg, #16A34A, #4ADE80); }
-    .stat-item:nth-child(2)::after { background: rgba(34, 197, 94, 0.08); }
-    .stat-item:nth-child(3)::before { background: linear-gradient(180deg, #D97706, #FBBF24); }
-    .stat-item:nth-child(3)::after { background: rgba(245, 158, 11, 0.09); }
-    .stat-item:nth-child(4)::before { background: linear-gradient(180deg, #7C3AED, #A78BFA); }
-    .stat-item:nth-child(4)::after { background: rgba(124, 58, 237, 0.08); }
-    .stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #2563EB;
-        line-height: 1.1;
-        margin-bottom: 6px;
-        position: relative;
-        z-index: 1;
-    }
-    .stat-label {
-        font-size: 11px;
-        color: #64748B;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        position: relative;
-        z-index: 1;
-    }
-
-    .members-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .members-table thead {
-        background: #F8FAFC;
-        border-bottom: 1px solid #E2E8F0;
-    }
-    .members-table th {
-        padding: 12px 14px;
-        text-align: center;
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .members-table td {
-        padding: 13px 14px;
-        font-size: 13px;
-        color: #1E293B;
-        border-bottom: 1px solid #F1F5F9;
-        vertical-align: middle;
-        text-align: center;
-    }
-    .members-table tr:last-child td { border-bottom: none; }
-    .members-table tbody tr:hover { background: #F8FAFC; }
-
-    .badge-head {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 10px;
-        font-weight: 600;
-        background: #FEF3C7;
-        color: #92400E;
-        margin-left: 6px;
-    }
-    .badge-head svg { width: 11px; height: 11px; }
-
-    .voter-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 500;
-    }
-    .voter-yes {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-    .voter-no {
-        background: #F3F4F6;
-        color: #6B7280;
-    }
-    .voter-badge svg { width: 12px; height: 12px; }
-
-    .action-group {
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    .btn-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 500;
-        text-decoration: none;
-        transition: all .15s;
-        border: none;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-    .btn-action svg { width: 12px; height: 12px; }
-    .btn-set-head {
-        background: #FEF3C7;
-        color: #92400E;
-    }
-    .btn-set-head:hover {
-        background: #FDE68A;
-        text-decoration: none;
-        color: #78350F;
-    }
-    .btn-current-head {
-        background: #E0E7FF;
-        color: #3730A3;
-        cursor: default;
-    }
-    .btn-remove {
-        background: #FEE2E2;
-        color: #991B1B;
-    }
-    .btn-remove:hover {
-        background: #FECACA;
-        text-decoration: none;
-        color: #7F1D1D;
-    }
-    .head-label { font-style: normal; }
-
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    .empty-state-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 16px;
-        border-radius: 50%;
-        background: #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .empty-state-icon svg {
-        width: 32px;
-        height: 32px;
-        color: #94A3B8;
-    }
-    .empty-state-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 6px;
-    }
-    .empty-state-text {
-        font-size: 13px;
-        color: #64748B;
-        margin-bottom: 16px;
-    }
-
-    @media (max-width: 1200px) {
-        .members-table {
-            display: block;
-            overflow-x: auto;
-        }
-    }
-    @media (max-width: 980px) {
-        .household-hero-main {
-            grid-template-columns: 1fr;
-        }
-        .household-info-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        .household-info-item:nth-child(3n) { border-right: 1px solid #F1F5F9; }
-        .household-info-item:nth-child(2n) { border-right: none; }
-        .household-info-item:nth-last-child(-n + 3) { border-bottom: 1px solid #F1F5F9; }
-        .household-info-item:nth-last-child(-n + 2) { border-bottom: none; }
-        .stats-card-body {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-    @media (max-width: 720px) {
-        .household-info-grid,
-        .stats-card-body {
-            grid-template-columns: 1fr;
-        }
-        .household-info-item,
-        .household-info-item:nth-child(2n),
-        .household-info-item:nth-child(3n) {
-            border-right: none;
-        }
-        .household-info-item:nth-last-child(-n + 2) { border-bottom: 1px solid #F1F5F9; }
-        .household-info-item:last-child { border-bottom: none; }
-    }
+    .hero-card{padding:22px 24px;background:radial-gradient(circle at top right, rgba(37,99,235,.16), transparent 32%),radial-gradient(circle at left, rgba(15,159,143,.10), transparent 28%),linear-gradient(180deg,#fff,#f8fbff)}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) auto;gap:18px;align-items:center}
+    .hero-title{font-size:28px;line-height:1.1;font-weight:700;color:#16243d;margin:0}
+    .hero-copy{margin-top:8px;color:#66768d;font-size:14px;max-width:760px}
+    .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#f8fbff;border:1px solid #dbe7f7;color:#37516d;font-size:12px;font-weight:700}
+    .hero-tag::before{content:"";width:8px;height:8px;border-radius:999px;background:#2563eb}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    .stat-card{padding:18px;display:flex;align-items:center;gap:14px}
+    .stat-icon{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .stat-icon svg{width:20px;height:20px}
+    .icon-blue{background:#eff6ff;color:#2563eb}.icon-teal{background:#ecfdf5;color:#0f9f8f}.icon-purple{background:#f5f3ff;color:#7c3aed}.icon-amber{background:#fff7ed;color:#ea580c}
+    .stat-value{font-size:28px;font-weight:700;color:#16243d;line-height:1}
+    .stat-label{font-size:12px;color:#6b7a90;margin-top:6px}
+    .layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:18px;align-items:start}
+    .left-col,.right-col{display:grid;gap:18px}
+    .info-card{overflow:hidden}
+    .info-head{padding:18px 20px;border-bottom:1px solid #e7eef6;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .info-title{font-size:15px;font-weight:700;color:#1c2d47}
+    .info-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .info-body{padding:18px 20px}
+    .info-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #edf2f7}
+    .info-row:last-child{border-bottom:none}
+    .info-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em}
+    .info-value{font-size:14px;font-weight:600;color:#1e293b;text-align:right}
+    .table-card{overflow:hidden}
+    .table-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .table-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .table-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .table-wrap{overflow-x:auto}
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th{padding:14px 20px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7b8ba4;text-align:left;border-bottom:1px solid #e7eef6;white-space:nowrap}
+    .table td{padding:16px 20px;border-bottom:1px solid #eef3f8;font-size:13px;color:#20314c;vertical-align:middle}
+    .table tbody tr:hover{background:#fbfdff}
+    .table tbody tr:last-child td{border-bottom:none}
+    .member-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .member-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;line-height:1;white-space:nowrap}
+    .pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor;opacity:.9}
+    .pill-blue{background:#eff6ff;color:#2563eb}.pill-teal{background:#ecfdf5;color:#0f9f8f}.pill-green{background:#f0fdf4;color:#16a34a}.pill-amber{background:#fff7ed;color:#ea580c}.pill-neutral{background:#f8fafc;color:#64748b}
+    .action-cell{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .empty{padding:48px 24px;text-align:center}
+    .empty-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:18px;background:#f3f7fb;color:#9aa9bb;display:flex;align-items:center;justify-content:center}
+    .empty-icon svg{width:24px;height:24px}
+    .empty h3{font-size:16px;color:#1c2d47;margin-bottom:6px}
+    .empty p{font-size:13px;color:#7b8ba4;max-width:420px;margin:0 auto}
+    @media (max-width:1100px){.hero-grid,.layout{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+    @media (max-width:640px){.stats{grid-template-columns:1fr}}
 </style>
 
-<div class="breadcrumb">
-    <a href="{% url 'household_list' %}">Households</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">Household #{{ household.house_number }}</span>
-</div>
+<div class="household-page">
+    <div class="crumbs">
+        <a href="{% url 'household_list' %}">Households</a><span>&gt;</span>
+        <span>Household #{{ household.house_number }}</span>
+    </div>
 
-<div class="household-dashboard">
-    <section class="household-hero">
-        <div class="household-hero-main">
-            <div class="household-identity">
-                <div class="household-avatar">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M3 10.182V17a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 001 1h3a1 1 0 001-1v-6.818l-7-5.25-7 5.25z"/>
-                        <path d="M10 2a1 1 0 01.6.2l7.4 5.55a1 1 0 01-1.2 1.6L10 4.2 3.2 9.35A1 1 0 012 7.75l7.4-5.55A1 1 0 0110 2z"/>
-                    </svg>
+    <section class="hero-card">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Household #{{ household.house_number }}</h1>
+                <div class="hero-copy">The best version of this page is a true household dashboard: address details, head-of-household status, member composition, and quick actions all visible without forcing staff to scan scattered sections.</div>
+                <div class="hero-tags">
+                    <span class="hero-tag">{{ household.street }}</span>
+                    <span class="hero-tag">{{ household.purok|default:"No purok assigned" }}</span>
+                    <span class="hero-tag">{{ total_members }} member{{ total_members|pluralize }}</span>
                 </div>
-                <div class="household-name">Household #{{ household.house_number }}</div>
-                <div class="household-subtitle">{{ household.street }}, Purok {{ household.purok }}</div>
-                <div class="household-status-pill">{{ total_members }} member{{ total_members|pluralize }} registered</div>
             </div>
+            <div class="hero-actions">
+                <a href="{% url 'household_list' %}" class="btn-bmis btn-secondary">Back to List</a>
+                <a href="{% url 'add_resident_to_household' household.id %}" class="btn-bmis btn-primary">Add Resident</a>
+            </div>
+        </div>
+    </section>
 
-            <div class="household-info-grid">
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 10.182V17a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 001 1h3a1 1 0 001-1v-6.818l-7-5.25-7 5.25z"/><path d="M10 2a1 1 0 01.6.2l7.4 5.55a1 1 0 01-1.2 1.6L10 4.2 3.2 9.35A1 1 0 012 7.75l7.4-5.55A1 1 0 0110 2z"/></svg></div>
-                    <div>
-                        <div class="info-label">Household Head</div>
-                        <div class="info-value">
+    <section class="stats">
+        <article class="stat-card">
+            <div class="stat-icon icon-blue"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/></svg></div>
+            <div><div class="stat-value">{{ total_members }}</div><div class="stat-label">Members</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-teal"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ voters }}</div><div class="stat-label">Registered Voters</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-purple"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 16a6 6 0 1112 0H4z"/></svg></div>
+            <div><div class="stat-value">{{ females }}</div><div class="stat-label">Female Members</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-amber"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 100 8 4 4 0 000-8zM4 16a6 6 0 1112 0H4z"/></svg></div>
+            <div><div class="stat-value">{{ males }}</div><div class="stat-label">Male Members</div></div>
+        </article>
+    </section>
+
+    <section class="layout">
+        <div class="left-col">
+            <article class="info-card">
+                <div class="info-head">
+                    <div class="info-title">Address Summary</div>
+                    <div class="info-sub">Core location details for this household record.</div>
+                </div>
+                <div class="info-body">
+                    <div class="info-row"><span class="info-label">House Number</span><span class="info-value">{{ household.house_number }}</span></div>
+                    <div class="info-row"><span class="info-label">Street</span><span class="info-value">{{ household.street }}</span></div>
+                    <div class="info-row"><span class="info-label">Purok</span><span class="info-value">{{ household.purok|default:"Not assigned" }}</span></div>
+                </div>
+            </article>
+
+            <article class="info-card">
+                <div class="info-head">
+                    <div class="info-title">Household Head</div>
+                    <div class="info-sub">Current head-of-household assignment.</div>
+                </div>
+                <div class="info-body">
+                    <div class="info-row">
+                        <span class="info-label">Assigned Head</span>
+                        <span class="info-value">
                             {% if household.head %}
                                 {{ household.head.first_name }} {{ household.head.last_name }}
                             {% else %}
-                                <span class="info-value-muted">Not assigned</span>
+                                Not assigned
                             {% endif %}
-                        </div>
+                        </span>
                     </div>
                 </div>
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div>
-                    <div><div class="info-label">House Number</div><div class="info-value">{{ household.house_number }}</div></div>
-                </div>
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 10.182V17a1 1 0 001 1h3a1 1 0 001-1v-3a1 1 0 011-1h2a1 1 0 011 1v3a1 1 0 001 1h3a1 1 0 001-1v-6.818l-7-5.25-7 5.25z"/><path d="M10 2a1 1 0 01.6.2l7.4 5.55a1 1 0 01-1.2 1.6L10 4.2 3.2 9.35A1 1 0 012 7.75l7.4-5.55A1 1 0 0110 2z"/></svg></div>
-                    <div><div class="info-label">Street</div><div class="info-value">{{ household.street }}</div></div>
-                </div>
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg></div>
-                    <div><div class="info-label">Purok</div><div class="info-value">Purok {{ household.purok }}</div></div>
-                </div>
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg></div>
-                    <div><div class="info-label">Total Members</div><div class="info-value">{{ total_members }}</div></div>
-                </div>
-                <div class="household-info-item">
-                    <div class="household-info-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg></div>
-                    <div><div class="info-label">Registered Voters</div><div class="info-value">{{ voters }}</div></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="stats-card">
-        <div class="stats-card-header">
-            <div class="stats-card-title">
-                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
-                Household Statistics
-            </div>
-        </div>
-        <div class="stats-card-body">
-            <div class="stat-item">
-                <div class="stat-value">{{ total_members }}</div>
-                <div class="stat-label">Members</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ voters }}</div>
-                <div class="stat-label">Voters</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ males }}</div>
-                <div class="stat-label">Males</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value">{{ females }}</div>
-                <div class="stat-label">Females</div>
-            </div>
-        </div>
-    </section>
-
-    <section class="table-card">
-        <div class="table-card-header">
-            <div class="table-card-title">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                </svg>
-                Household Members
-            </div>
-            <span class="table-card-count">{{ members|length }} member{{ members|length|pluralize }}</span>
+            </article>
         </div>
 
-        {% if members %}
-        <table class="members-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Gender</th>
-                    <th>Status</th>
-                    <th>Voter</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for member in members %}
-                <tr>
-                    <td>
-                        <strong>{{ member.first_name }} {{ member.last_name }}</strong>
-                        {% if household.head == member %}
-                        <span class="badge-head">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            HEAD
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td>{{ member.gender }}</td>
-                    <td>{{ member.status }}</td>
-                    <td>
-                        {% if member.voter_status %}
-                        <span class="voter-badge voter-yes">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Yes
-                        </span>
-                        {% else %}
-                        <span class="voter-badge voter-no">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                            </svg>
-                            No
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div class="action-group">
-                            {% if household.head != member %}
-                            <a href="{% url 'set_household_head' household.id member.id %}" class="btn-action btn-set-head">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                                </svg>
-                                Set as Head
-                            </a>
-                            {% else %}
-                            <span class="btn-action btn-current-head head-label">Current Head</span>
-                            {% endif %}
-
-                            <a href="{% url 'remove_from_household' member.id %}" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to remove this member from the household?')">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                Remove
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                </svg>
-            </div>
-            <div class="empty-state-title">No members yet</div>
-            <div class="empty-state-text">Add residents to this household to get started.</div>
+        <div class="right-col">
+            <article class="table-card">
+                <div class="table-head">
+                    <div>
+                        <div class="table-title">Household Members</div>
+                        <div class="table-sub">Manage membership, head-of-household assignment, and removal actions from one table.</div>
+                    </div>
+                    <div class="pill pill-blue">{{ members|length }} member{{ members|length|pluralize }}</div>
+                </div>
+                <div class="table-wrap">
+                    {% if members %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Resident</th>
+                                <th>Gender</th>
+                                <th>Status</th>
+                                <th>Voter</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for member in members %}
+                            <tr>
+                                <td>
+                                    <div class="member-name">{{ member.first_name }} {{ member.last_name }}</div>
+                                    <div class="member-sub">
+                                        {% if household.head == member %}
+                                        <span class="pill pill-amber">Household Head</span>
+                                        {% else %}
+                                        Household member
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ member.gender }}</td>
+                                <td>
+                                    {% if member.status == "Alive" %}
+                                    <span class="pill pill-green">Alive</span>
+                                    {% elif member.status == "Moved" %}
+                                    <span class="pill pill-amber">Moved Out</span>
+                                    {% else %}
+                                    <span class="pill pill-neutral">{{ member.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if member.voter_status %}
+                                    <span class="pill pill-teal">Registered</span>
+                                    {% else %}
+                                    <span class="pill pill-neutral">Not registered</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="action-cell">
+                                        {% if household.head != member %}
+                                        <a href="{% url 'set_household_head' household.id member.id %}" class="btn-bmis btn-secondary">Set as Head</a>
+                                        {% else %}
+                                        <span class="pill pill-amber">Current Head</span>
+                                        {% endif %}
+                                        <a href="{% url 'remove_from_household' member.id %}" class="btn-bmis btn-danger-bmis" onclick="return confirm('Are you sure you want to remove this member from the household?')">Remove</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">
+                        <div class="empty-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg></div>
+                        <h3>No members yet</h3>
+                        <p>Add residents to this household to begin tracking composition, gender counts, and voter participation.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
         </div>
-        {% endif %}
     </section>
 </div>
 {% endblock %}

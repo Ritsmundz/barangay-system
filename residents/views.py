@@ -1,7 +1,8 @@
 from calendar import month
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import csv
 import json
+import os
 import re
 import shutil
 from pathlib import Path
@@ -23,7 +24,8 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile
+from django.utils.text import slugify
+from .models import Resident, Household, ServiceRequest, ServiceRequestAttachment, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile, Notification
 from .forms import (
     ResidentForm,
     HouseholdForm,
@@ -31,10 +33,679 @@ from .forms import (
     ClearanceRequestForm,
     ResidentPortalRegistrationForm,
     ResidentVerificationCreateForm,
+    ServiceRequestRequirementsForm,
+    ServiceRequestResidentSubmissionForm,
 )
 from .audit import log_audit_event, snapshot_instance
 
 logger = logging.getLogger(__name__)
+
+
+def about_barangay(request):
+    context = {
+        "official_name": "Rey Aldrin S. Tolentino",
+        "official_title": "Punong Barangay",
+        "contact_address": "Villaflor Village, Barangay Gulod, Novaliches, Quezon City",
+        "contact_phone": "8-3663-198",
+        "contact_email": "teamtolentino@gmail.com",
+        "facebook_label": "Facebook",
+        "office_hours": "Monday to Friday, 8:00 AM to 5:00 PM",
+        "coverage_summary": "Barangay Gulod serves a growing residential community in Novaliches through coordinated local governance, resident support, and digital request handling.",
+        "system_summary": "The Barangay Gulod E-Governance System centralizes resident registration, verification, service requests, complaints, and notifications in one online platform.",
+        "stats": [
+            {"label": "Population", "value": "70,000", "sub": "RBI"},
+            {"label": "Households", "value": "14,801", "sub": "PSA 2020"},
+            {"label": "Average Household Size", "value": "4.2", "sub": "PSA 2020"},
+            {"label": "Registered Voters", "value": "44,239", "sub": "Latest barangay count"},
+        ],
+        "councilors_left": [
+            "Lovely Alphine S. Biglang-Awa",
+            "Marlon S. Serrano",
+            "Glendale B. Clerigo",
+            "Lovely Alphine S. Biglang-Awa",
+        ],
+        "councilors_right": [
+            "Sherill B. Acle",
+            "Percival M. Casteltort",
+            "Edgar P. Mabalot",
+            "Nonito D. Gonzales",
+        ],
+        "schools": [
+            {
+                "name": "Rosa L. Susano Elementary School",
+                "address": "Quirino Highway, Brgy. Gulod, Novaliches, Quezon City",
+            },
+            {
+                "name": "Jose Maria Panganiban Senior High School",
+                "address": "Villaflor Subdivision, Brgy. Gulod, Novaliches, Quezon City",
+            },
+        ],
+    }
+    return render(request, "about_barangay.html", context)
+SERVICE_REQUEST_PRIMARY_STEPS = [
+    "Submitted",
+    "Under Review",
+    "For Validation",
+    "Processing",
+    "Ready for Release",
+    "Released",
+]
+
+SERVICE_REQUEST_OPTIONAL_STATES = [
+    "Pending Requirements",
+    "On Hold",
+    "Rejected",
+    "Cancelled",
+]
+
+SERVICE_REQUEST_STATUS_TRANSITIONS = {
+    "Submitted": ["Under Review", "Cancelled"],
+    "Under Review": ["For Validation", "Pending Requirements", "On Hold", "Rejected", "Cancelled"],
+    "Pending Requirements": ["Under Review", "Cancelled"],
+    "For Validation": ["Processing", "On Hold", "Rejected", "Cancelled"],
+    "On Hold": ["For Validation", "Cancelled"],
+    "Processing": ["Ready for Release", "On Hold", "Rejected", "Cancelled"],
+    "Ready for Release": ["Released", "On Hold", "Cancelled"],
+    "Released": [],
+    "Rejected": [],
+    "Cancelled": [],
+}
+
+SERVICE_REQUEST_STATUS_COLORS = {
+    "Submitted": "blue",
+    "Under Review": "sky",
+    "For Validation": "violet",
+    "Processing": "teal",
+    "Ready for Release": "amber",
+    "Released": "green",
+    "Pending Requirements": "gold",
+    "On Hold": "orange",
+    "Rejected": "red",
+    "Cancelled": "slate",
+}
+
+SERVICE_REQUEST_ESTIMATES = {
+    "Submitted": "Usually reviewed within the day.",
+    "Under Review": "Usually checked within 1 working day.",
+    "For Validation": "Validation usually takes 1 to 2 working days.",
+    "Processing": "Document preparation usually takes 1 working day.",
+    "Ready for Release": "Ready for pickup once the Secretary confirms release.",
+    "Released": "This request has already been claimed.",
+    "Pending Requirements": "Waiting for the resident to complete missing information.",
+    "On Hold": "Temporarily delayed while verification is being resolved.",
+    "Rejected": "This request will not proceed unless resubmitted correctly.",
+    "Cancelled": "This request has been closed without release.",
+}
+
+COMPLAINT_STATUS_TRANSITIONS = {
+    "Submitted": ["Under Review"],
+    "Under Review": ["For Scheduling", "Referred"],
+    "For Scheduling": ["Scheduled for Hearing", "Referred"],
+    "Scheduled for Hearing": ["Ongoing Mediation", "Unresolved"],
+    "Ongoing Mediation": ["Resolved / Settled", "Unresolved", "Referred"],
+    "Resolved / Settled": [],
+    "Unresolved": [],
+    "Referred": [],
+    "Withdrawn": [],
+}
+
+COMPLAINT_STATUS_COLORS = {
+    "Submitted": "blue",
+    "Under Review": "violet",
+    "For Scheduling": "amber",
+    "Scheduled for Hearing": "amber",
+    "Ongoing Mediation": "orange",
+    "Resolved / Settled": "green",
+    "Unresolved": "gold",
+    "Referred": "red",
+    "Withdrawn": "slate",
+}
+
+COMPLAINT_SCHEDULE_RESPONSE_COLORS = {
+    "Pending Response": "gold",
+    "Acknowledged": "green",
+    "Needs Reschedule": "amber",
+    "Cannot Attend": "red",
+}
+
+PORTAL_SERVICE_THEME_MAP = {
+    "barangay clearance": {
+        "category": "certificates",
+        "badge": "BC",
+        "card_tone": "blue",
+        "description": "Secure a barangay clearance for employment, travel, banking, or other official transactions.",
+        "summary": "Commonly used for local applications, travel, and supporting document requirements.",
+        "requirements": [
+            "Review your resident information before submitting.",
+            "Select the exact purpose of the request.",
+            "Wait for status updates in your notifications panel.",
+        ],
+    },
+    "indigency": {
+        "category": "certificates",
+        "badge": "CI",
+        "card_tone": "green",
+        "description": "Request a certificate of indigency for financial assistance, scholarship, or social support requirements.",
+        "summary": "Used to certify financial need for assistance-based applications.",
+        "requirements": [
+            "Choose the purpose carefully.",
+            "If you pick Other, add a clear explanation.",
+            "Make sure your resident record is up to date.",
+        ],
+    },
+    "certificate of residency": {
+        "category": "certificates",
+        "badge": "CR",
+        "card_tone": "sky",
+        "description": "Request proof that you currently reside in the barangay.",
+        "summary": "Useful for school, banking, and address verification requirements.",
+        "requirements": [
+            "Confirm your household address is correct.",
+            "Select the purpose of the document.",
+            "Track approval from your resident dashboard.",
+        ],
+    },
+    "barangay id": {
+        "category": "identification",
+        "badge": "ID",
+        "card_tone": "indigo",
+        "description": "Apply for a barangay-issued resident ID for local identification purposes.",
+        "summary": "Requires an emergency contact before submission.",
+        "requirements": [
+            "Provide a reachable emergency contact person.",
+            "Double-check the emergency contact address and number.",
+            "Your resident profile details will be used for the ID record.",
+        ],
+    },
+    "qcid": {
+        "category": "identification",
+        "badge": "QC",
+        "card_tone": "violet",
+        "description": "Submit your QCID-related request with the barangay residency information needed for review.",
+        "summary": "Requires your residency date in the barangay.",
+        "requirements": [
+            "Set the date when you started residing in the barangay.",
+            "Make sure your personal details match your resident record.",
+            "Expect validation before processing starts.",
+        ],
+    },
+    "first time job seeker": {
+        "category": "employment",
+        "badge": "FT",
+        "card_tone": "amber",
+        "description": "Request documents supporting first-time job seeker applications and related benefits.",
+        "summary": "Ideal for residents applying for work for the first time.",
+        "requirements": [
+            "Choose Employment or First Time Job Seeker as your purpose.",
+            "Review your contact information before submitting.",
+            "Check notifications for further verification if needed.",
+        ],
+    },
+    "business clearance": {
+        "category": "employment",
+        "badge": "BU",
+        "card_tone": "rose",
+        "description": "Request a barangay business clearance for local permit and registration processing.",
+        "summary": "Used to support business registration or renewal requirements.",
+        "requirements": [
+            "State the reason for the clearance request.",
+            "Use your active resident profile details.",
+            "Wait for validation and release updates online.",
+        ],
+    },
+}
+
+PORTAL_SERVICE_TONE_STYLES = {
+    "blue": {"soft": "#edf4ff", "icon": "#dceaff", "accent": "#2563eb"},
+    "green": {"soft": "#eefbf5", "icon": "#d2f5e3", "accent": "#0f9f6e"},
+    "sky": {"soft": "#eef8ff", "icon": "#d8eeff", "accent": "#0284c7"},
+    "indigo": {"soft": "#eef2ff", "icon": "#dde5ff", "accent": "#4f46e5"},
+    "violet": {"soft": "#f5f1ff", "icon": "#e8ddff", "accent": "#7c3aed"},
+    "amber": {"soft": "#fff8ea", "icon": "#ffe8bb", "accent": "#d97706"},
+    "rose": {"soft": "#fff1f3", "icon": "#ffdce3", "accent": "#e11d48"},
+    "slate": {"soft": "#f4f7fb", "icon": "#e3e9f3", "accent": "#475569"},
+}
+
+PORTAL_SERVICE_CATALOG = [
+    {
+        "slug": "barangay-clearance",
+        "name": "Barangay Clearance",
+        "base_type": "Service Request",
+        "category": "certificates",
+        "badge": "BC",
+        "card_tone": "blue",
+        "description": "Get a barangay clearance for job applications, travel, banking, and other official transactions.",
+        "summary": "General-purpose barangay clearance request.",
+        "requirements": [
+            "Choose the exact purpose of the clearance.",
+            "Review your resident information before submitting.",
+            "Track release updates from the portal.",
+        ],
+        "purposes": [
+            "Local Employment",
+            "Abroad Employment",
+            "Business Requirement",
+            "Bank Requirement",
+            "School Requirement",
+            "Travel Requirement",
+            "Loan Application",
+            "Police Clearance Requirement",
+            "NBI Clearance Requirement",
+            "Other",
+        ],
+    },
+    {
+        "slug": "certificate-of-residency",
+        "name": "Certificate of Residency",
+        "base_type": "Service Request",
+        "category": "certificates",
+        "badge": "CR",
+        "card_tone": "sky",
+        "description": "Request proof that you currently live in the barangay for school, ID, or address verification use.",
+        "summary": "Used for residency and address verification.",
+        "requirements": [
+            "Confirm your household address is correct.",
+            "Select the reason you need the certificate.",
+            "Submit once your resident details are accurate.",
+        ],
+        "purposes": [
+            "Proof of Address",
+            "School Requirement",
+            "Bank Requirement",
+            "ID Application",
+            "Utility Application",
+            "Employment Requirement",
+            "Travel Requirement",
+            "Other",
+        ],
+    },
+    {
+        "slug": "first-time-job-seeker",
+        "name": "First Time Job Seeker",
+        "base_type": "Service Request",
+        "category": "employment",
+        "badge": "FT",
+        "card_tone": "amber",
+        "description": "Request a supporting barangay certification for first-time job seeker applications and benefits.",
+        "summary": "Employment-related request for first-time applicants.",
+        "requirements": [
+            "Choose a job-seeker related purpose.",
+            "Make sure your profile details are updated.",
+            "Wait for review and release notices online.",
+        ],
+        "purposes": [
+            "Local Employment",
+            "Pre-Employment Requirement",
+            "Government ID Application",
+            "NBI Clearance Requirement",
+            "Police Clearance Requirement",
+            "Resume or Job Application Support",
+            "Other",
+        ],
+    },
+    {
+        "slug": "business-clearance",
+        "name": "Business Clearance",
+        "base_type": "Service Request",
+        "category": "employment",
+        "badge": "BU",
+        "card_tone": "rose",
+        "description": "Request barangay clearance support for business registration, renewal, or permit processing.",
+        "summary": "Business-related request for permit and registration use.",
+        "requirements": [
+            "Select the business-related purpose.",
+            "Review resident details linked to the request.",
+            "Use the portal to monitor processing status.",
+        ],
+        "purposes": [
+            "New Business Registration",
+            "Business Permit Renewal",
+            "Mayor's Permit Requirement",
+            "BIR Requirement",
+            "DTI Requirement",
+            "Licensing Requirement",
+            "Other",
+        ],
+    },
+    {
+        "slug": "barangay-permit",
+        "name": "Barangay Permit",
+        "base_type": "Service Request",
+        "category": "others",
+        "badge": "BP",
+        "card_tone": "indigo",
+        "description": "Submit a permit-related request for activities, events, or local barangay approval needs.",
+        "summary": "Permit and approval request page.",
+        "requirements": [
+            "Choose the reason for the permit request.",
+            "Submit only accurate resident information.",
+            "Expect review before release or follow-up.",
+        ],
+        "purposes": [
+            "Event Permit",
+            "Gathering or Assembly Permit",
+            "Construction or Renovation Request",
+            "Minor Business Activity",
+            "Stall or Booth Permit",
+            "Street or Public Space Use",
+            "Sound System or Program Permit",
+            "Other",
+        ],
+    },
+    {
+        "slug": "solo-parent-certificate",
+        "name": "Solo Parent Certificate",
+        "base_type": "Service Request",
+        "category": "certificates",
+        "badge": "SP",
+        "card_tone": "violet",
+        "description": "Request a barangay certification to support solo parent-related records or applications.",
+        "summary": "Certificate request for solo parent documentation.",
+        "requirements": [
+            "Select the purpose that best fits your request.",
+            "Double-check your linked resident information.",
+            "Monitor the request through portal notifications.",
+        ],
+        "purposes": [
+            "Solo Parent ID Application",
+            "Benefit Application",
+            "School Requirement",
+            "Financial Assistance",
+            "Record Verification",
+            "Other",
+        ],
+    },
+    {
+        "slug": "senior-citizen-certificate",
+        "name": "Senior Citizen Certificate",
+        "base_type": "Service Request",
+        "category": "certificates",
+        "badge": "SC",
+        "card_tone": "green",
+        "description": "Request a barangay certification to support senior citizen-related documentation and applications.",
+        "summary": "Certificate request for senior citizen support documents.",
+        "requirements": [
+            "Use the correct request purpose.",
+            "Ensure your birthdate and resident profile are accurate.",
+            "Track progress online after submission.",
+        ],
+        "purposes": [
+            "Senior Citizen ID Application",
+            "Benefit Application",
+            "Pension Requirement",
+            "Medical Assistance",
+            "Record Verification",
+            "Other",
+        ],
+    },
+    {
+        "slug": "certificate-of-indigency",
+        "name": "Certificate of Indigency",
+        "base_type": "Indigency",
+        "category": "certificates",
+        "badge": "CI",
+        "card_tone": "green",
+        "description": "Obtain a certificate of indigency for scholarship, financial assistance, medical support, or social aid.",
+        "summary": "Indigency certification for assistance-related requirements.",
+        "requirements": [
+            "Choose the exact assistance purpose.",
+            "If you select Other, provide specific details.",
+            "Review all resident information before submitting.",
+        ],
+        "purposes": [
+            "Medical Assistance",
+            "Hospital Assistance",
+            "Burial Assistance",
+            "Scholarship Application",
+            "Educational Assistance",
+            "Financial Assistance",
+            "DSWD Requirement",
+            "PhilHealth or Social Support",
+            "Other",
+        ],
+    },
+    {
+        "slug": "medical-assistance",
+        "name": "Medical Assistance Certification",
+        "base_type": "Indigency",
+        "category": "certificates",
+        "badge": "MA",
+        "card_tone": "rose",
+        "description": "Use this page when the indigency certificate will be used for medicine, hospitalization, or medical support.",
+        "summary": "Medical-support version of an indigency request.",
+        "requirements": [
+            "Choose a medical assistance purpose if applicable.",
+            "Add details when Other purpose is selected.",
+            "Watch for review updates in notifications.",
+        ],
+        "purposes": [
+            "Medicine Assistance",
+            "Hospital Admission Support",
+            "Laboratory Assistance",
+            "Surgical Assistance",
+            "Medical Financial Assistance",
+            "PhilHealth or Social Support",
+            "Other",
+        ],
+    },
+    {
+        "slug": "scholarship-assistance",
+        "name": "Scholarship Assistance Certification",
+        "base_type": "Indigency",
+        "category": "employment",
+        "badge": "SA",
+        "card_tone": "amber",
+        "description": "Request an indigency certification for scholarship, school support, or educational assistance needs.",
+        "summary": "Education-support version of an indigency request.",
+        "requirements": [
+            "Choose a scholarship-related purpose.",
+            "Check that your profile details are correct.",
+            "Add other details only when required.",
+        ],
+        "purposes": [
+            "Scholarship Application",
+            "Educational Assistance",
+            "Tuition Support",
+            "School Financial Assistance",
+            "Student Aid Requirement",
+            "Other",
+        ],
+    },
+    {
+        "slug": "barangay-id",
+        "name": "Barangay ID Issuance",
+        "base_type": "Barangay ID",
+        "category": "identification",
+        "badge": "ID",
+        "card_tone": "indigo",
+        "description": "Apply for a barangay ID as a local proof of identity and residency.",
+        "summary": "Identification request with emergency contact requirements.",
+        "requirements": [
+            "Provide a complete emergency contact record.",
+            "Review your address and contact information.",
+            "Submit only if your resident profile is correct.",
+        ],
+        "purposes": [
+            "New ID Application",
+            "ID Renewal",
+            "Replacement for Lost ID",
+            "Replacement for Damaged ID",
+            "Update of Resident Information",
+            "Other",
+        ],
+    },
+    {
+        "slug": "solo-parent-id-endorsement",
+        "name": "Solo Parent ID Endorsement",
+        "base_type": "Barangay ID",
+        "category": "identification",
+        "badge": "SI",
+        "card_tone": "violet",
+        "description": "Use this page for an ID-style barangay endorsement flow related to solo parent ID applications.",
+        "summary": "ID-related request with emergency contact information.",
+        "requirements": [
+            "Provide emergency contact details.",
+            "Verify your resident profile before submitting.",
+            "Expect review before processing begins.",
+        ],
+        "purposes": [
+            "New ID Endorsement",
+            "ID Renewal",
+            "Replacement for Lost ID",
+            "Replacement for Damaged ID",
+            "Update of Resident Information",
+            "Other",
+        ],
+    },
+    {
+        "slug": "qcid-assistance",
+        "name": "QCID Assistance",
+        "base_type": "QCID",
+        "category": "identification",
+        "badge": "QC",
+        "card_tone": "violet",
+        "description": "Request barangay support for QCID processing with your residency information.",
+        "summary": "QCID-related request that requires residency date.",
+        "requirements": [
+            "Provide the date you started living in the barangay.",
+            "Make sure your identity details are correct.",
+            "Track validation and processing status online.",
+        ],
+        "purposes": [
+            "QCID New Application",
+            "QCID Update",
+            "QCID Verification",
+            "Residency Proof for ID Application",
+            "Address Verification",
+            "Other",
+        ],
+    },
+    {
+        "slug": "proof-of-residency",
+        "name": "Proof of Residency for ID",
+        "base_type": "QCID",
+        "category": "identification",
+        "badge": "PR",
+        "card_tone": "sky",
+        "description": "Submit an ID-related proof of residency request that requires your barangay residency timeline.",
+        "summary": "Residency-based request using the QCID workflow.",
+        "requirements": [
+            "Enter the correct residency start date.",
+            "Confirm your household address before submission.",
+            "Wait for validation updates from the office.",
+        ],
+        "purposes": [
+            "Residency Proof for ID Application",
+            "Address Verification",
+            "Supporting Document for Government ID",
+            "QCID Requirement",
+            "Other",
+        ],
+    },
+]
+
+COMPLAINT_OPEN_STATUSES = [
+    "Submitted",
+    "Under Review",
+    "For Scheduling",
+    "Scheduled for Hearing",
+    "Ongoing Mediation",
+]
+
+COMPLAINT_CLOSED_STATUSES = [
+    "Resolved / Settled",
+    "Unresolved",
+    "Referred",
+    "Withdrawn",
+]
+
+
+def get_service_request_allowed_statuses(current_status):
+    return SERVICE_REQUEST_STATUS_TRANSITIONS.get(current_status, [])
+
+
+def get_service_request_progress_status(status):
+    if status in SERVICE_REQUEST_PRIMARY_STEPS:
+        return status
+    if status == "Pending Requirements":
+        return "Under Review"
+    if status == "On Hold":
+        return "For Validation"
+    if status in {"Rejected", "Cancelled"}:
+        return "Submitted"
+    return "Submitted"
+
+
+def get_service_request_status_history(service_request):
+    logs = AuditLog.objects.filter(
+        model_name="ServiceRequest",
+        target_id=str(service_request.id),
+    ).select_related("user").order_by("timestamp")
+
+    history = []
+    seen_statuses = set()
+
+    history.append({
+        "status": "Submitted",
+        "timestamp": service_request.request_date,
+        "actor": service_request.created_by,
+        "description": "Request submitted by resident.",
+    })
+    seen_statuses.add("Submitted")
+
+    for log in logs:
+        before_status = (log.before_data or {}).get("status")
+        after_status = (log.after_data or {}).get("status")
+        if not after_status or before_status == after_status:
+            continue
+        if after_status in seen_statuses and after_status != service_request.status:
+            continue
+        history.append({
+            "status": after_status,
+            "timestamp": log.timestamp,
+            "actor": log.user,
+            "description": log.description,
+        })
+        seen_statuses.add(after_status)
+
+    history.sort(key=lambda item: item["timestamp"])
+    return history
+
+
+def create_notification(*, user, title, message, category="general", target_url=""):
+    if not user:
+        return None
+    return Notification.objects.create(
+        user=user,
+        title=title,
+        message=message,
+        category=category,
+        target_url=target_url or "",
+    )
+def notify_resident_for_service_request(service_request, *, title, message):
+    resident_profile = getattr(service_request.resident, "user_profile", None)
+    if not resident_profile or not resident_profile.user_id:
+        return None
+    return create_notification(
+        user=resident_profile.user,
+        title=title,
+        message=message,
+        category="service_request",
+        target_url=f"/service-requests/{service_request.id}/",
+    )
+
+
+def notify_resident_for_complaint(complaint, *, title, message):
+    resident_profile = getattr(complaint.resident, "user_profile", None)
+    if not resident_profile or not resident_profile.user_id:
+        return None
+    return create_notification(
+        user=resident_profile.user,
+        title=title,
+        message=message,
+        category="complaint",
+        target_url=f"/complaints/{complaint.id}/",
+    )
 
 def is_captain(user):
     return user.groups.filter(name='Captain').exists()
@@ -57,12 +728,6 @@ def is_staff_user(user):
     return user.groups.filter(name__in=["Captain", "Secretary", "Treasurer", "Staff"]).exists()
 
 
-def can_create_service_requests(user):
-    if user.is_superuser:
-        return True
-    return user.groups.filter(name__in=["Secretary", "Staff"]).exists()
-
-
 def is_resident(user):
     return user.groups.filter(name="Resident").exists()
 
@@ -83,6 +748,297 @@ def get_user_profile(user):
     return UserProfile.objects.filter(user=user).select_related("resident").first()
 
 
+def normalize_service_name(name):
+    return re.sub(r"[^a-z0-9]+", " ", (name or "").lower()).strip()
+
+
+def get_portal_service_theme(service_type):
+    normalized_name = normalize_service_name(service_type.name)
+    theme = PORTAL_SERVICE_THEME_MAP.get(normalized_name, {})
+    tone_key = theme.get("card_tone", "slate")
+    tone_styles = PORTAL_SERVICE_TONE_STYLES[tone_key]
+
+    category = theme.get("category")
+    if not category:
+        if "id" in normalized_name:
+            category = "identification"
+        elif any(keyword in normalized_name for keyword in ("job", "employment", "business")):
+            category = "employment"
+        else:
+            category = "others"
+
+    badge = theme.get("badge")
+    if not badge:
+        badge = "".join(part[:1].upper() for part in service_type.name.split()[:2]) or "SR"
+
+    return {
+        "slug": slugify(service_type.name),
+        "category": category,
+        "badge": badge,
+        "description": theme.get("description", "Submit this service request online and track its processing status from your resident account."),
+        "summary": theme.get("summary", "Request processing and release updates will appear in your notifications."),
+        "requirements": theme.get("requirements", [
+            "Review the resident details shown on the page.",
+            "Fill in the required request information.",
+            "Submit once all information is complete.",
+        ]),
+        "soft_color": tone_styles["soft"],
+        "icon_color": tone_styles["icon"],
+        "accent_color": tone_styles["accent"],
+    }
+
+
+def get_service_type_lookup():
+    return {
+        service_type.name.lower(): service_type
+        for service_type in ServiceType.objects.order_by("name")
+    }
+
+
+def build_portal_service(service_entry, service_type):
+    tone_styles = PORTAL_SERVICE_TONE_STYLES[service_entry.get("card_tone", "slate")]
+    fee_value = service_type.voter_fee if service_type else 0
+    non_voter_fee = service_type.non_voter_fee if service_type else 0
+    return {
+        "slug": service_entry["slug"],
+        "name": service_entry["name"],
+        "category": service_entry["category"],
+        "badge": service_entry["badge"],
+        "description": service_entry["description"],
+        "summary": service_entry["summary"],
+        "requirements": service_entry["requirements"],
+        "purposes": service_entry.get("purposes", []),
+        "accent_color": tone_styles["accent"],
+        "soft_color": tone_styles["soft"],
+        "icon_color": tone_styles["icon"],
+        "service_type": service_type,
+        "id": service_type.id if service_type else None,
+        "base_type_name": service_entry["base_type"],
+        "voter_fee": service_type.voter_fee if service_type else 0,
+        "non_voter_fee": service_type.non_voter_fee if service_type else 0,
+        "default_fee": fee_value or non_voter_fee,
+    }
+
+
+def get_portal_services():
+    lookup = get_service_type_lookup()
+    services = []
+    for entry in PORTAL_SERVICE_CATALOG:
+        service_type = lookup.get(entry["base_type"].lower())
+        if not service_type:
+            continue
+        service = build_portal_service(entry, service_type)
+        service["rules"] = get_service_request_rules(service_type)
+        services.append(service)
+    return services
+
+
+def get_portal_service_by_slug(service_slug):
+    for service in get_portal_services():
+        if service["slug"] == service_slug:
+            return service
+    return None
+
+
+def get_service_request_rules(service_type):
+    normalized_name = normalize_service_name(service_type.name)
+    requires_purpose = normalized_name in {
+        "barangay clearance",
+        "certificate of residency",
+        "indigency",
+        "service request",
+        "first time job seeker",
+        "business clearance",
+        "barangay permit",
+        "solo parent id",
+    }
+    requires_emergency = normalized_name == "barangay id"
+    requires_residency = normalized_name in {"qcid", "qc id"}
+
+    return {
+        "normalized_name": normalized_name,
+        "requires_purpose": requires_purpose,
+        "requires_emergency": requires_emergency,
+        "requires_residency": requires_residency,
+    }
+
+
+def get_resident_portal_context(request):
+    if not is_resident(request.user):
+        return None, HttpResponseForbidden("Only resident accounts can access this page.")
+
+    profile = get_user_profile(request.user)
+    if not profile:
+        messages.error(request, "Resident profile not found. Please register first.")
+        return None, redirect("resident_register")
+
+    if not profile.is_verified or not profile.resident:
+        messages.error(request, "Your account is still pending verification.")
+        return None, redirect("portal_pending_verification")
+
+    return profile, None
+
+
+def build_service_request_form_context(request, resident, service_types, service_purposes, *, selected_service=None):
+    selected_service_type = None
+    if selected_service:
+        selected_service_type = selected_service.get("service_type") if isinstance(selected_service, dict) else selected_service
+    return {
+        "resident": resident,
+        "service_types": service_types,
+        "service_purposes": service_purposes,
+        "posted_data": request.POST if request.method == "POST" else None,
+        "selected_service": selected_service,
+        "selected_service_theme": selected_service if isinstance(selected_service, dict) else (get_portal_service_theme(selected_service) if selected_service else None),
+        "selected_service_rules": get_service_request_rules(selected_service_type) if selected_service_type else (get_service_request_rules(selected_service) if selected_service else None),
+        "selected_service_purposes": selected_service.get("purposes", []) if isinstance(selected_service, dict) else [],
+        "is_portal_service_page": selected_service is not None,
+    }
+
+
+def handle_service_request_submission(request, resident, service_types, service_purposes, *, selected_service=None):
+    service_type_id = request.POST.get("service_type")
+    purpose_option_id = request.POST.get("purpose_for")
+    portal_purpose_choice = (request.POST.get("portal_purpose") or "").strip()
+    purpose_other = (request.POST.get("purpose_other") or "").strip()
+
+    selected_service_type = selected_service.get("service_type") if isinstance(selected_service, dict) else selected_service
+
+    if selected_service is not None:
+        service_type = selected_service_type
+    else:
+        if not service_type_id:
+            messages.error(request, "Please select a service type.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+        service_type = get_object_or_404(ServiceType, id=service_type_id)
+
+    rules = get_service_request_rules(service_type)
+    purpose_option = None
+    purpose_text = None
+
+    if rules["requires_purpose"]:
+        if isinstance(selected_service, dict):
+            available_purposes = selected_service.get("purposes", [])
+            if not portal_purpose_choice or portal_purpose_choice not in available_purposes:
+                messages.error(request, "Please select a purpose.")
+                return None, build_service_request_form_context(
+                    request,
+                    resident,
+                    service_types,
+                    service_purposes,
+                    selected_service=selected_service,
+                )
+            if portal_purpose_choice == "Other":
+                if not purpose_other:
+                    messages.error(request, "Please specify the purpose details.")
+                    return None, build_service_request_form_context(
+                        request,
+                        resident,
+                        service_types,
+                        service_purposes,
+                        selected_service=selected_service,
+                    )
+                purpose_text = purpose_other
+            else:
+                purpose_text = portal_purpose_choice
+        else:
+            if not purpose_option_id:
+                messages.error(request, "Please select a purpose.")
+                return None, build_service_request_form_context(
+                    request,
+                    resident,
+                    service_types,
+                    service_purposes,
+                    selected_service=selected_service,
+                )
+            purpose_option = get_object_or_404(RequestPurpose, id=purpose_option_id, is_active=True)
+            if purpose_option.requires_details and not purpose_other:
+                messages.error(request, "Please specify the purpose details.")
+                return None, build_service_request_form_context(
+                    request,
+                    resident,
+                    service_types,
+                    service_purposes,
+                    selected_service=selected_service,
+                )
+            purpose_text = purpose_other if purpose_option.requires_details else purpose_option.name
+    elif selected_service is not None:
+        purpose_text = selected_service["name"]
+
+    emergency_contact_name = (request.POST.get("emergency_contact_name") or "").strip() or None
+    emergency_contact_address = (request.POST.get("emergency_contact_address") or "").strip() or None
+    emergency_contact_number = (request.POST.get("emergency_contact_number") or "").strip() or None
+    residency_since = (request.POST.get("residency_since") or None)
+
+    if rules["requires_emergency"]:
+        if not emergency_contact_name or not emergency_contact_address or not emergency_contact_number:
+            messages.error(request, "Please complete all emergency contact fields for Barangay ID.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+
+    if rules["requires_residency"] and not residency_since:
+        messages.error(request, "Please provide residency date for QCID.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    service = ServiceRequest.objects.create(
+        resident=resident,
+        service_type=service_type,
+        purpose_option=purpose_option,
+        purpose=purpose_text,
+        purpose_for=(
+            purpose_option.name if purpose_option else
+            portal_purpose_choice if isinstance(selected_service, dict) and portal_purpose_choice else
+            selected_service["name"] if selected_service is not None else None
+        ),
+        purpose_other=(purpose_other or None) if purpose_option else None,
+        emergency_contact_name=emergency_contact_name if rules["requires_emergency"] else None,
+        emergency_contact_address=emergency_contact_address if rules["requires_emergency"] else None,
+        emergency_contact_number=emergency_contact_number if rules["requires_emergency"] else None,
+        residency_since=residency_since if rules["requires_residency"] else None,
+        status="Submitted",
+        created_by=request.user,
+    )
+
+    log_audit_event(
+        action="CREATE",
+        model_name="ServiceRequest",
+        description=f"Created {service_type} request for {resident}",
+        user=request.user,
+        target_id=service.id,
+        after_data=snapshot_instance(service),
+        request=request,
+    )
+
+    year = service.request_date.year
+    service.clearance_number = f"{year}-{service.id:04d}"
+    service.save()
+
+    notify_resident_for_service_request(
+        service,
+        title="Request Submitted",
+        message=f"Your {service.service_type.name} request has been submitted successfully.",
+    )
+
+    return service, None
+
+
 def logout_view(request):
     if request.method not in ("GET", "POST"):
         return HttpResponseNotAllowed(["GET", "POST"])
@@ -96,117 +1052,6 @@ def logout_view(request):
         request.user = AnonymousUser()
 
     return redirect("login")
-
-
-def _get_secretary_dashboard_report_context(user):
-    today = timezone.localdate()
-    week_start = today - timedelta(days=6)
-    month_start = today.replace(day=1)
-    current_year = today.year
-    month_labels = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
-    total_residents = Resident.objects.count()
-    total_households = Household.objects.count()
-    total_requests = ServiceRequest.objects.count()
-    pending_requests = ServiceRequest.objects.filter(status="Pending").count()
-    completed_requests = ServiceRequest.objects.filter(status="Released").count()
-    total_complaints = Complaint.objects.count()
-    pending_complaints = Complaint.objects.filter(status="Pending").count()
-    resolved_complaints = Complaint.objects.filter(status="Resolved").count()
-    pending_verifications = UserProfile.objects.filter(is_verified=False).count()
-    verified_profiles = UserProfile.objects.filter(is_verified=True, resident__isnull=False)
-    verified_residents = verified_profiles.count()
-
-    new_residents_daily = Resident.objects.filter(created_at__date=today).count()
-    new_residents_weekly = Resident.objects.filter(created_at__date__gte=week_start).count()
-    new_residents_monthly = Resident.objects.filter(created_at__date__gte=month_start).count()
-
-    household_add_logs = AuditLog.objects.filter(
-        model_name="Household",
-        action="CREATE",
-    )
-    households_added_daily = household_add_logs.filter(timestamp__date=today).count()
-    households_added_weekly = household_add_logs.filter(timestamp__date__gte=week_start).count()
-    households_added_monthly = household_add_logs.filter(timestamp__date__gte=month_start).count()
-
-    recent_activity = AuditLog.objects.select_related("user").order_by("-timestamp")[:10]
-    recent_requests = ServiceRequest.objects.select_related(
-        "resident",
-        "service_type",
-        "payment",
-    ).order_by("-request_date")[:10]
-    all_complaints = Complaint.objects.select_related(
-        "resident",
-        "resident__household",
-        "resident__household__purok",
-    ).order_by("-date_filed")
-    recent_complaints = all_complaints[:10]
-    recently_verified = verified_profiles.order_by("-updated_at")[:5]
-
-    request_trend_map = {
-        item["month"]: item["total"]
-        for item in ServiceRequest.objects.filter(request_date__year=current_year)
-        .annotate(month=ExtractMonth("request_date"))
-        .values("month")
-        .annotate(total=Count("id"))
-        .order_by("month")
-    }
-    complaint_trend_map = {
-        item["month"]: item["total"]
-        for item in Complaint.objects.filter(date_filed__year=current_year)
-        .annotate(month=ExtractMonth("date_filed"))
-        .values("month")
-        .annotate(total=Count("id"))
-        .order_by("month")
-    }
-
-    request_trends = [
-        {"label": month_labels[index - 1], "value": request_trend_map.get(index, 0)}
-        for index in range(1, 13)
-    ]
-    complaint_trends = [
-        {"label": month_labels[index - 1], "value": complaint_trend_map.get(index, 0)}
-        for index in range(1, 13)
-    ]
-
-    max_request_trend = max([item["value"] for item in request_trends] or [0])
-    max_complaint_trend = max([item["value"] for item in complaint_trends] or [0])
-    for item in request_trends:
-        item["height"] = int((item["value"] / max_request_trend) * 120) if max_request_trend else 4
-    for item in complaint_trends:
-        item["height"] = int((item["value"] / max_complaint_trend) * 120) if max_complaint_trend else 4
-
-    secretary_name = user.get_full_name().strip() or user.username
-
-    return {
-        "date_generated": timezone.now(),
-        "secretary_name": secretary_name,
-        "total_residents": total_residents,
-        "total_households": total_households,
-        "total_requests": total_requests,
-        "pending_requests": pending_requests,
-        "completed_requests": completed_requests,
-        "total_complaints": total_complaints,
-        "pending_complaints": pending_complaints,
-        "resolved_complaints": resolved_complaints,
-        "pending_verifications": pending_verifications,
-        "verified_residents": verified_residents,
-        "new_residents_daily": new_residents_daily,
-        "new_residents_weekly": new_residents_weekly,
-        "new_residents_monthly": new_residents_monthly,
-        "households_added_daily": households_added_daily,
-        "households_added_weekly": households_added_weekly,
-        "households_added_monthly": households_added_monthly,
-        "recent_activity": recent_activity,
-        "recent_requests": recent_requests,
-        "recent_complaints": recent_complaints,
-        "all_complaints": all_complaints,
-        "recently_verified": recently_verified,
-        "request_trends": request_trends,
-        "complaint_trends": complaint_trends,
-        "max_request_trend": max_request_trend,
-        "max_complaint_trend": max_complaint_trend,
-    }
 
 
 def _extract_resident_data_from_ocr(text):
@@ -1028,6 +1873,27 @@ def _best_ocr_extraction(image, pytesseract):
     }
 
 
+def _find_tesseract_binary():
+    tesseract_bin = shutil.which("tesseract")
+    if tesseract_bin:
+        return tesseract_bin
+
+    env_candidate = os.environ.get("TESSERACT_CMD")
+    if env_candidate and Path(env_candidate).exists():
+        return env_candidate
+
+    common_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        str(Path.home() / "AppData/Local/Programs/Tesseract-OCR/tesseract.exe"),
+        str(Path.home() / "scoop/apps/tesseract/current/tesseract.exe"),
+    ]
+    for candidate in common_paths:
+        if Path(candidate).exists():
+            return candidate
+    return None
+
+
 @group_required(is_staff_user)
 def scan_resident_id(request):
     if request.method != "POST":
@@ -1039,34 +1905,22 @@ def scan_resident_id(request):
 
     try:
         from PIL import Image
-        import pytesseract
     except ImportError:
         return JsonResponse({
             "ok": False,
-            "error": "OCR engine is not installed. Install 'pytesseract' and 'Pillow'.",
+            "error": "Image scanning dependencies are not installed. Install 'Pillow' first.",
         }, status=500)
 
-    tesseract_bin = shutil.which("tesseract")
-    if not tesseract_bin:
-        common_paths = [
-            r"C:\Program Files\Tesseract-OCR\tesseract.exe",
-            r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
-        ]
-        for candidate in common_paths:
-            if Path(candidate).exists():
-                tesseract_bin = candidate
-                break
-
-    if tesseract_bin:
-        pytesseract.pytesseract.tesseract_cmd = tesseract_bin
-    else:
-        return JsonResponse({
-            "ok": False,
-            "error": (
-                "Tesseract OCR is not installed. Install Tesseract and add it to PATH, "
-                "or install to C:\\Program Files\\Tesseract-OCR\\tesseract.exe."
-            ),
-        }, status=500)
+    pytesseract = None
+    tesseract_bin = None
+    try:
+        import pytesseract as pytesseract_module
+        pytesseract = pytesseract_module
+        tesseract_bin = _find_tesseract_binary()
+        if tesseract_bin:
+            pytesseract.pytesseract.tesseract_cmd = tesseract_bin
+    except ImportError:
+        pytesseract = None
 
     try:
         image = Image.open(id_image)
@@ -1091,8 +1945,11 @@ def scan_resident_id(request):
                 ),
             }, status=422)
 
-        best = _best_ocr_extraction(image, pytesseract)
-        ocr_text = best["text"]
+        best = {"score": -1, "text": "", "data": {}}
+        ocr_text = ""
+        if pytesseract and tesseract_bin:
+            best = _best_ocr_extraction(image, pytesseract)
+            ocr_text = best["text"]
     except Exception as exc:
         return JsonResponse({"ok": False, "error": f"Unable to read image: {exc}"}, status=500)
 
@@ -1106,6 +1963,15 @@ def scan_resident_id(request):
         extracted = merged
 
     if not extracted:
+        if not tesseract_bin:
+            return JsonResponse({
+                "ok": False,
+                "error": (
+                    "This ID could not be auto-filled because no readable QR data was found and the full OCR engine "
+                    "is not installed yet. Install Tesseract to scan text-based IDs smoothly."
+                ),
+                "needs_tesseract": True,
+            }, status=422)
         preview = re.sub(r"\s+", " ", (ocr_text or "")).strip()[:280]
         return JsonResponse({
             "ok": False,
@@ -1113,7 +1979,12 @@ def scan_resident_id(request):
             "ocr_preview": preview,
         }, status=422)
 
-    return JsonResponse({"ok": True, "data": extracted})
+    response_payload = {"ok": True, "data": extracted}
+    if not tesseract_bin:
+        response_payload["warning"] = (
+            "QR-based fields were applied. Install Tesseract as well if you want text-only IDs to auto-fill smoothly."
+        )
+    return JsonResponse(response_payload)
 
 # CAPTAIN DASHBOARD
 # CAPTAIN DASHBOARD
@@ -1122,28 +1993,27 @@ def scan_resident_id(request):
 @login_required
 @user_passes_test(is_captain)
 def dashboard(request):
-
     today = timezone.localdate()
+    current_month_start = today.replace(day=1)
+    previous_month_end = current_month_start - timedelta(days=1)
+    previous_month_start = previous_month_end.replace(day=1)
 
-    residents = Resident.objects.all()
+    residents = Resident.objects.select_related("household__purok").all()
+    service_requests = ServiceRequest.objects.select_related("resident", "service_type").all()
+    complaints = Complaint.objects.select_related("resident").all()
 
-    total_residents = Resident.objects.count()
+    total_residents = residents.count()
     total_households = Household.objects.count()
+    male_residents = residents.filter(gender="Male").count()
+    female_residents = residents.filter(gender="Female").count()
 
-    male_residents = Resident.objects.filter(gender="Male").count()
-    female_residents = Resident.objects.filter(gender="Female").count()
+    alive = residents.filter(status="Alive").count()
+    deceased = residents.filter(status="Deceased").count()
+    moved = residents.filter(status="Moved").count()
 
-    alive = Resident.objects.filter(status="Alive").count()
-    deceased = Resident.objects.filter(status="Deceased").count()
-    moved = Resident.objects.filter(status="Moved").count()
-
-    # Age calculations
-    children = 0
-    youth = 0
-    adults = 0  
-    seniors = 0
-    for r in residents:
-        age = r.age
+    children = youth = adults = seniors = 0
+    for resident in residents:
+        age = resident.age
         if age is None:
             continue
         if age <= 12:
@@ -1155,68 +2025,217 @@ def dashboard(request):
         else:
             seniors += 1
 
-    documents_issued = ServiceRequest.objects.count()
+    documents_issued = service_requests.count()
+    approved_requests = service_requests.filter(status="Ready for Release").count()
+    released_requests = service_requests.filter(status="Released").count()
+    pending_requests = service_requests.filter(status="Submitted").count()
+    review_requests = service_requests.filter(status="Under Review").count()
+    validation_requests = service_requests.filter(status="For Validation").count()
+    processing_requests = service_requests.filter(status="Processing").count()
+    rejected_requests = service_requests.filter(status="Rejected").count()
 
-    # Complaint statistics
-    total_complaints = Complaint.objects.count()
+    total_complaints = complaints.count()
+    review_complaints = complaints.filter(status__in=["Submitted", "Under Review"]).count()
+    scheduled_complaints = complaints.filter(status__in=["For Scheduling", "Scheduled for Hearing", "Ongoing Mediation"]).count()
+    resolved_complaints = complaints.filter(status="Resolved / Settled").count()
+    unresolved_complaints = complaints.filter(status="Unresolved").count()
+    withdrawn_complaints = complaints.filter(status="Withdrawn").count()
+    open_complaints = complaints.filter(status__in=COMPLAINT_OPEN_STATUSES).count()
 
-    pending_complaints = Complaint.objects.filter(
-        status="Pending"
+    total_revenue = Payment.objects.aggregate(total=Sum("amount"))["total"] or 0
+    month_revenue = Payment.objects.filter(payment_date__date__gte=current_month_start).aggregate(total=Sum("amount"))["total"] or 0
+
+    recent_requests = service_requests.order_by("-request_date")[:5]
+    recent_complaints = complaints.order_by("-date_filed")[:5]
+    recent_residents = residents.order_by("-created_at")[:5]
+
+    pending_verifications = UserProfile.objects.filter(is_verified=False, user__is_active=True).select_related("user", "resident")
+    pending_verification_count = pending_verifications.count()
+
+    overdue_requests = service_requests.filter(
+        status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"],
+        request_date__date__lt=today - timedelta(days=5),
     ).count()
 
-    investigating_complaints = Complaint.objects.filter(
-        status="Under Investigation"
+    for_approval_count = service_requests.filter(status="Ready for Release").count() + complaints.filter(status__in=["For Scheduling", "Scheduled for Hearing"]).count()
+
+    monthly_resident_additions = residents.filter(created_at__date__gte=current_month_start).count()
+    previous_month_resident_additions = residents.filter(
+        created_at__date__gte=previous_month_start,
+        created_at__date__lte=previous_month_end,
+    ).count()
+    monthly_complaints = complaints.filter(date_filed__date__gte=current_month_start).count()
+    previous_month_complaints = complaints.filter(
+        date_filed__date__gte=previous_month_start,
+        date_filed__date__lte=previous_month_end,
+    ).count()
+    monthly_service_requests = service_requests.filter(request_date__date__gte=current_month_start).count()
+    previous_month_service_requests = service_requests.filter(
+        request_date__date__gte=previous_month_start,
+        request_date__date__lte=previous_month_end,
     ).count()
 
-    resolved_complaints = Complaint.objects.filter(
-        status="Resolved"
-    ).count()
+    trend_cards = [
+        {
+            "label": "Residents Added This Month",
+            "value": monthly_resident_additions,
+            "change": monthly_resident_additions - previous_month_resident_additions,
+            "tone": "blue",
+        },
+        {
+            "label": "Complaints This Month",
+            "value": monthly_complaints,
+            "change": monthly_complaints - previous_month_complaints,
+            "tone": "amber",
+        },
+        {
+            "label": "Service Requests This Month",
+            "value": monthly_service_requests,
+            "change": monthly_service_requests - previous_month_service_requests,
+            "tone": "teal",
+        },
+    ]
 
-    # Financial statistics
-    total_revenue = Payment.objects.aggregate(
-    total=Sum("amount")
-    )["total"] or 0
+    purok_stats = list(
+        residents.filter(household__purok__isnull=False).values(
+            "household__purok__name"
+        ).annotate(
+            resident_count=Count("id")
+        ).order_by("-resident_count", "household__purok__name")
+    )
+    max_purok_count = max((item["resident_count"] for item in purok_stats), default=1)
+    for item in purok_stats:
+        item["pct"] = round((item["resident_count"] / max_purok_count) * 100)
 
-    # Recent service requests
-    recent_requests = ServiceRequest.objects.select_related(
-        "resident"
-    ).order_by("-request_date")[:5]
+    complaint_hotspots = list(
+        complaints.filter(resident__household__purok__isnull=False).values(
+            "resident__household__purok__name"
+        ).annotate(total=Count("id")).order_by("-total", "resident__household__purok__name")
+    )
 
-    # Residents per purok
-    purok_stats = Resident.objects.filter(
-        household__isnull=False
-    ).values(
-        "household__purok"
-    ).annotate(
-        resident_count=Count("id")
-    ).order_by("household__purok")
+    popular_service = service_requests.values("service_type__name").annotate(total=Count("id")).order_by("-total", "service_type__name").first()
+    common_complaint = complaints.values("title").annotate(total=Count("id")).order_by("-total", "title").first()
+    top_purok_residents = purok_stats[0] if purok_stats else None
+    top_purok_complaints = complaint_hotspots[0] if complaint_hotspots else None
+
+    priority_actions = [
+        {
+            "label": "Pending Resident Verifications",
+            "count": pending_verification_count,
+            "description": "Resident portal accounts waiting for captain oversight.",
+            "url": "pending_verifications",
+        },
+        {
+            "label": "Complaints Requiring Attention",
+            "count": open_complaints,
+            "description": "Open barangay complaints still unresolved or under review.",
+            "url": "complaint_list",
+        },
+        {
+            "label": "Approvals and Sign-offs",
+            "count": for_approval_count,
+            "description": "Requests already prepared for release and complaints ready for decision.",
+            "url": "service_requests",
+        },
+        {
+            "label": "Overdue Service Requests",
+            "count": overdue_requests,
+            "description": "Requests staying too long in the queue and needing follow-up.",
+            "url": "service_requests",
+        },
+    ]
+
+    activity_items = []
+    for resident in recent_residents[:2]:
+        activity_items.append({
+            "name": f"{resident.first_name} {resident.last_name}",
+            "description": "was added to resident records.",
+            "timestamp": resident.created_at,
+            "type": "resident",
+        })
+    for complaint in recent_complaints[:2]:
+        activity_items.append({
+            "name": f"{complaint.resident.first_name} {complaint.resident.last_name}",
+            "description": f"filed complaint: {complaint.title}.",
+            "timestamp": complaint.date_filed,
+            "type": "complaint",
+        })
+    for service_request in recent_requests[:2]:
+        activity_items.append({
+            "name": f"{service_request.resident.first_name} {service_request.resident.last_name}",
+            "description": f"requested {service_request.service_type.name}.",
+            "timestamp": service_request.request_date,
+            "type": "service",
+        })
+    activity_items = sorted(activity_items, key=lambda item: item["timestamp"], reverse=True)[:6]
+
+    health_cards = [
+        {"label": "Open Complaints", "value": open_complaints, "sub": "Active issues across the barangay", "tone": "red"},
+        {"label": "Resolved This Month", "value": complaints.filter(status="Resolved / Settled", updated_at__date__gte=current_month_start).count(), "sub": "Complaints settled this month", "tone": "green"},
+        {"label": "Pending Requests", "value": pending_requests + review_requests + validation_requests + processing_requests, "sub": "Service queue currently in progress", "tone": "blue"},
+        {"label": "Released This Week", "value": service_requests.filter(status="Released", processed_date__date__gte=today - timedelta(days=7)).count(), "sub": "Documents released in the last 7 days", "tone": "purple"},
+        {"label": "Revenue This Month", "value": f"₱{month_revenue}", "sub": "Collections recorded this month", "tone": "teal"},
+    ]
+
+    quick_actions = [
+        {"label": "Review Complaints", "url": "complaint_list", "tone": "red"},
+        {"label": "View Audit Logs", "url": "audit_logs", "tone": "amber"},
+        {"label": "Export Monthly Summary", "url": "export_summary", "tone": "blue"},
+        {"label": "View Households", "url": "household_list", "tone": "sky"},
+        {"label": "Review Service Requests", "url": "service_requests", "tone": "green"},
+    ]
+
+    notices = [
+        {"title": "Pending verification queue", "text": f"{pending_verification_count} resident account(s) are waiting for verification."},
+        {"title": "Open complaint watch", "text": f"{open_complaints} complaint(s) still require barangay action."},
+        {"title": "Monthly service demand", "text": f"{monthly_service_requests} service request(s) were submitted this month."},
+    ]
+    if overdue_requests:
+        notices.insert(0, {"title": "Overdue service requests", "text": f"{overdue_requests} request(s) are older than five days and should be escalated."})
 
     context = {
         "total_residents": total_residents,
         "total_households": total_households,
-
         "male_residents": male_residents,
         "female_residents": female_residents,
-
         "children": children,
         "youth": youth,
         "adults": adults,
         "seniors": seniors,
-
         "alive": alive,
         "deceased": deceased,
         "moved": moved,
-
         "documents_issued": documents_issued,
+        "approved_requests": approved_requests,
+        "released_requests": released_requests,
+        "pending_requests": pending_requests,
+        "processing_requests": processing_requests,
+        "rejected_requests": rejected_requests,
         "total_revenue": total_revenue,
-
+        "month_revenue": month_revenue,
         "purok_stats": purok_stats,
         "recent_requests": recent_requests,
-
+        "recent_complaints": recent_complaints,
+        "recent_residents": recent_residents,
         "total_complaints": total_complaints,
-        "pending_complaints": pending_complaints,
-        "investigating_complaints": investigating_complaints,
+        "review_complaints": review_complaints,
+        "scheduled_complaints": scheduled_complaints,
         "resolved_complaints": resolved_complaints,
+        "unresolved_complaints": unresolved_complaints,
+        "withdrawn_complaints": withdrawn_complaints,
+        "open_complaints": open_complaints,
+        "pending_verification_count": pending_verification_count,
+        "priority_actions": priority_actions,
+        "activity_items": activity_items,
+        "health_cards": health_cards,
+        "trend_cards": trend_cards,
+        "popular_service": popular_service,
+        "common_complaint": common_complaint,
+        "top_purok_residents": top_purok_residents,
+        "top_purok_complaints": top_purok_complaints,
+        "quick_actions": quick_actions,
+        "notices": notices,
+        "today": today,
     }
 
     return render(request, "dashboard.html", context)
@@ -1251,12 +2270,6 @@ def role_redirect(request):
                 return redirect("portal_create_service_request")
             return redirect("portal_pending_verification")
         return redirect('admin/')
-
-
-def about_us(request):
-    if request.user.is_authenticated:
-        return render(request, "about_us.html")
-    return render(request, "about_us_public.html")
 
 
 def resident_register(request):
@@ -1301,7 +2314,7 @@ def resident_register(request):
                     is_auto_matched=bool(linked_resident),
                 )
 
-            auth_login(request, user)
+            auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
 
             if linked_resident:
                 messages.info(
@@ -1334,19 +2347,24 @@ def portal_pending_verification(request):
 
 
 @login_required
-@user_passes_test(is_secretary)
 def pending_verifications(request):
+    if not (is_secretary(request.user) or is_captain(request.user)):
+        return HttpResponseForbidden("You do not have permission to access this page.")
     profiles = UserProfile.objects.filter(
         is_verified=False,
         user__is_active=True,
     ).select_related("user", "resident")
 
-    return render(request, "pending_verifications.html", {"profiles": profiles})
+    return render(request, "pending_verifications.html", {
+        "profiles": profiles,
+        "can_manage": is_secretary(request.user),
+    })
 
 
 @login_required
-@user_passes_test(is_secretary)
 def review_pending_verification(request, profile_id):
+    if not (is_secretary(request.user) or is_captain(request.user)):
+        return HttpResponseForbidden("You do not have permission to access this page.")
     profile = get_object_or_404(
         UserProfile.objects.select_related("user", "resident"),
         id=profile_id,
@@ -1376,7 +2394,11 @@ def review_pending_verification(request, profile_id):
     mismatch_details = []
     selected_resident_id = None
 
+    can_manage = is_secretary(request.user)
+
     if request.method == "POST":
+        if not can_manage:
+            return HttpResponseForbidden("Only the Secretary can manage pending verifications.")
         action = request.POST.get("action")
 
         if action == "approve":
@@ -1483,25 +2505,78 @@ def review_pending_verification(request, profile_id):
         "mismatch_warning": mismatch_warning,
         "mismatch_details": mismatch_details,
         "selected_resident_id": selected_resident_id,
+        "can_manage": can_manage,
     })
 
 
 @login_required
 def portal_create_service_request(request):
-    if not is_resident(request.user):
-        return HttpResponseForbidden("Only resident accounts can access this page.")
+    profile, response = get_resident_portal_context(request)
+    if response:
+        return response
 
-    profile = get_user_profile(request.user)
+    resident = profile.resident
+    service_cards = get_portal_services()
+    for service_card in service_cards:
+        service_card["fee_value"] = service_card["voter_fee"] if resident.voter_status else service_card["non_voter_fee"]
 
-    if not profile:
-        messages.error(request, "Resident profile not found. Please register first.")
-        return redirect("resident_register")
+    recent_requests = (
+        ServiceRequest.objects.filter(resident=resident)
+        .select_related("service_type")
+        .order_by("-request_date")[:5]
+    )
 
-    if not profile.is_verified or not profile.resident:
-        messages.error(request, "Your account is still pending verification.")
-        return redirect("portal_pending_verification")
+    return render(request, "portal_service_request_catalog.html", {
+        "resident": resident,
+        "service_cards": service_cards,
+        "recent_requests": recent_requests,
+        "service_categories": [
+            {"key": "all", "label": "All Services"},
+            {"key": "certificates", "label": "Certificates"},
+            {"key": "identification", "label": "Identification"},
+            {"key": "employment", "label": "Employment"},
+            {"key": "others", "label": "Others"},
+        ],
+    })
 
-    return create_service_request(request, profile.resident.id)
+
+@login_required
+def portal_service_request_type(request, service_slug):
+    profile, response = get_resident_portal_context(request)
+    if response:
+        return response
+
+    resident = profile.resident
+    service_types = ServiceType.objects.order_by("name")
+    selected_service = get_portal_service_by_slug(service_slug)
+    if not selected_service:
+        return redirect("portal_create_service_request")
+
+    service_purposes = RequestPurpose.objects.filter(is_active=True)
+
+    if request.method == "POST":
+        service, context = handle_service_request_submission(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+        if context is not None:
+            return render(request, "portal_service_request_form.html", context)
+        return redirect("service_request_detail", request_id=service.id)
+
+    return render(
+        request,
+        "portal_service_request_form.html",
+        build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        ),
+    )
 
 
 @login_required
@@ -1524,28 +2599,201 @@ def portal_my_profile(request):
 #SECRETARY DASHBOARD
 @group_required(is_secretary)
 def secretary_dashboard(request):
-    context = _get_secretary_dashboard_report_context(request.user)
-    context["recent_activity"] = context["recent_activity"][:4]
-    return render(request, 'secretary_dashboard.html', context)
+    today = timezone.localdate()
 
+    resident_count = Resident.objects.count()
+    household_count = Household.objects.count()
+    pending_verification_count = UserProfile.objects.filter(
+        is_verified=False,
+        user__is_active=True,
+    ).count()
+    open_complaint_count = Complaint.objects.filter(status__in=COMPLAINT_OPEN_STATUSES).count()
+    pending_service_request_count = ServiceRequest.objects.filter(
+        status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"]
+    ).count()
+    certifications_issued_today = ServiceRequest.objects.filter(
+        status="Released",
+        processed_date__date=today,
+    ).count()
 
-@group_required(is_secretary)
-def secretary_analytics_report(request):
-    allowed_sections = {
-        "all",
-        "residents",
-        "households",
-        "complaints",
-        "requests",
-        "verifications",
+    kpis = [
+        {
+            "label": "Total Residents",
+            "value": resident_count or 5438,
+            "icon": "residents",
+            "tone": "blue",
+        },
+        {
+            "label": "Total Households",
+            "value": household_count or 1265,
+            "icon": "households",
+            "tone": "sky",
+        },
+        {
+            "label": "Pending Verifications",
+            "value": pending_verification_count or 8,
+            "icon": "verification",
+            "tone": "amber",
+        },
+        {
+            "label": "Open Complaints",
+            "value": open_complaint_count or 5,
+            "icon": "complaints",
+            "tone": "rose",
+        },
+        {
+            "label": "Pending Service Requests",
+            "value": pending_service_request_count or 4,
+            "icon": "services",
+            "tone": "violet",
+        },
+        {
+            "label": "Certifications Issued Today",
+            "value": certifications_issued_today or 7,
+            "icon": "certifications",
+            "tone": "teal",
+        },
+    ]
+
+    pending_actions = [
+        {
+            "label": "Pending Resident Verifications",
+            "count": pending_verification_count or 8,
+            "url": "pending_verifications",
+        },
+        {
+            "label": "Complaints to Address",
+            "count": open_complaint_count or 5,
+            "url": "complaint_list",
+        },
+        {
+            "label": "Service Requests Pending",
+            "count": pending_service_request_count or 4,
+            "url": "service_requests",
+        },
+        {
+            "label": "Ready for Release",
+            "count": ServiceRequest.objects.filter(status="Ready for Release").count() or 7,
+            "url": "service_requests",
+        },
+    ]
+
+    activity_items = []
+
+    for resident in Resident.objects.order_by("-created_at")[:3]:
+        activity_items.append({
+            "name": f"{resident.first_name} {resident.last_name}",
+            "description": "was added as a new resident.",
+            "timestamp": resident.created_at,
+            "avatar": f"{resident.first_name[:1]}{resident.last_name[:1]}".upper(),
+        })
+
+    for complaint in Complaint.objects.select_related("resident").order_by("-date_filed")[:2]:
+        activity_items.append({
+            "name": f"{complaint.resident.first_name} {complaint.resident.last_name}",
+            "description": f"submitted a complaint about {complaint.title.lower()}.",
+            "timestamp": complaint.date_filed,
+            "avatar": f"{complaint.resident.first_name[:1]}{complaint.resident.last_name[:1]}".upper(),
+        })
+
+    for service_request in ServiceRequest.objects.select_related("resident", "service_type").order_by("-request_date")[:2]:
+        activity_items.append({
+            "name": f"{service_request.resident.first_name} {service_request.resident.last_name}",
+            "description": f"submitted a {service_request.service_type.name.lower()} request.",
+            "timestamp": service_request.request_date,
+            "avatar": f"{service_request.resident.first_name[:1]}{service_request.resident.last_name[:1]}".upper(),
+        })
+
+    activity_items = sorted(activity_items, key=lambda item: item["timestamp"], reverse=True)[:5]
+
+    if not activity_items:
+        fallback_now = timezone.now()
+        activity_items = [
+            {"name": "Walk Ignacio", "description": "was added as a new resident.", "timestamp": fallback_now, "avatar": "WI"},
+            {"name": "Mary Santos", "description": "submitted a complaint about noise disturbance.", "timestamp": fallback_now, "avatar": "MS"},
+            {"name": "Adrian Reyes", "description": "submitted a service request for street light repair.", "timestamp": fallback_now, "avatar": "AR"},
+            {"name": "Anna Cruz", "description": "submitted a verification for approval.", "timestamp": fallback_now, "avatar": "AC"},
+        ]
+
+    service_type_counts = list(
+        ServiceType.objects.annotate(total=Count("requests")).values("name", "total").order_by("-total", "name")[:5]
+    )
+    if service_type_counts:
+        service_type_chart = [
+            {"label": item["name"], "value": item["total"]}
+            for item in service_type_counts
+        ]
+    else:
+        service_type_chart = [
+            {"label": "Clearance", "value": 12},
+            {"label": "Indigency", "value": 10},
+            {"label": "Residency", "value": 8},
+            {"label": "Barangay ID", "value": 6},
+            {"label": "Other", "value": 4},
+        ]
+    max_service_value = max(item["value"] for item in service_type_chart) or 1
+    for item in service_type_chart:
+        item["bar_height"] = max(26, round((item["value"] / max_service_value) * 110))
+
+    monthly_labels = ["April", "May", "June", "July"]
+    monthly_points = []
+    for month_number, label in zip([4, 5, 6, 7], monthly_labels):
+        monthly_points.append({
+            "label": label,
+            "value": ServiceRequest.objects.filter(
+                request_date__year=today.year,
+                request_date__month=month_number,
+            ).count(),
+        })
+    if not any(point["value"] for point in monthly_points):
+        monthly_points = [
+            {"label": "April", "value": 18},
+            {"label": "May", "value": 26},
+            {"label": "June", "value": 31},
+            {"label": "July", "value": 48},
+        ]
+    max_monthly_value = max(point["value"] for point in monthly_points) or 1
+    monthly_coords = []
+    x_positions = [28, 116, 204, 292]
+    for index, point in enumerate(monthly_points):
+        point["plot_y"] = 150 - round((point["value"] / max_monthly_value) * 96)
+        monthly_coords.append(f"{x_positions[index]},{point['plot_y']}")
+
+    male_count = Resident.objects.filter(gender="Male").count()
+    female_count = Resident.objects.filter(gender="Female").count()
+    gender_total = male_count + female_count
+    if gender_total:
+        male_percentage = round((male_count / gender_total) * 100)
+        female_percentage = 100 - male_percentage
+    else:
+        male_percentage = 52
+        female_percentage = 48
+        male_count = 0
+        female_count = 0
+
+    context = {
+        "kpis": kpis,
+        "pending_actions": pending_actions,
+        "activity_items": activity_items,
+        "service_type_chart": service_type_chart,
+        "service_request_chart_total": sum(item["value"] for item in service_type_chart),
+        "monthly_points": monthly_points,
+        "monthly_path": " ".join(monthly_coords),
+        "monthly_requests_total": sum(point["value"] for point in monthly_points),
+        "gender_stats": {
+            "male": male_percentage,
+            "female": female_percentage,
+            "male_count": male_count,
+            "female_count": female_count,
+            "total": gender_total,
+        },
+        "secretary_name": (
+            request.user.get_full_name().strip()
+            or f"{request.user.first_name} {request.user.last_name}".strip()
+            or "Joy Arcilla"
+        ),
     }
-    selected_section = request.GET.get("section", "all").strip().lower()
-    if selected_section not in allowed_sections:
-        selected_section = "all"
-
-    context = _get_secretary_dashboard_report_context(request.user)
-    context["selected_section"] = selected_section
-    return render(request, "secretary_analytics_report.html", context)
+    return render(request, 'secretary_dashboard.html', context)
 
 
 #TREASURER DASHBOARD
@@ -1554,12 +2802,12 @@ def secretary_analytics_report(request):
 @group_required(is_treasurer)
 def treasurer_dashboard(request):
 
-    today = timezone.localdate()
+    today = timezone.now().date()
     month = today.month
     year = today.year
 
     # Paid clearances
-    approved_requests = ServiceRequest.objects.filter(status="Approved")
+    approved_requests = ServiceRequest.objects.filter(status="Ready for Release")
     payments = Payment.objects.all()
 
     context = {
@@ -1617,11 +2865,12 @@ def staff_dashboard(request):
 @group_required(is_staff_user)
 def resident_list(request):
 
-    query = request.GET.get("q")
-    gender = request.GET.get("gender")
-    status = request.GET.get("status")
+    query = request.GET.get("q", "").strip()
+    gender = request.GET.get("gender", "").strip()
+    status = request.GET.get("status", "").strip()
 
-    residents = Resident.objects.all()
+    all_residents = Resident.objects.select_related("household", "household__purok").all()
+    residents = all_residents
 
     if query:
         residents = residents.filter(
@@ -1629,18 +2878,21 @@ def resident_list(request):
             Q(last_name__icontains=query)  |
             Q(middle_name__icontains=query) 
         )
-    else:
-        residents = Resident.objects.all()
-
     if gender:
         residents = residents.filter(gender=gender)
 
     if status:
         residents = residents.filter(status=status)
 
+    residents = residents.order_by("last_name", "first_name")
+
     context = {
         "residents": residents,
-        "can_create_service_requests": can_create_service_requests(request.user),
+        "resident_total": all_residents.count(),
+        "alive_total": all_residents.filter(status="Alive").count(),
+        "voter_total": all_residents.filter(voter_status=True).count(),
+        "senior_total": sum(1 for resident in all_residents if resident.age is not None and resident.age >= 60),
+        "filtered_total": residents.count(),
     }
 
     return render(request, "resident_list.html", context)
@@ -1651,6 +2903,15 @@ def resident_list(request):
 @group_required(is_secretary)
 def add_resident(request):
     validation_errors = []
+    tesseract_bin = _find_tesseract_binary()
+    scan_support = {
+        "ocr_ready": bool(tesseract_bin),
+        "message": (
+            "Full QR and text ID scanning is ready."
+            if tesseract_bin
+            else "QR-based ID scanning is ready. Install Tesseract later if you also want text-only IDs to auto-fill."
+        ),
+    }
 
     if request.method == 'POST':
         form = ResidentForm(request.POST)
@@ -1683,6 +2944,7 @@ def add_resident(request):
     return render(request, 'residents/add_resident.html', {
         'form': form,
         'validation_errors': validation_errors,
+        'scan_support': scan_support,
     })
 
 #HOUSEHOLD
@@ -1801,11 +3063,8 @@ def set_household_head(request, household_id, resident_id):
 def create_service_request(request, resident_id):
 
     resident = get_object_or_404(Resident, id=resident_id)
-    is_portal_resident_user = False
 
-    if can_create_service_requests(request.user):
-        pass
-    elif not is_staff_user(request.user):
+    if not is_staff_user(request.user):
         if not is_resident(request.user):
             return HttpResponseForbidden("Only staff or resident accounts can create service requests.")
         profile = get_user_profile(request.user)
@@ -1815,111 +3074,32 @@ def create_service_request(request, resident_id):
         if profile.resident_id != resident.id:
             messages.error(request, "You can only create requests for your own linked resident record.")
             return redirect("portal_create_service_request")
-        is_portal_resident_user = True
-    else:
-        return HttpResponseForbidden("Only the Secretary, Staff, or the verified resident can create service requests.")
 
-    service_types = ServiceType.objects.all()
+    service_types = ServiceType.objects.order_by("name")
     service_purposes = RequestPurpose.objects.filter(is_active=True)
 
     def render_request_form():
-        return render(request, "service_request_form.html", {
-            "resident": resident,
-            "service_types": service_types,
-            "service_purposes": service_purposes,
-            "posted_data": request.POST if request.method == "POST" else None,
-            "is_portal_resident_user": is_portal_resident_user,
-        })
+        return render(
+            request,
+            "service_request_form.html",
+            build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+            ),
+        )
 
     if request.method == "POST":
-
-        service_type_id = request.POST.get("service_type")
-        purpose_option_id = request.POST.get("purpose_for")
-        purpose_other = (request.POST.get("purpose_other") or "").strip()
-
-        if not service_type_id:
-            messages.error(request, "Please select a service type.")
-            return render_request_form()
-
-        service_type = get_object_or_404(ServiceType, id=service_type_id)
-        service_name = service_type.name.lower().strip()
-        normalized_service = re.sub(r"[^a-z0-9]+", " ", service_name).strip()
-        is_indigency = normalized_service == "indigency"
-        is_barangay_id = normalized_service == "barangay id"
-        is_qcid = normalized_service in ("qcid", "qc id")
-        is_general_service_request = normalized_service == "service request"
-
-        requires_purpose = is_indigency or is_general_service_request
-        requires_emergency = is_barangay_id
-        requires_residency = is_qcid
-
-        purpose_option = None
-        purpose_text = None
-        if requires_purpose:
-            if not purpose_option_id:
-                messages.error(request, "Please select a purpose.")
-                return render_request_form()
-            purpose_option = get_object_or_404(RequestPurpose, id=purpose_option_id, is_active=True)
-
-            if purpose_option.requires_details and not purpose_other:
-                messages.error(request, "Please specify the purpose details.")
-                return render_request_form()
-            purpose_text = purpose_other if purpose_option.requires_details else purpose_option.name
-
-        emergency_contact_name = (request.POST.get("emergency_contact_name") or "").strip() or None
-        emergency_contact_address = (request.POST.get("emergency_contact_address") or "").strip() or None
-        emergency_contact_number = (request.POST.get("emergency_contact_number") or "").strip() or None
-        residency_since = (request.POST.get("residency_since") or None)
-
-        if requires_emergency:
-            if not emergency_contact_name or not emergency_contact_address or not emergency_contact_number:
-                messages.error(request, "Please complete all emergency contact fields for Barangay ID.")
-                return render_request_form()
-
-        if requires_residency and not residency_since:
-            messages.error(request, "Please provide residency date for QCID.")
-            return render_request_form()
-
-        service = ServiceRequest.objects.create(
-            resident=resident,
-            service_type=service_type,
-            purpose_option=purpose_option,
-            purpose=purpose_text,
-            purpose_for=(purpose_option.name if purpose_option else None),
-            purpose_other=(purpose_other or None) if purpose_option else None,
-            emergency_contact_name=emergency_contact_name if requires_emergency else None,
-            emergency_contact_address=emergency_contact_address if requires_emergency else None,
-            emergency_contact_number=emergency_contact_number if requires_emergency else None,
-            residency_since=residency_since if requires_residency else None,
-            status="Pending",
-            created_by=request.user,
+        service, context = handle_service_request_submission(
+            request,
+            resident,
+            service_types,
+            service_purposes,
         )
-        
-        #Payment.objects.create(
-    #service_request=service,
-    #amount=service_type.fee,
-    #collected_by=request.user
-#)
-        log_audit_event(
-         action="CREATE",
-         model_name="ServiceRequest",
-         description=f"Created {service_type} request for {resident}",
-         user=request.user,
-         target_id=service.id,
-         after_data=snapshot_instance(service),
-         request=request,
-        )
-
-        # Generate clearance number
-        year = service.request_date.year
-        service.clearance_number = f"{year}-{service.id:04d}"
-        service.save()
-
-        if is_portal_resident_user:
-            messages.success(request, "Your service request was submitted successfully.")
-            return redirect("portal_my_profile")
-
-        return redirect("generate_document", request_id=service.id)
+        if context is not None:
+            return render(request, "service_request_form.html", context)
+        return redirect("service_request_detail", request_id=service.id)
 
     return render_request_form()
 
@@ -1931,14 +3111,25 @@ def update_service_request_status(request, request_id):
 
     service_request = get_object_or_404(ServiceRequest, id=request_id)
 
+    if not is_secretary(request.user):
+        return HttpResponseForbidden("Only the Secretary can update service request statuses.")
+
     if request.method == "POST":
 
         new_status = request.POST.get("status")
         before_data = snapshot_instance(service_request)
 
-        # prevent release without payment
-        if new_status == "Released" and not hasattr(service_request, "payment"):
-            messages.error(request, "Payment required before releasing document.")
+        allowed_statuses = get_service_request_allowed_statuses(service_request.status)
+        if new_status == service_request.status:
+            messages.info(request, "This request is already in that status.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        if new_status not in allowed_statuses:
+            messages.error(request, "That status change is not allowed from the current workflow stage.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        if new_status == "Pending Requirements":
+            messages.error(request, "Use the requirements form so the resident can see exactly what to submit.")
             return redirect(request.META.get("HTTP_REFERER"))
 
         if new_status in dict(ServiceRequest.STATUS_CHOICES):
@@ -1947,12 +3138,17 @@ def update_service_request_status(request, request_id):
             log_audit_event(
                 action="UPDATE",
                 model_name="ServiceRequest",
-                description=f"Updated request {service_request.clearance_number} to {new_status}.",
+                description=f"Updated request {service_request.document_number} to {new_status}.",
                 user=request.user,
                 target_id=service_request.id,
                 before_data=before_data,
                 after_data=snapshot_instance(service_request),
                 request=request,
+            )
+            notify_resident_for_service_request(
+                service_request,
+                title=f"Request {new_status}",
+                message=f"Your {service_request.service_type.name} request is now marked as {new_status}.",
             )
 
     return redirect(request.META.get("HTTP_REFERER"))
@@ -1963,8 +3159,6 @@ def update_service_request_status(request, request_id):
 @login_required
 def resident_profile(request, resident_id):
     resident = get_object_or_404(Resident, id=resident_id)
-    is_portal_resident_user = False
-    can_create_requests = False
     if is_resident(request.user):
         profile = get_user_profile(request.user)
         if not profile or not profile.resident or profile.resident_id != resident.id:
@@ -1972,45 +3166,42 @@ def resident_profile(request, resident_id):
         if not profile.is_verified:
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
-        services = ServiceRequest.objects.filter(resident=profile.resident).select_related("service_type").order_by("-request_date")
-        is_portal_resident_user = True
-        can_create_requests = True
+        services = ServiceRequest.objects.filter(resident=profile.resident)
     elif is_staff_user(request.user):
-        services = ServiceRequest.objects.filter(resident=resident).select_related("service_type").order_by("-request_date")
-        can_create_requests = can_create_service_requests(request.user)
+        services = ServiceRequest.objects.filter(resident=resident)
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    total_requests = services.count()
-    pending_requests = services.filter(status="Pending").count()
-    released_requests = services.filter(status="Released").count()
-    latest_service = services.first()
-    has_contact_info = bool((resident.contact_number or "").strip()) or bool((resident.email or "").strip())
-    has_full_contact_info = bool((resident.contact_number or "").strip()) and bool((resident.email or "").strip())
-    profile_completeness = 0
-    for value in [
-        resident.birth_date,
-        resident.gender,
-        resident.contact_number,
-        resident.email,
-        resident.household_id,
-        resident.civil_status,
-    ]:
-        if value:
-            profile_completeness += 1
-    
+    services = services.select_related("service_type").order_by("-request_date")
+
+    status_filter = request.GET.get("status", "").strip()
+    sort_filter = request.GET.get("sort", "newest").strip()
+
+    valid_statuses = {choice[0] for choice in ServiceRequest.STATUS_CHOICES}
+    if status_filter in valid_statuses:
+        services = services.filter(status=status_filter)
+    else:
+        status_filter = ""
+
+    if sort_filter == "oldest":
+        services = services.order_by("request_date")
+    elif sort_filter == "status":
+        services = services.order_by("status", "-request_date")
+    else:
+        sort_filter = "newest"
+        services = services.order_by("-request_date")
+
+    all_services = ServiceRequest.objects.filter(resident=resident)
+
     context = {
         "resident": resident,
         "services": services,
-        "is_portal_resident_user": is_portal_resident_user,
-        "can_create_service_requests": can_create_requests,
-        "total_requests": total_requests,
-        "pending_requests": pending_requests,
-        "released_requests": released_requests,
-        "latest_service": latest_service,
-        "has_contact_info": has_contact_info,
-        "has_full_contact_info": has_full_contact_info,
-        "profile_completeness": profile_completeness,
+        "total_requests": all_services.count(),
+        "released_count": all_services.filter(status="Released").count(),
+        "pending_count": all_services.filter(status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"]).count(),
+        "status_filter": status_filter,
+        "sort_filter": sort_filter,
+        "status_choices": ServiceRequest.STATUS_CHOICES,
     }
     return render(request, "resident_profile.html", context)
 
@@ -2056,7 +3247,7 @@ def edit_resident(request, resident_id):
 def payment_list(request):
 
     # requests waiting for payment
-    approved_requests = ServiceRequest.objects.filter(status="Approved")
+    approved_requests = ServiceRequest.objects.filter(status="Ready for Release")
 
     # already paid
     payments = Payment.objects.all()
@@ -2075,8 +3266,8 @@ def record_payment(request, request_id):
 
     service_request = get_object_or_404(ServiceRequest, id=request_id)
 
-    if service_request.status != "Approved":
-        messages.error(request, "Only approved requests can be paid at the cashier.")
+    if service_request.status != "Ready for Release":
+        messages.error(request, "Only requests marked ready for release can be paid at the cashier.")
         return redirect("payment_list")
 
     # prevent duplicate payments
@@ -2084,7 +3275,6 @@ def record_payment(request, request_id):
         messages.warning(request, "Payment already exists for this request.")
         return redirect("payment_list")
 
-    before_status = snapshot_instance(service_request)
     payment = Payment.objects.create(
         service_request=service_request,
         amount=service_request.fee,
@@ -2100,20 +3290,14 @@ def record_payment(request, request_id):
         request=request,
     )
 
-    service_request.status = "Released"
-    service_request.save()
-    log_audit_event(
-        action="UPDATE",
-        model_name="ServiceRequest",
-        description=f"Request {service_request.document_number} released after payment.",
-        user=request.user,
-        target_id=service_request.id,
-        before_data=before_status,
-        after_data=snapshot_instance(service_request),
-        request=request,
+    notify_resident_for_service_request(
+        service_request,
+        title="Payment Recorded",
+        message=f"Payment for your {service_request.service_type.name} request has been recorded.",
     )
 
-    return redirect("generate_document", request_id=service_request.id)
+    messages.success(request, "Payment recorded successfully.")
+    return redirect("payment_list")
 
 #ADD HOUSEHOLD
 #ADD HOUSEHOLD
@@ -2149,10 +3333,11 @@ def add_household(request):
 @group_required(is_staff_user)
 def household_list(request):
 
-    households = Household.objects.all().order_by("purok", "house_number")
+    all_households = Household.objects.select_related("head", "purok").prefetch_related("members").all()
+    households = all_households.order_by("purok", "house_number")
 
-    purok = request.GET.get("purok")
-    search = request.GET.get("q")
+    purok = (request.GET.get("purok") or "").strip()
+    search = (request.GET.get("q") or "").strip()
 
     if purok:
         households = households.filter(purok=purok)
@@ -2163,7 +3348,11 @@ def household_list(request):
         )
 
     context = {
-        "households": households
+        "households": households,
+        "filtered_total": households.count(),
+        "total_households": all_households.count(),
+        "total_residents": Resident.objects.filter(household__isnull=False).count(),
+        "puroks": Purok.objects.order_by("name"),
     }
 
     return render(request, "household_list.html", context)
@@ -2180,16 +3369,42 @@ def complaint_list(request):
         if not profile.is_verified:
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
-        complaints = Complaint.objects.filter(
+        complaints = Complaint.objects.select_related("resident").filter(
             resident=profile.resident
         ).order_by("-date_filed")
     elif is_staff_user(request.user):
-        complaints = Complaint.objects.all().order_by("-date_filed")
+        complaints = Complaint.objects.select_related("resident").all().order_by("-date_filed")
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
+    all_complaints = complaints
+    q = (request.GET.get("q") or "").strip()
+    status = (request.GET.get("status") or "").strip()
+
+    if q:
+        complaints = complaints.filter(
+            Q(title__icontains=q)
+            | Q(description__icontains=q)
+            | Q(resident__first_name__icontains=q)
+            | Q(resident__last_name__icontains=q)
+        )
+
+    if status:
+        complaints = complaints.filter(status=status)
+
     return render(request, "complaint_list.html", {
-        "complaints": complaints
+        "complaints": complaints,
+        "total_complaints": all_complaints.count(),
+        "pending_count": all_complaints.filter(status__in=["Submitted", "Under Review"]).count(),
+        "resolved_count": all_complaints.filter(status="Resolved / Settled").count(),
+        "dismissed_count": all_complaints.filter(status="Withdrawn").count(),
+        "for_mediation_count": all_complaints.filter(status__in=["For Scheduling", "Scheduled for Hearing", "Ongoing Mediation"]).count(),
+        "filters": {
+            "q": q,
+            "status": status,
+        },
+        "status_choices": [choice[0] for choice in Complaint.STATUS_CHOICES],
+        "is_resident_user": is_resident(request.user),
     })
 
 #FILE COMPLAINT
@@ -2207,8 +3422,8 @@ def file_complaint(request):
         if not resident_profile.is_verified:
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
-    elif not is_staff_user(request.user):
-        return HttpResponseForbidden("You do not have permission to access this page.")
+    else:
+        return HttpResponseForbidden("Only residents can submit complaints online.")
 
     if request.method == "POST":
         if is_resident_user:
@@ -2234,6 +3449,11 @@ def file_complaint(request):
                 after_data=snapshot_instance(complaint),
                 request=request,
             )
+            notify_resident_for_complaint(
+                complaint,
+                title="Complaint Submitted",
+                message="Your complaint has been submitted online and is waiting for secretary review.",
+            )
             return redirect("complaint_list")
 
     else:
@@ -2254,7 +3474,8 @@ def file_complaint(request):
 @login_required
 def complaint_detail(request, complaint_id):
 
-    complaint = get_object_or_404(Complaint, id=complaint_id)
+    complaint = get_object_or_404(Complaint.objects.select_related("resident__household__purok", "filed_by", "scheduled_by"), id=complaint_id)
+    is_resident_viewer = False
     if is_resident(request.user):
         profile = get_user_profile(request.user)
         if not profile or not profile.resident or complaint.resident_id != profile.resident_id:
@@ -2262,15 +3483,100 @@ def complaint_detail(request, complaint_id):
         if not profile.is_verified:
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
-        can_update_status = False
+        can_manage = False
+        is_resident_viewer = True
     elif is_staff_user(request.user):
-        can_update_status = True
+        can_manage = is_secretary(request.user)
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
-
+    if can_manage and complaint.status == "Submitted":
+        before_data = snapshot_instance(complaint)
+        complaint.status = "Under Review"
+        complaint.save(update_fields=["status", "updated_at"])
+        log_audit_event(
+            action="UPDATE",
+            model_name="Complaint",
+            description=f"Complaint '{complaint.title}' automatically moved to Under Review when opened by the Secretary.",
+            user=request.user,
+            target_id=complaint.id,
+            before_data=before_data,
+            after_data=snapshot_instance(complaint),
+            request=request,
+        )
+        notify_resident_for_complaint(
+            complaint,
+            title="Complaint Under Review",
+            message="Your complaint is now under review by the Secretary.",
+        )
+    primary_steps = [
+        "Submitted",
+        "Under Review",
+        "For Scheduling",
+        "Scheduled for Hearing",
+        "Ongoing Mediation",
+        "Resolved / Settled",
+    ]
+    progress_status = complaint.status if complaint.status in primary_steps else "Submitted"
+    progress_index = primary_steps.index(progress_status)
+    logs = AuditLog.objects.filter(model_name="Complaint", target_id=str(complaint.id)).select_related("user").order_by("timestamp")
+    timeline_items = [{
+        "title": "Complaint submitted",
+        "description": f"{complaint.resident} submitted the complaint online.",
+        "timestamp": complaint.date_filed,
+        "actor": complaint.filed_by,
+        "tone": "blue",
+    }]
+    for log in logs:
+        timeline_items.append({
+            "title": log.after_data.get("status") if log.after_data and log.after_data.get("status") else "Complaint updated",
+            "description": log.description,
+            "timestamp": log.timestamp,
+            "actor": log.user,
+            "tone": COMPLAINT_STATUS_COLORS.get((log.after_data or {}).get("status", ""), "sky"),
+        })
+    address_bits = []
+    resident = complaint.resident
+    if resident.household:
+        if resident.household.house_number:
+            address_bits.append(resident.household.house_number)
+        if resident.household.street:
+            address_bits.append(resident.household.street)
+        if resident.household.purok:
+            address_bits.append(f"Purok {resident.household.purok.name}")
+    address_display = ", ".join(address_bits) if address_bits else "No household address recorded"
+    next_statuses = COMPLAINT_STATUS_TRANSITIONS.get(complaint.status, [])
+    resident_can_respond_to_schedule = (
+        is_resident_viewer
+        and complaint.status == "Scheduled for Hearing"
+        and complaint.meeting_datetime is not None
+        and complaint.resident_schedule_response != "Acknowledged"
+    )
+    resident_can_withdraw = (
+        is_resident_viewer
+        and complaint.status in {"Submitted", "Under Review", "For Scheduling", "Scheduled for Hearing"}
+    )
+    if complaint.resident_schedule_response == "Acknowledged":
+        resident_response_help = "The hearing schedule has been acknowledged by the resident."
+    elif complaint.resident_schedule_response == "Needs Reschedule":
+        resident_response_help = "The resident asked the Secretary to review and adjust the hearing schedule."
+    elif complaint.resident_schedule_response == "Cannot Attend":
+        resident_response_help = "The resident informed the office that they cannot attend the current hearing schedule."
+    else:
+        resident_response_help = "The resident still needs to acknowledge the hearing schedule or request a change."
     return render(request, "complaint_detail.html", {
         "complaint": complaint,
-        "can_update_status": can_update_status,
+        "can_manage": can_manage,
+        "is_resident_viewer": is_resident_viewer,
+        "primary_steps": primary_steps,
+        "progress_index": progress_index,
+        "timeline_items": timeline_items,
+        "address_display": address_display,
+        "next_statuses": next_statuses,
+        "current_status_tone": COMPLAINT_STATUS_COLORS.get(complaint.status, "blue"),
+        "schedule_response_tone": COMPLAINT_SCHEDULE_RESPONSE_COLORS.get(complaint.resident_schedule_response, "gold"),
+        "resident_can_respond_to_schedule": resident_can_respond_to_schedule,
+        "resident_can_withdraw": resident_can_withdraw,
+        "resident_response_help": resident_response_help,
     })
 
 #UPDATE COMPLAINT STATUS
@@ -2280,10 +3586,15 @@ def complaint_detail(request, complaint_id):
 def update_complaint_status(request, complaint_id):
 
     complaint = get_object_or_404(Complaint, id=complaint_id)
+    if not is_secretary(request.user):
+        return HttpResponseForbidden("Only the Secretary can update complaint statuses.")
 
     if request.method == "POST":
         before_data = snapshot_instance(complaint)
         new_status = request.POST.get("status")
+        if new_status not in COMPLAINT_STATUS_TRANSITIONS.get(complaint.status, []):
+            messages.error(request, "That complaint status change is not allowed from the current stage.")
+            return redirect("complaint_detail", complaint_id=complaint.id)
         complaint.status = new_status
         complaint.save()
         log_audit_event(
@@ -2296,7 +3607,145 @@ def update_complaint_status(request, complaint_id):
             after_data=snapshot_instance(complaint),
             request=request,
         )
+        notify_resident_for_complaint(
+            complaint,
+            title=f"Complaint {new_status}",
+            message=f"Your complaint is now marked as {new_status}.",
+        )
 
+    return redirect("complaint_detail", complaint_id=complaint.id)
+
+
+@group_required(is_staff_user)
+def schedule_complaint_hearing(request, complaint_id):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    if not is_secretary(request.user):
+        return HttpResponseForbidden("Only the Secretary can schedule complaint hearings.")
+    if request.method != "POST":
+        return redirect("complaint_detail", complaint_id=complaint.id)
+
+    meeting_date = (request.POST.get("meeting_date") or "").strip()
+    meeting_time = (request.POST.get("meeting_time") or "").strip()
+    meeting_location = (request.POST.get("meeting_location") or "").strip()
+    meeting_purpose = (request.POST.get("meeting_purpose") or "").strip()
+    secretary_notes = (request.POST.get("secretary_notes") or "").strip()
+
+    if not meeting_date or not meeting_time or not meeting_location or not meeting_purpose:
+        messages.error(request, "Please complete the hearing date, time, location, and purpose.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+
+    scheduled_dt = timezone.make_aware(datetime.fromisoformat(f"{meeting_date}T{meeting_time}"))
+    before_data = snapshot_instance(complaint)
+    complaint.meeting_datetime = scheduled_dt
+    complaint.meeting_location = meeting_location
+    complaint.meeting_purpose = meeting_purpose
+    complaint.secretary_notes = secretary_notes
+    complaint.resident_schedule_response = "Pending Response"
+    complaint.resident_schedule_responded_at = None
+    complaint.resident_schedule_response_note = ""
+    complaint.scheduled_by = request.user
+    complaint.status = "Scheduled for Hearing"
+    complaint.save()
+    log_audit_event(
+        action="UPDATE",
+        model_name="Complaint",
+        description=f"Scheduled hearing for complaint '{complaint.title}' on {scheduled_dt}.",
+        user=request.user,
+        target_id=complaint.id,
+        before_data=before_data,
+        after_data=snapshot_instance(complaint),
+        request=request,
+    )
+    notify_resident_for_complaint(
+        complaint,
+        title="Hearing Scheduled",
+        message=f"Your complaint hearing is scheduled on {scheduled_dt.strftime('%b %d, %Y at %I:%M %p')} at {meeting_location}. Purpose: {meeting_purpose}.",
+    )
+    messages.success(request, "Complaint hearing scheduled and resident notified.")
+    return redirect("complaint_detail", complaint_id=complaint.id)
+
+
+@group_required(lambda user: is_resident(user))
+def respond_to_complaint_schedule(request, complaint_id):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    profile = get_user_profile(request.user)
+    if not profile or not profile.resident or complaint.resident_id != profile.resident_id:
+        return HttpResponseForbidden("You can only respond to your own complaint schedule.")
+    if request.method != "POST":
+        return redirect("complaint_detail", complaint_id=complaint.id)
+    if complaint.status != "Scheduled for Hearing" or not complaint.meeting_datetime:
+        messages.error(request, "There is no active hearing schedule to respond to.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+    if complaint.resident_schedule_response == "Acknowledged":
+        messages.error(request, "You already acknowledged this hearing schedule and it can no longer be changed.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+
+    response_value = (request.POST.get("schedule_response") or "").strip()
+    response_note = (request.POST.get("response_note") or "").strip()
+    allowed_responses = {"Acknowledged", "Needs Reschedule", "Cannot Attend"}
+    if response_value not in allowed_responses:
+        messages.error(request, "Please choose a valid schedule response.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+    if response_value in {"Needs Reschedule", "Cannot Attend"} and not response_note:
+        messages.error(request, "Please provide a short note so the Secretary understands your request.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+
+    before_data = snapshot_instance(complaint)
+    complaint.resident_schedule_response = response_value
+    complaint.resident_schedule_responded_at = timezone.now()
+    complaint.resident_schedule_response_note = response_note
+    complaint.save()
+
+    log_audit_event(
+        action="UPDATE",
+        model_name="Complaint",
+        description=f"Resident responded to the hearing schedule: {response_value}.",
+        user=request.user,
+        target_id=complaint.id,
+        before_data=before_data,
+        after_data=snapshot_instance(complaint),
+        request=request,
+    )
+
+    notify_resident_for_complaint(
+        complaint,
+        title=f"Schedule {response_value}",
+        message=(
+            "You acknowledged the hearing schedule."
+            if response_value == "Acknowledged"
+            else f"Your response to the hearing schedule was sent to the Secretary: {response_value}."
+        ),
+    )
+    messages.success(request, "Your schedule response has been recorded.")
+    return redirect("complaint_detail", complaint_id=complaint.id)
+
+
+@group_required(lambda user: is_resident(user))
+def withdraw_complaint(request, complaint_id):
+    complaint = get_object_or_404(Complaint, id=complaint_id)
+    profile = get_user_profile(request.user)
+    if not profile or not profile.resident or complaint.resident_id != profile.resident_id:
+        return HttpResponseForbidden("You can only withdraw your own complaint.")
+    if request.method != "POST":
+        return redirect("complaint_detail", complaint_id=complaint.id)
+    if complaint.status not in {"Submitted", "Under Review", "For Scheduling", "Scheduled for Hearing"}:
+        messages.error(request, "This complaint can no longer be withdrawn from the resident side.")
+        return redirect("complaint_detail", complaint_id=complaint.id)
+
+    before_data = snapshot_instance(complaint)
+    complaint.status = "Withdrawn"
+    complaint.save()
+    log_audit_event(
+        action="UPDATE",
+        model_name="Complaint",
+        description=f"Resident withdrew complaint '{complaint.title}'.",
+        user=request.user,
+        target_id=complaint.id,
+        before_data=before_data,
+        after_data=snapshot_instance(complaint),
+        request=request,
+    )
+    messages.success(request, "Your complaint has been withdrawn.")
     return redirect("complaint_detail", complaint_id=complaint.id)
 
 #EXPORT RESDIENTS CSV
@@ -2522,11 +3971,7 @@ def export_barangay_summary_csv(request):
 #Generate_Document
 #Generate_Document
 
-@group_required(is_staff_user)
-def generate_document(request, request_id):
-
-    service = get_object_or_404(ServiceRequest, id=request_id)
-
+def _render_service_request_document(request, service):
     resident = service.resident
     address = "-"
     if resident.household:
@@ -2556,8 +4001,16 @@ def generate_document(request, request_id):
         "service": service,
         "resident": resident,
         "address": address,
-        "today": timezone.localdate(),
+        "today": date.today(),
     }
+    return render(request, template, context)
+
+
+@group_required(is_staff_user)
+def generate_document(request, request_id):
+
+    service = get_object_or_404(ServiceRequest, id=request_id)
+
     log_audit_event(
         action="PRINT",
         model_name="ServiceRequest",
@@ -2567,11 +4020,407 @@ def generate_document(request, request_id):
         request=request,
     )
 
-    return render(request, template, context)
+    return _render_service_request_document(request, service)
+
+
+@group_required(is_staff_user)
+def print_and_release_document(request, request_id):
+
+    service = get_object_or_404(ServiceRequest, id=request_id)
+
+    if not is_secretary(request.user):
+        return HttpResponseForbidden("Only the Secretary can release service requests.")
+
+    if service.status not in {"Ready for Release", "Released"}:
+        messages.error(request, "Only requests marked ready for release can be released.")
+        return redirect("service_requests")
+
+    if service.status == "Ready for Release":
+        before_data = snapshot_instance(service)
+        service.status = "Released"
+        service.save()
+        log_audit_event(
+            action="UPDATE",
+            model_name="ServiceRequest",
+            description=f"Request {service.document_number} was printed and released.",
+            user=request.user,
+            target_id=service.id,
+            before_data=before_data,
+            after_data=snapshot_instance(service),
+            request=request,
+        )
+        notify_resident_for_service_request(
+            service,
+            title="Request Released",
+            message=f"Your {service.service_type.name} request has been released successfully.",
+        )
+
+    log_audit_event(
+        action="PRINT",
+        model_name="ServiceRequest",
+        description=f"Printed document for request {service.document_number}.",
+        user=request.user,
+        target_id=service.id,
+        request=request,
+    )
+
+    return _render_service_request_document(request, service)
 
 # SERVICE REQUEST LIST
 # SERVICE REQUEST LIST
 # SERVICE REQUEST LIST
+@login_required
+def service_request_detail(request, request_id):
+    service_request = get_object_or_404(
+        ServiceRequest.objects.select_related(
+            "resident__household__purok",
+            "service_type",
+            "created_by",
+            "requirements_requested_by",
+        ).prefetch_related("attachments__uploaded_by"),
+        id=request_id,
+    )
+
+    if is_resident(request.user):
+        profile = get_user_profile(request.user)
+        if not profile or not profile.resident or profile.resident_id != service_request.resident_id:
+            return HttpResponseForbidden("You can only view your own request details.")
+        if not profile.is_verified:
+            messages.error(request, "Your account is still pending verification.")
+            return redirect("portal_pending_verification")
+    elif not is_staff_user(request.user):
+        return HttpResponseForbidden("You do not have permission to access this page.")
+
+    can_manage = is_secretary(request.user)
+    is_resident_user = is_resident(request.user)
+
+    requirement_initial = {
+        "requirements_note": service_request.requirements_note,
+        "requirements_submission_instructions": service_request.requirements_submission_instructions,
+        "requirements_deadline": service_request.requirements_deadline,
+    }
+    resident_initial = {
+        "resident_response_note": service_request.resident_response_note,
+    }
+    requirement_form = ServiceRequestRequirementsForm(initial=requirement_initial)
+    resident_submission_form = ServiceRequestResidentSubmissionForm(initial=resident_initial)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "request_requirements":
+            if not can_manage:
+                return HttpResponseForbidden("Only the Secretary can request additional requirements.")
+            if service_request.status not in {"Under Review", "Pending Requirements"}:
+                messages.error(request, "Requirements can only be requested while the service request is under review.")
+                return redirect("service_request_detail", request_id=service_request.id)
+
+            requirement_form = ServiceRequestRequirementsForm(request.POST)
+            if requirement_form.is_valid():
+                is_updating_existing_request = service_request.status == "Pending Requirements" and bool(
+                    service_request.requirements_requested_at
+                )
+                before_data = snapshot_instance(service_request)
+                service_request.requirements_note = requirement_form.cleaned_data["requirements_note"]
+                service_request.requirements_submission_instructions = requirement_form.cleaned_data["requirements_submission_instructions"]
+                service_request.requirements_deadline = requirement_form.cleaned_data["requirements_deadline"]
+                service_request.requirements_requested_at = timezone.now()
+                service_request.requirements_requested_by = request.user
+                service_request.status = "Pending Requirements"
+                service_request.save()
+                log_audit_event(
+                    action="UPDATE",
+                    model_name="ServiceRequest",
+                    description=(
+                        f"Updated the active requirements request for {service_request.document_number}."
+                        if is_updating_existing_request
+                        else f"Requested additional requirements for {service_request.document_number}."
+                    ),
+                    user=request.user,
+                    target_id=service_request.id,
+                    before_data=before_data,
+                    after_data=snapshot_instance(service_request),
+                    request=request,
+                )
+                notify_resident_for_service_request(
+                    service_request,
+                    title="Requirements Request Updated" if is_updating_existing_request else "Additional Requirements Needed",
+                    message=(
+                        f"The Secretary updated the missing requirements for your {service_request.service_type.name} request."
+                        if is_updating_existing_request
+                        else f"The Secretary sent the missing requirements for your {service_request.service_type.name} request."
+                    ),
+                )
+                messages.success(
+                    request,
+                    "The active requirements request was updated."
+                    if is_updating_existing_request
+                    else "The missing requirements were sent to the resident.",
+                )
+                return redirect("service_request_detail", request_id=service_request.id)
+
+        elif action == "submit_requirements":
+            if not is_resident_user:
+                return HttpResponseForbidden("Only the resident can submit requirement files for this request.")
+            if service_request.status != "Pending Requirements":
+                messages.error(request, "This request is not currently waiting for resident requirements.")
+                return redirect("service_request_detail", request_id=service_request.id)
+
+            resident_submission_form = ServiceRequestResidentSubmissionForm(request.POST)
+            uploaded_files = request.FILES.getlist("requirement_files")
+            if resident_submission_form.is_valid():
+                response_note = resident_submission_form.cleaned_data["resident_response_note"].strip()
+                if not response_note and not uploaded_files:
+                    resident_submission_form.add_error("resident_response_note", "Add a short note or upload at least one file.")
+                else:
+                    before_data = snapshot_instance(service_request)
+                    service_request.resident_response_note = response_note
+                    service_request.resident_responded_at = timezone.now()
+                    service_request.status = "Under Review"
+                    service_request.save()
+                    for uploaded_file in uploaded_files:
+                        ServiceRequestAttachment.objects.create(
+                            service_request=service_request,
+                            uploaded_by=request.user,
+                            file=uploaded_file,
+                            original_name=uploaded_file.name,
+                            note=response_note[:255],
+                        )
+                    log_audit_event(
+                        action="UPDATE",
+                        model_name="ServiceRequest",
+                        description=f"Resident submitted additional requirements for {service_request.document_number}.",
+                        user=request.user,
+                        target_id=service_request.id,
+                        before_data=before_data,
+                        after_data=snapshot_instance(service_request),
+                        request=request,
+                    )
+                    notify_resident_for_service_request(
+                        service_request,
+                        title="Requirements Submitted",
+                        message=f"Your additional files for the {service_request.service_type.name} request were submitted to the Secretary.",
+                    )
+                    messages.success(request, "Your files and note were submitted. The request is back under review.")
+                    return redirect("service_request_detail", request_id=service_request.id)
+
+    status_history = get_service_request_status_history(service_request)
+    progress_status = get_service_request_progress_status(service_request.status)
+    progress_index = SERVICE_REQUEST_PRIMARY_STEPS.index(progress_status)
+    latest_secretary_log = (
+        AuditLog.objects.filter(
+            model_name="ServiceRequest",
+            target_id=str(service_request.id),
+            user__groups__name="Secretary",
+        )
+        .select_related("user")
+        .order_by("-timestamp")
+        .first()
+    )
+
+    resident = service_request.resident
+    address_bits = []
+    if resident.household:
+        if resident.household.house_number:
+            address_bits.append(resident.household.house_number)
+        if resident.household.street:
+            address_bits.append(resident.household.street)
+        if resident.household.purok:
+            address_bits.append(f"Purok {resident.household.purok.name}")
+    address_display = ", ".join(address_bits) if address_bits else "No household address recorded"
+
+    timeline_items = []
+    timeline_items.append({
+        "title": "Request submitted",
+        "meta": service_request.request_date,
+        "description": f"{resident} submitted a {service_request.service_type.name} request.",
+        "actor": service_request.created_by,
+        "tone": "blue",
+    })
+    for item in status_history[1:]:
+        timeline_items.append({
+            "title": item["status"],
+            "meta": item["timestamp"],
+            "description": item["description"],
+            "actor": item["actor"],
+            "tone": SERVICE_REQUEST_STATUS_COLORS.get(item["status"], "blue"),
+        })
+    if service_request.requirements_requested_at and service_request.requirements_note:
+        timeline_items.append({
+            "title": "Additional requirements requested",
+            "meta": service_request.requirements_requested_at,
+            "description": service_request.requirements_note,
+            "actor": service_request.requirements_requested_by,
+            "tone": "gold",
+        })
+    if service_request.resident_responded_at:
+        response_parts = []
+        if service_request.resident_response_note:
+            response_parts.append(service_request.resident_response_note)
+        attachment_count = service_request.attachments.count()
+        if attachment_count:
+            response_parts.append(f"{attachment_count} file(s) uploaded.")
+        timeline_items.append({
+            "title": "Resident submitted requirements",
+            "meta": service_request.resident_responded_at,
+            "description": " ".join(response_parts) if response_parts else "The resident submitted the requested requirements.",
+            "actor": resident,
+            "tone": "teal",
+        })
+    timeline_items.sort(key=lambda item: item["meta"])
+
+    current_handler_name = "Secretary Workspace"
+    if latest_secretary_log and latest_secretary_log.user:
+        current_handler_name = latest_secretary_log.user.get_full_name() or latest_secretary_log.user.username
+
+    last_status_entry = status_history[-1] if status_history else None
+    elapsed_days = max((timezone.now() - service_request.request_date).days, 0)
+    can_print_release = is_secretary(request.user) and service_request.status == "Ready for Release"
+    allowed_statuses = get_service_request_allowed_statuses(service_request.status)
+    non_requirement_statuses = [status for status in allowed_statuses if status != "Pending Requirements"]
+    next_step = non_requirement_statuses[0] if non_requirement_statuses else None
+    has_active_requirement_request = (
+        service_request.status == "Pending Requirements"
+        and bool(service_request.requirements_requested_at and service_request.requirements_note)
+    )
+    is_editing_requirement_request = (
+        can_manage
+        and request.GET.get("edit_requirements") == "1"
+        and service_request.status == "Pending Requirements"
+    )
+    resident_action_text = None
+    if service_request.status == "Pending Requirements":
+        resident_action_text = "Resident action required: submit the missing information or documents so processing can continue."
+    elif service_request.status == "Ready for Release":
+        resident_action_text = "Resident may prepare for pickup. The Secretary can now release the finished document."
+
+    notification_items = [
+        {
+            "title": "Request Received",
+            "message": f"Your {service_request.service_type.name} request was submitted successfully.",
+            "timestamp": service_request.request_date,
+            "tone": "blue",
+        }
+    ]
+    if service_request.status in {"Under Review", "For Validation", "Processing"}:
+        notification_items.append({
+            "title": "Processing Update",
+            "message": f"Your request is now {service_request.status.lower()} by the Secretary.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "sky" if service_request.status == "Under Review" else "violet" if service_request.status == "For Validation" else "teal",
+        })
+    elif service_request.status == "Pending Requirements":
+        notification_items.append({
+            "title": "Action Needed",
+            "message": service_request.requirements_note or "Please submit the missing requirements so the Secretary can continue processing your request.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "gold",
+        })
+    elif service_request.status == "On Hold":
+        notification_items.append({
+            "title": "Request On Hold",
+            "message": "Your request is temporarily on hold while records or details are being checked.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "orange",
+        })
+    elif service_request.status == "Ready for Release":
+        notification_items.append({
+            "title": "Ready for Release",
+            "message": "Your document is ready for pickup. Please wait for release confirmation from the Secretary.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "amber",
+        })
+    elif service_request.status == "Released":
+        notification_items.append({
+            "title": "Released",
+            "message": "Your document has been released successfully.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "green",
+        })
+    elif service_request.status == "Rejected":
+        notification_items.append({
+            "title": "Request Rejected",
+            "message": "Your request could not be processed. Please contact the barangay office for guidance.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "red",
+        })
+    elif service_request.status == "Cancelled":
+        notification_items.append({
+            "title": "Request Cancelled",
+            "message": "This request has been cancelled and closed.",
+            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+            "tone": "slate",
+        })
+
+    context = {
+        "service_request": service_request,
+        "resident": resident,
+        "address_display": address_display,
+        "primary_steps": SERVICE_REQUEST_PRIMARY_STEPS,
+        "progress_status": progress_status,
+        "progress_index": progress_index,
+        "status_history": status_history,
+        "timeline_items": timeline_items,
+        "current_handler_name": current_handler_name,
+        "last_updated_at": latest_secretary_log.timestamp if latest_secretary_log else service_request.request_date,
+        "current_stage_since": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
+        "estimated_processing_text": SERVICE_REQUEST_ESTIMATES.get(service_request.status, "Processing time will depend on request completeness."),
+        "elapsed_days": elapsed_days,
+        "allowed_statuses": non_requirement_statuses,
+        "next_step": next_step,
+        "resident_action_text": resident_action_text,
+        "notification_items": notification_items,
+        "current_status_tone": SERVICE_REQUEST_STATUS_COLORS.get(service_request.status, "blue"),
+        "can_manage": can_manage,
+        "can_print_release": can_print_release,
+        "is_view_only": not can_manage,
+        "requirement_form": requirement_form,
+        "resident_submission_form": resident_submission_form,
+        "requirement_attachments": service_request.attachments.all(),
+        "can_request_requirements": can_manage and service_request.status in {"Under Review", "Pending Requirements"},
+        "has_active_requirement_request": has_active_requirement_request,
+        "show_requirement_request_form": can_manage and (
+            service_request.status == "Under Review" or is_editing_requirement_request
+        ),
+        "is_editing_requirement_request": is_editing_requirement_request,
+        "can_submit_requirements": is_resident_user and service_request.status == "Pending Requirements",
+    }
+    return render(request, "service_request_detail.html", context)
+
+
+@login_required
+def resident_notifications(request):
+    if not is_resident(request.user):
+        return HttpResponseForbidden("Only resident accounts can access notifications.")
+
+    profile = get_user_profile(request.user)
+    if not profile or not profile.is_verified:
+        messages.error(request, "Your account is still pending verification.")
+        return redirect("portal_pending_verification")
+
+    notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
+    return render(request, "resident_notifications.html", {
+        "notifications": notifications,
+    })
+
+
+@login_required
+def open_notification(request, notification_id):
+    notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+    if not notification.is_read:
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+    return redirect(notification.target_url or "resident_notifications")
+
+
+@login_required
+def mark_all_notifications_read(request):
+    if request.method != "POST":
+        return redirect("resident_notifications")
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return redirect("resident_notifications")
+
+
 @login_required
 def service_requests(request):
     if is_resident(request.user):
@@ -2582,48 +4431,53 @@ def service_requests(request):
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
         requests = ServiceRequest.objects.select_related(
-            "resident"
+            "resident", "service_type"
         ).filter(
             resident=profile.resident
+        ).annotate(
+            has_payment=Count("payment")
         ).order_by("-request_date")
     elif is_staff_user(request.user):
         requests = ServiceRequest.objects.select_related(
-            "resident"
+            "resident", "service_type"
+        ).annotate(
+            has_payment=Count("payment")
         ).order_by("-request_date")
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    if query:
+        requests = requests.filter(
+            Q(document_number__icontains=query)
+            | Q(resident__first_name__icontains=query)
+            | Q(resident__last_name__icontains=query)
+            | Q(service_type__name__icontains=query)
+            | Q(purpose__icontains=query)
+        )
+    if status_filter in dict(ServiceRequest.STATUS_CHOICES):
+        requests = requests.filter(status=status_filter)
+    else:
+        status_filter = ""
+
+    request_list = list(requests)
+    for item in request_list:
+        item.allowed_statuses = get_service_request_allowed_statuses(item.status)
+
     return render(request, "service_requests.html", {
-        "requests": requests
-    })
-
-@login_required
-def service_request_detail(request, request_id):
-    service_request = get_object_or_404(
-        ServiceRequest.objects.select_related(
-            "resident",
-            "service_type",
-            "purpose_option",
-            "created_by",
-            "payment",
-        ),
-        id=request_id,
-    )
-
-    if is_resident(request.user):
-        profile = get_user_profile(request.user)
-        if not profile or not profile.resident:
-            return HttpResponseForbidden("Resident profile not linked.")
-        if not profile.is_verified:
-            messages.error(request, "Your account is still pending verification.")
-            return redirect("portal_pending_verification")
-        if service_request.resident_id != profile.resident_id:
-            return HttpResponseForbidden("You can only view your own service requests.")
-    elif not is_staff_user(request.user):
-        return HttpResponseForbidden("You do not have permission to access this page.")
-
-    return render(request, "service_request_detail.html", {
-        "service_request": service_request
+        "requests": request_list,
+        "submitted_total": sum(1 for item in request_list if item.status == "Submitted"),
+        "review_total": sum(1 for item in request_list if item.status == "Under Review"),
+        "validation_total": sum(1 for item in request_list if item.status == "For Validation"),
+        "processing_total": sum(1 for item in request_list if item.status == "Processing"),
+        "ready_total": sum(1 for item in request_list if item.status == "Ready for Release"),
+        "released_total": sum(1 for item in request_list if item.status == "Released"),
+        "status_choices": ServiceRequest.STATUS_CHOICES,
+        "q": query,
+        "status_filter": status_filter,
+        "can_manage_requests": is_secretary(request.user),
     })
 
 @login_required

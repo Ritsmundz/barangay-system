@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 
-{% block page_title %}Edit Resident{% endblock %}
-{% block page_subtitle %}Update the information for {{ resident.first_name }} {{ resident.last_name }}{% endblock %}
-
 {% block content %}
 
 <style>
@@ -32,21 +29,13 @@
     .breadcrumb svg { width: 12px; height: 12px; }
     .breadcrumb .cur { color: #1E293B; font-weight: 500; }
 
-    .edit-layout {
-        max-width: 780px;
-        margin: 0 auto;
-        padding: 0 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-
     /* ── Form card ── */
     .form-card {
         background: #fff;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
         overflow: hidden;
+        max-width: 780px;
     }
     .form-card-hdr {
         background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
@@ -214,24 +203,6 @@
         line-height: 1.4;
     }
 
-    .info-card {
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 10px;
-        padding: 14px 16px;
-        display: flex;
-        gap: 12px;
-    }
-    .info-card svg { width: 18px; height: 18px; color: #2563EB; flex-shrink: 0; margin-top: 1px; }
-    .info-card-content { flex: 1; }
-    .info-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E40AF;
-        margin-bottom: 4px;
-    }
-    .info-card-text { font-size: 12px; color: #1E3A8A; line-height: 1.6; }
-
     /* ── Form footer ── */
     .form-footer {
         display: flex;
@@ -285,19 +256,15 @@
     <span class="cur">Edit</span>
 </div>
 
-<div class="edit-layout">
-<div class="info-card">
-    <svg viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-    </svg>
-    <div class="info-card-content">
-        <div class="info-card-title">About Resident Information</div>
-        <div class="info-card-text">
-            Review and update the resident record carefully before saving. Keep names, contact details, and birth date format consistent with the barangay registry.
-        </div>
+<!-- ═══════════════ PAGE HEADER ═══════════════ -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Edit Resident</div>
+        <div class="page-subtitle">Update the information for {{ resident.first_name }} {{ resident.last_name }}</div>
     </div>
 </div>
 
+<!-- ═══════════════ FORM CARD ═══════════════ -->
 <div class="form-card">
 
     <!-- Card header -->
@@ -346,8 +313,7 @@
         </div>
 
     </form>
-</div>
+
 </div>
 
 {% endblock %}
-

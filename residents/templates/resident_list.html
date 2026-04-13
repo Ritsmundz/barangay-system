@@ -1,508 +1,250 @@
 {% extends "base.html" %}
 
 {% block page_title %}Residents{% endblock %}
-{% block page_subtitle %}Barangay Gulod · Registered Resident Records{% endblock %}
+{% block page_subtitle %}Browse, filter, and manage registered resident records in one place.{% endblock %}
+
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
-
 <style>
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-        gap: 10px;
+    .resident-page{display:grid;gap:20px;max-width:1280px;margin:0 auto}
+    .hero-card,.stat-card,.toolbar-card,.table-card{
+        background:linear-gradient(180deg,#fff,var(--card-soft));border:1px solid var(--brd);border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)
     }
-    .page-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #1E293B;
-        line-height: 1.2;
+    .hero-card{padding:22px 24px;background:radial-gradient(circle at top right, rgba(43,111,220,.16), transparent 32%),radial-gradient(circle at bottom left, rgba(21,128,111,.08), transparent 26%),linear-gradient(180deg,#fff,var(--bg-soft))}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) 320px;gap:18px;align-items:center}
+    .hero-title{font-size:28px;line-height:1.1;font-weight:700;color:var(--txt);margin:0}
+    .hero-copy{margin-top:8px;color:var(--txt2);font-size:14px;max-width:760px}
+    .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:var(--pri-lt);border:1px solid var(--pri-brd);color:var(--pri);font-size:12px;font-weight:700}
+    .hero-tag::before{content:"";width:8px;height:8px;border-radius:999px;background:var(--accent)}
+    .hero-panel{padding:16px;border:1px solid var(--pri-brd);border-radius:16px;background:linear-gradient(180deg,var(--pri-lt),#f3f8fe)}
+    .hero-panel-title{font-size:12px;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .hero-panel-value{font-size:30px;font-weight:700;color:var(--txt);line-height:1}
+    .hero-panel-sub{font-size:12px;color:var(--txt2);margin-top:8px}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    .stat-card{padding:18px;display:flex;align-items:center;gap:14px}
+    .stat-icon{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .stat-icon svg{width:20px;height:20px}
+    .icon-blue{background:var(--pri-lt);color:var(--pri2)}.icon-green{background:var(--accent-lt);color:var(--accent)}.icon-amber{background:var(--warn-lt);color:var(--warn)}.icon-purple{background:#eef2ff;color:#5b77af}
+    .stat-value{font-size:28px;font-weight:700;color:var(--txt);line-height:1}
+    .stat-label{font-size:12px;color:var(--txt2);margin-top:6px}
+    .toolbar-card{padding:18px}
+    .toolbar-top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .toolbar-title{font-size:16px;font-weight:700;color:var(--txt)}
+    .toolbar-sub{font-size:12px;color:var(--txt3);margin-top:4px}
+    .toolbar-count{font-size:12px;color:var(--txt2)}.toolbar-count strong{color:var(--txt)}
+    .filter-form{display:grid;grid-template-columns:minmax(220px,1fr) 160px 160px auto auto;gap:10px;align-items:center}
+    .search-wrap{position:relative}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--txt3)}
+    .search-wrap input,.filter-form select{
+        width:100%;min-height:44px;border:1px solid var(--brd);border-radius:14px;background:#fff;font:inherit;color:var(--txt);outline:none;transition:.15s
     }
-    .page-subtitle {
-        font-size: 12px;
-        color: #64748B;
-        margin-top: 2px;
+    .search-wrap input{padding:0 14px 0 40px}
+    .filter-form select{padding:0 14px}
+    .search-wrap input:focus,.filter-form select:focus{border-color:var(--pri-brd);box-shadow:0 0 0 4px rgba(43,111,220,.10)}
+    .table-card{overflow:hidden}
+    .table-head{padding:18px 20px;border-bottom:1px solid var(--brd);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#fff,var(--bg-soft))}
+    .table-title{font-size:16px;font-weight:700;color:var(--txt)}
+    .table-sub{font-size:12px;color:var(--txt3);margin-top:4px}
+    .table-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .table-wrap{overflow-x:auto}
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th{padding:14px 20px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);text-align:left;border-bottom:1px solid var(--brd);white-space:nowrap}
+    .table td{padding:16px 20px;border-bottom:1px solid #eaf0f6;font-size:13px;color:var(--txt);vertical-align:middle}
+    .table tbody tr:hover{background:var(--bg-soft)}
+    .table tbody tr:last-child td{border-bottom:none}
+    .name-cell{display:flex;gap:12px;align-items:center}
+    .avatar{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+    .avatar-male{background:var(--pri-lt);color:var(--pri2)}.avatar-female{background:#f4f0ff;color:#6b5bb4}.avatar-other{background:var(--slate-lt);color:var(--txt2)}
+    .name-main{font-size:14px;font-weight:700;color:var(--txt)}
+    .name-sub{font-size:12px;color:var(--txt3);margin-top:3px}
+    .status-badge,.meta-badge{
+        display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;line-height:1;white-space:nowrap
     }
-
-    /* ── Buttons ── */
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 14px;
-        border-radius: 8px;
-        font-size: 12.5px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        border: none;
-        transition: all .15s;
-        line-height: 1;
+    .status-badge::before,.meta-badge::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor;opacity:.9}
+    .badge-alive{background:var(--accent-lt);color:var(--accent-strong)}.badge-moved{background:var(--warn-lt);color:var(--warn-strong)}.badge-deceased{background:var(--slate-lt);color:var(--txt2)}
+    .badge-voter{background:var(--pri-lt);color:var(--pri2)}.badge-non-voter{background:var(--slate-lt);color:var(--txt2)}.badge-civil{background:#eef2ff;color:#5b77af}
+    .gender-pill{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--txt2)}
+    .gender-dot{width:8px;height:8px;border-radius:999px}
+    .action-cell{display:flex;gap:8px;flex-wrap:wrap}
+    .mini-btn{
+        display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:12px;border:1px solid var(--brd);background:#fff;color:var(--txt2);font-size:12px;font-weight:700;text-decoration:none;transition:.15s
     }
-    .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .btn-primary  { background: #2563EB; color: #fff; }
-    .btn-primary:hover  { background: #1D4ED8; color: #fff; text-decoration: none; }
-    .btn-secondary { background: #fff; color: #475569; border: 1px solid #E2E8F0; }
-    .btn-secondary:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-    .btn-sm { padding: 5px 10px; font-size: 11.5px; }
-
-    /* ── Filter toolbar ── */
-    .filter-bar {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 14px 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-    }
-    .filter-search {
-        display: flex;
-        align-items: center;
-        gap: 7px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 0 12px;
-        height: 36px;
-        flex: 1;
-        min-width: 180px;
-        max-width: 280px;
-    }
-    .filter-search svg { width: 14px; height: 14px; color: #94A3B8; flex-shrink: 0; }
-    .filter-search input {
-        border: none;
-        background: transparent;
-        font-size: 13px;
-        color: #1E293B;
-        font-family: inherit;
-        outline: none;
-        width: 100%;
-    }
-    .filter-search input::placeholder { color: #94A3B8; }
-
-    .filter-select {
-        height: 36px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        padding: 0 10px;
-        font-size: 12.5px;
-        font-family: inherit;
-        color: #475569;
-        background: #F8FAFC;
-        outline: none;
-        cursor: pointer;
-        transition: border-color .15s;
-        min-width: 130px;
-    }
-    .filter-select:hover { border-color: #CBD5E1; }
-    .filter-select:focus { border-color: #2563EB; }
-
-    .filter-divider {
-        width: 1px;
-        height: 22px;
-        background: #E2E8F0;
-        flex-shrink: 0;
-    }
-
-    .btn-filter {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        height: 36px;
-        padding: 0 16px;
-        background: #2563EB;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        font-size: 12.5px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background .15s;
-    }
-    .btn-filter:hover { background: #1D4ED8; }
-    .btn-filter svg { width: 13px; height: 13px; }
-
-    .btn-reset {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        height: 36px;
-        padding: 0 14px;
-        background: #fff;
-        color: #64748B;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        font-size: 12.5px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-    }
-    .btn-reset:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-    .btn-reset svg { width: 13px; height: 13px; }
-
-    /* ── Results summary bar ── */
-    .results-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    .results-count {
-        font-size: 12.5px;
-        color: #64748B;
-    }
-    .results-count strong { color: #1E293B; }
-
-    /* ── Table card ── */
-    .table-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .bmis-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .bmis-table th {
-        font-size: 11.5px;
-        font-weight: 600;
-        color: #64748B;
-        text-align: left;
-        padding: 10px 16px;
-        background: #FAFAFA;
-        border-bottom: 1px solid #E2E8F0;
-        text-transform: uppercase;
-        letter-spacing: .04em;
-        white-space: nowrap;
-    }
-    .bmis-table td {
-        padding: 11px 16px;
-        border-bottom: 1px solid #F1F5F9;
-        font-size: 12.5px;
-        color: #1E293B;
-        vertical-align: middle;
-    }
-    .bmis-table tbody tr:last-child td { border-bottom: none; }
-    .bmis-table tbody tr:hover td { background: #FAFAFE; }
-
-    /* ── Resident name cell ── */
-    .resident-name {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .resident-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-    .avatar-male   { background: #EFF6FF; color: #2563EB; }
-    .avatar-female { background: #FDF4FF; color: #9333EA; }
-    .avatar-other  { background: #F8FAFC; color: #64748B; }
-    .resident-fullname { font-weight: 500; color: #1E293B; }
-
-    /* ── Status badges ── */
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 9px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-    .badge::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        flex-shrink: 0;
-    }
-    /* Resident status */
-    .badge-alive     { background: #F0FDF4; color: #166534; }
-    .badge-alive::before { background: #16A34A; }
-    .badge-moved     { background: #FFF7ED; color: #9A3412; }
-    .badge-moved::before { background: #F97316; }
-    .badge-deceased  { background: #F1F5F9; color: #475569; }
-    .badge-deceased::before { background: #94A3B8; }
-    /* Voter status */
-    .badge-voter     { background: #EFF6FF; color: #1E40AF; }
-    .badge-voter::before { background: #2563EB; }
-    .badge-non-voter { background: #F8FAFC; color: #64748B; }
-    .badge-non-voter::before { background: #CBD5E1; }
-    /* Civil status */
-    .badge-civil     { background: #F5F3FF; color: #5B21B6; }
-    .badge-civil::before { background: #7C3AED; }
-
-    /* ── Gender pill ── */
-    .gender-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: #475569;
-        font-weight: 500;
-    }
-    .gender-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-    }
-
-    /* ── Action buttons ── */
-    .action-cell { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .act-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11.5px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        border: 1px solid #E2E8F0;
-        background: #F8FAFC;
-        color: #475569;
-        transition: all .15s;
-        white-space: nowrap;
-    }
-    .act-btn svg { width: 12px; height: 12px; }
-    .act-btn:hover { background: #EFF6FF; color: #2563EB; border-color: #BFDBFE; text-decoration: none; }
-    .act-btn-service {
-        background: #F0FDF4;
-        color: #166534;
-        border-color: #BBF7D0;
-    }
-    .act-btn-service:hover { background: #DCFCE7; color: #14532D; border-color: #86EFAC; text-decoration: none; }
-
-    /* Cannot request notice */
-    .no-request {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 11px;
-        color: #94A3B8;
-        font-style: italic;
-    }
-    .no-request svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-    /* ── Empty state ── */
-    .empty-state {
-        text-align: center;
-        padding: 48px 24px;
-    }
-    .empty-state svg {
-        width: 40px;
-        height: 40px;
-        color: #CBD5E1;
-        margin: 0 auto 12px;
-        display: block;
-    }
-    .empty-state p { font-size: 13px; color: #94A3B8; }
+    .mini-btn:hover{text-decoration:none;background:var(--pri-lt);color:var(--pri2);border-color:var(--pri-brd)}
+    .mini-btn-service{background:var(--accent-lt);color:var(--accent-strong);border-color:#b8ece1}
+    .mini-btn-service:hover{background:#daf5ee;color:var(--accent-strong);border-color:#9fded1}
+    .muted-note{font-size:12px;color:var(--txt3)}
+    .empty{padding:48px 24px;text-align:center}
+    .empty-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:18px;background:var(--slate-lt);color:var(--txt3);display:flex;align-items:center;justify-content:center}
+    .empty-icon svg{width:24px;height:24px}
+    .empty h3{font-size:16px;color:var(--txt);margin-bottom:6px}
+    .empty p{font-size:13px;color:var(--txt3);max-width:420px;margin:0 auto}
+    @media (max-width:1180px){.hero-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:900px){.filter-form{grid-template-columns:1fr 1fr}.filter-form .full-row{grid-column:1/-1}}
+    @media (max-width:640px){.stats,.filter-form{grid-template-columns:1fr}}
 </style>
 
-<!-- ═══════════════ FILTER FORM ═══════════════
-     Preserved: method="GET", name="q", name="gender", name="status"
-═══════════════════════════════════════════════ -->
-<form method="GET">
-<div class="filter-bar">
+<div class="resident-page">
+    <section class="hero-card">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Resident Records</h1>
+                <div class="hero-copy">A more useful resident command center should feel active and informative, so this page now emphasizes quick scanning, smart filtering, and direct action on every record.</div>
+                <div class="hero-tags">
+                    <span class="hero-tag">Search faster</span>
+                    <span class="hero-tag">Review statuses</span>
+                    <span class="hero-tag">Open profiles quickly</span>
+                </div>
+            </div>
+            <div class="hero-panel">
+                <div class="hero-panel-title">Filtered Result Set</div>
+                <div class="hero-panel-value">{{ filtered_total }}</div>
+                <div class="hero-panel-sub">Residents currently visible based on your search and filter selections.</div>
+            </div>
+        </div>
+    </section>
 
-    <!-- Search -->
-    <div class="filter-search">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-        </svg>
-        <input
-            type="text"
-            name="q"
-            placeholder="Search by name..."
-            value="{{ request.GET.q }}">
-    </div>
+    <section class="stats">
+        <article class="stat-card">
+            <div class="stat-icon icon-blue"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zM3 17a7 7 0 1114 0H3z"/></svg></div>
+            <div><div class="stat-value">{{ resident_total }}</div><div class="stat-label">Total Residents</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-green"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ alive_total }}</div><div class="stat-label">Active / Alive</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-amber"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 00.293.707l2 2a1 1 0 101.414-1.414L11 10.586V7z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ senior_total }}</div><div class="stat-label">Senior Citizens</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-purple"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 102 0V3a1 1 0 00-1-1zM4 5a2 2 0 00-2 2v1a1 1 0 102 0V7h1a1 1 0 100-2H4zm11 0a1 1 0 100 2h1v1a1 1 0 102 0V7a2 2 0 00-2-2h-1zM4 12a1 1 0 00-2 0v1a2 2 0 002 2h1a1 1 0 100-2H4v-1zm12-1a1 1 0 00-1 1v1h-1a1 1 0 100 2h1a2 2 0 002-2v-1a1 1 0 00-1-1zM7 7a3 3 0 116 0 3 3 0 01-6 0zm-2 9a5 5 0 1110 0H5z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ voter_total }}</div><div class="stat-label">Registered Voters</div></div>
+        </article>
+    </section>
 
-    <div class="filter-divider"></div>
+    <section class="toolbar-card">
+        <div class="toolbar-top">
+            <div>
+                <div class="toolbar-title">Search and Filter</div>
+                <div class="toolbar-sub">Quickly narrow down residents by name, gender, or status.</div>
+            </div>
+            <div class="toolbar-count">Showing <strong>{{ filtered_total }}</strong> resident{{ filtered_total|pluralize }}{% if request.GET.q %} for <strong>"{{ request.GET.q }}"</strong>{% endif %}</div>
+        </div>
+        <form method="GET" class="filter-form">
+            <div class="search-wrap full-row">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by first name, middle name, or last name">
+            </div>
+            <select name="gender">
+                <option value="">All Gender</option>
+                <option value="Male"{% if request.GET.gender == "Male" %} selected{% endif %}>Male</option>
+                <option value="Female"{% if request.GET.gender == "Female" %} selected{% endif %}>Female</option>
+            </select>
+            <select name="status">
+                <option value="">All Status</option>
+                <option value="Alive"{% if request.GET.status == "Alive" %} selected{% endif %}>Alive</option>
+                <option value="Moved"{% if request.GET.status == "Moved" %} selected{% endif %}>Moved Out</option>
+                <option value="Deceased"{% if request.GET.status == "Deceased" %} selected{% endif %}>Deceased</option>
+            </select>
+            <button type="submit" class="btn-bmis btn-primary">Apply Filters</button>
+            <a href="{% url 'resident_list' %}" class="btn-bmis btn-secondary">Reset</a>
+        </form>
+    </section>
 
-    <!-- Gender filter -->
-    <select name="gender" class="filter-select">
-        <option value="">All Gender</option>
-        <option value="Male"   {% if request.GET.gender == "Male"   %}selected{% endif %}>Male</option>
-        <option value="Female" {% if request.GET.gender == "Female" %}selected{% endif %}>Female</option>
-    </select>
-
-    <!-- Status filter -->
-    <select name="status" class="filter-select">
-        <option value="">All Status</option>
-        <option value="Alive"     {% if request.GET.status == "Alive"     %}selected{% endif %}>Alive</option>
-        <option value="Moved"     {% if request.GET.status == "Moved"     %}selected{% endif %}>Moved Out</option>
-        <option value="Deceased"  {% if request.GET.status == "Deceased"  %}selected{% endif %}>Deceased</option>
-    </select>
-
-    <div class="filter-divider"></div>
-
-    <!-- Submit -->
-    <button type="submit" class="btn-filter">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.553.894l-4 2A1 1 0 016 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-        </svg>
-        Filter
-    </button>
-
-    <!-- Reset -->
-    <a href="{% url 'resident_list' %}" class="btn-reset">
-        <svg viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
-        </svg>
-        Reset
-    </a>
-
+    <section class="table-card">
+        <div class="table-head">
+            <div>
+                <div class="table-title">Resident Directory</div>
+                <div class="table-sub">Use this list to review identity details, resident status, and service eligibility.</div>
+            </div>
+            <div class="table-actions">
+                <a href="{% url 'add_resident' %}" class="btn-bmis btn-primary">Add Resident</a>
+                <a href="{% url 'add_household' %}" class="btn-bmis btn-secondary">Add Household</a>
+            </div>
+        </div>
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Resident</th>
+                        <th>Gender</th>
+                        <th>Voter Status</th>
+                        <th>Resident Status</th>
+                        <th>Civil Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resident in residents %}
+                    <tr>
+                        <td>
+                            <div class="name-cell">
+                                <div class="avatar {% if resident.gender == 'Male' %}avatar-male{% elif resident.gender == 'Female' %}avatar-female{% else %}avatar-other{% endif %}">
+                                    {{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}
+                                </div>
+                                <div>
+                                    <div class="name-main">{{ resident.first_name }} {{ resident.last_name }}</div>
+                                    <div class="name-sub">
+                                        {% if resident.household %}
+                                            {{ resident.household.house_number }} {{ resident.household.street }}
+                                            {% if resident.household.purok %} · {{ resident.household.purok }}{% endif %}
+                                        {% else %}
+                                            No household assigned
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="gender-pill">
+                                <span class="gender-dot" style="background:{% if resident.gender == 'Male' %}#2563EB{% elif resident.gender == 'Female' %}#9333EA{% else %}#94A3B8{% endif %}"></span>
+                                {{ resident.gender }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if resident.voter_status %}
+                            <span class="meta-badge badge-voter">Registered</span>
+                            {% else %}
+                            <span class="meta-badge badge-non-voter">Non-voter</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if resident.status == "Alive" %}
+                            <span class="status-badge badge-alive">Alive</span>
+                            {% elif resident.status == "Moved" %}
+                            <span class="status-badge badge-moved">Moved Out</span>
+                            {% else %}
+                            <span class="status-badge badge-deceased">{{ resident.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="meta-badge badge-civil">{{ resident.civil_status|default:"Not set" }}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <a href="/resident/{{ resident.id }}/" class="mini-btn">View Profile</a>
+                                {% if resident.status == "Alive" %}
+                                <a href="{% url 'create_service_request' resident.id %}" class="mini-btn mini-btn-service">Request Service</a>
+                                {% else %}
+                                <span class="muted-note">Service requests unavailable</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty">
+                                <div class="empty-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/></svg></div>
+                                <h3>No residents found</h3>
+                                <p>Try adjusting your search or filters, or add a new resident record to get started.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
 </div>
-</form>
-
-<!-- ═══════════════ RESULTS BAR ═══════════════ -->
-<div class="results-bar">
-    <div class="results-count">
-        Showing <strong>{{ residents|length }}</strong> resident{{ residents|length|pluralize }}
-        {% if request.GET.q %}
-            for <strong>"{{ request.GET.q }}"</strong>
-        {% endif %}
-    </div>
-</div>
-
-<!-- ═══════════════ RESIDENTS TABLE ═══════════════ -->
-<div class="table-card">
-    <table class="bmis-table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Gender</th>
-                <th>Voter Status</th>
-                <th>Resident Status</th>
-                <th>Civil Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-
-            {% for resident in residents %}
-            <tr>
-
-                <!-- Name with avatar initials -->
-                <td>
-                    <div class="resident-name">
-                        <div class="resident-avatar {% if resident.gender == 'Male' %}avatar-male{% elif resident.gender == 'Female' %}avatar-female{% else %}avatar-other{% endif %}">
-                            {{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}
-                        </div>
-                        <span class="resident-fullname">
-                            {{ resident.first_name }} {{ resident.last_name }}
-                        </span>
-                    </div>
-                </td>
-
-                <!-- Gender -->
-                <td>
-                    <span class="gender-pill">
-                        <span class="gender-dot" style="background:{% if resident.gender == 'Male' %}#2563EB{% elif resident.gender == 'Female' %}#9333EA{% else %}#94A3B8{% endif %}"></span>
-                        {{ resident.gender }}
-                    </span>
-                </td>
-
-                <!-- Voter status -->
-                <td>
-                    {% if resident.voter_status == "Voter" or resident.voter_status == True or resident.voter_status == "Yes" %}
-                        <span class="badge badge-voter">{{ resident.voter_status }}</span>
-                    {% else %}
-                        <span class="badge badge-non-voter">{{ resident.voter_status }}</span>
-                    {% endif %}
-                </td>
-
-                <!-- Resident status -->
-                <td>
-                    {% if resident.status == "Alive" %}
-                        <span class="badge badge-alive">Alive</span>
-                    {% elif resident.status == "Moved" %}
-                        <span class="badge badge-moved">Moved Out</span>
-                    {% elif resident.status == "Deceased" %}
-                        <span class="badge badge-deceased">Deceased</span>
-                    {% else %}
-                        <span class="badge badge-deceased">{{ resident.status }}</span>
-                    {% endif %}
-                </td>
-
-                <!-- Civil status -->
-                <td>
-                    <span class="badge badge-civil">{{ resident.civil_status }}</span>
-                </td>
-
-                <!-- Actions — preserved logic exactly -->
-                <td>
-                    <div class="action-cell">
-
-                        <a href="/resident/{{ resident.id }}/" class="act-btn">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                            </svg>
-                            View Profile
-                        </a>
-
-                        {% if resident.status == "Alive" and can_create_service_requests %}
-                        <a href="{% url 'create_service_request' resident.id %}" class="act-btn act-btn-service">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
-                            </svg>
-                            Request Service
-                        </a>
-                        {% elif resident.status != "Alive" %}
-                        <span class="no-request">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524L13.476 14.89zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clip-rule="evenodd"/>
-                            </svg>
-                            Cannot request
-                        </span>
-                        {% endif %}
-
-                    </div>
-                </td>
-
-            </tr>
-            {% empty %}
-
-            <!-- Empty state -->
-            <tr>
-                <td colspan="6">
-                    <div class="empty-state">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/>
-                        </svg>
-                        <p>No residents found matching your search.</p>
-                    </div>
-                </td>
-            </tr>
-
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
 {% endblock %}

@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
@@ -21,6 +23,29 @@ class ResidentForm(forms.ModelForm):
         self.fields["status"].required = False
         if not self.instance or not self.instance.pk:
             self.fields["status"].initial = "Alive"
+        self.fields["first_name"].widget.attrs.setdefault("placeholder", "Enter first name")
+        self.fields["middle_name"].widget.attrs.setdefault("placeholder", "Enter middle name")
+        self.fields["last_name"].widget.attrs.setdefault("placeholder", "Enter last name")
+        self.fields["suffix"].widget.attrs.setdefault("placeholder", "Jr., Sr., III")
+        self.fields["place_of_birth"].widget.attrs.setdefault("placeholder", "City or municipality of birth")
+        self.fields["nationality"].widget.attrs.setdefault("placeholder", "e.g. Filipino")
+        self.fields["religion"].widget.attrs.setdefault("placeholder", "Enter religion")
+        self.fields["occupation"].widget.attrs.setdefault("placeholder", "Enter occupation")
+        self.fields["contact_number"].widget.attrs.update({
+            "placeholder": "09XX XXX XXXX",
+            "inputmode": "numeric",
+            "maxlength": "15",
+        })
+        self.fields["email"].widget.attrs.update({
+            "placeholder": "name@example.com",
+            "type": "email",
+            "autocomplete": "email",
+        })
+        self.fields["precinct"].widget.attrs.setdefault("placeholder", "Enter precinct number")
+        self.fields["birth_date"].widget.attrs.update({
+            "max": date.today().isoformat(),
+        })
+        self.fields["household"].queryset = Household.objects.order_by("house_number", "street")
         for field in self.fields.values():
             widget = field.widget
             if isinstance(widget, forms.CheckboxInput):
@@ -153,6 +178,9 @@ class HouseholdForm(forms.ModelForm):
             eligible_heads = (eligible_heads | Resident.objects.filter(id=self.instance.head_id)).distinct()
 
         self.fields["head"].queryset = eligible_heads
+        self.fields["house_number"].widget.attrs.setdefault("placeholder", "e.g. 117-B")
+        self.fields["street"].widget.attrs.setdefault("placeholder", "Enter street name")
+        self.fields["head"].empty_label = "Select a resident"
 
         for field in self.fields.values():
             widget = field.widget
@@ -194,6 +222,58 @@ class HouseholdForm(forms.ModelForm):
 
 
 class ComplaintForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["title"].widget.attrs.update({
+            "class": "bmis-input",
+            "placeholder": "Enter a clear complaint title",
+        })
+        self.fields["description"].widget.attrs.update({
+            "class": "bmis-input",
+            "placeholder": "Describe what happened, when it happened, where it happened, and any important facts.",
+            "rows": 7,
+        })
+        resident_widget = self.fields["resident"].widget
+        existing = resident_widget.attrs.get("class", "")
+        resident_widget.attrs["class"] = f"{existing} bmis-select".strip()
+
     class Meta:
         model = Complaint
         fields = ["resident", "title", "description"]
+
+
+class ServiceRequestRequirementsForm(forms.Form):
+    requirements_note = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 5}),
+        label="Needed requirements",
+    )
+    requirements_submission_instructions = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        label="Submission instructions",
+    )
+    requirements_deadline = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        label="Deadline",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing} bmis-input".strip()
+
+
+class ServiceRequestResidentSubmissionForm(forms.Form):
+    resident_response_note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4}),
+        label="Resident note",
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            existing = field.widget.attrs.get("class", "")
+            field.widget.attrs["class"] = f"{existing} bmis-input".strip()

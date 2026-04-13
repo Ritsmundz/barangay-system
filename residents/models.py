@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timezone
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -106,7 +106,7 @@ class Resident(models.Model):
         if not self.birth_date:
             return None
 
-        today = timezone.localdate()
+        today = date.today()
 
         age = today.year - self.birth_date.year - (
             (today.month, today.day) <
@@ -214,11 +214,16 @@ class ServiceRequest(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Processing', 'Processing'),
-        ('Approved', 'Approved'),
-        ('Released', 'Released'),
-        ('Rejected', 'Rejected'),
+        ("Submitted", "Submitted"),
+        ("Under Review", "Under Review"),
+        ("For Validation", "For Validation"),
+        ("Processing", "Processing"),
+        ("Ready for Release", "Ready for Release"),
+        ("Released", "Released"),
+        ("Pending Requirements", "Pending Requirements"),
+        ("On Hold", "On Hold"),
+        ("Rejected", "Rejected"),
+        ("Cancelled", "Cancelled"),
     ]
 
     resident = models.ForeignKey(
@@ -260,7 +265,7 @@ class ServiceRequest(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='Pending'
+        default='Submitted'
     )
 
     document_number = models.CharField(
@@ -283,6 +288,19 @@ class ServiceRequest(models.Model):
     )
 
     remarks = models.TextField(blank=True, null=True)
+    requirements_note = models.TextField(blank=True, null=True)
+    requirements_submission_instructions = models.TextField(blank=True, null=True)
+    requirements_deadline = models.DateField(blank=True, null=True)
+    requirements_requested_at = models.DateTimeField(blank=True, null=True)
+    requirements_requested_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="requested_service_requirements",
+    )
+    resident_response_note = models.TextField(blank=True, null=True)
+    resident_responded_at = models.DateTimeField(blank=True, null=True)
 
     clearance_number = models.CharField(max_length=20, blank=True, null=True)
 
@@ -317,7 +335,7 @@ class ServiceRequest(models.Model):
         # GENERATE DOCUMENT NUMBER
         if not self.document_number:
 
-            year = timezone.localdate().year
+            year = date.today().year
             prefix = self.service_type.name[:3].upper()
 
             last_request = ServiceRequest.objects.filter(
@@ -333,6 +351,31 @@ class ServiceRequest(models.Model):
             self.document_number = f"{prefix}-{year}-{new_number:04d}"
 
         super().save(*args, **kwargs)
+
+
+class ServiceRequestAttachment(models.Model):
+    service_request = models.ForeignKey(
+        ServiceRequest,
+        on_delete=models.CASCADE,
+        related_name="attachments"
+    )
+    uploaded_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="service_request_attachments"
+    )
+    file = models.FileField(upload_to="service_request_attachments/")
+    original_name = models.CharField(max_length=255, blank=True)
+    note = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    def __str__(self):
+        return self.original_name or f"Attachment {self.pk}"
 
 #PAYMENT
 #PAYMENT
@@ -353,6 +396,16 @@ class Payment(models.Model):
         blank=True
     )
 
+    received_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments_received"
+
+    )
+
+
     amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     payment_date = models.DateTimeField(auto_now_add=True)
@@ -369,7 +422,7 @@ class Payment(models.Model):
 
         if not self.receipt_number:
 
-            year = timezone.localdate().year
+            year = date.today().year
 
             last_payment = Payment.objects.filter(
                 receipt_number__startswith=f"RCPT-{year}"
@@ -396,12 +449,23 @@ class Payment(models.Model):
 class Complaint(models.Model):
 
     STATUS_CHOICES = [
-    ('Pending', 'Pending'),
-    ('Under Investigation', 'Under Investigation'),
-    ('For Mediation', 'For Mediation'),
-    ('Resolved', 'Resolved'),
-    ('Dismissed', 'Dismissed'),
-]
+        ("Submitted", "Submitted"),
+        ("Under Review", "Under Review"),
+        ("For Scheduling", "For Scheduling"),
+        ("Scheduled for Hearing", "Scheduled for Hearing"),
+        ("Ongoing Mediation", "Ongoing Mediation"),
+        ("Resolved / Settled", "Resolved / Settled"),
+        ("Unresolved", "Unresolved"),
+        ("Referred", "Referred"),
+        ("Withdrawn", "Withdrawn"),
+    ]
+
+    SCHEDULE_RESPONSE_CHOICES = [
+        ("Pending Response", "Pending Response"),
+        ("Acknowledged", "Acknowledged"),
+        ("Needs Reschedule", "Needs Reschedule"),
+        ("Cannot Attend", "Cannot Attend"),
+    ]
 
     resident = models.ForeignKey(
         Resident,
@@ -414,9 +478,9 @@ class Complaint(models.Model):
     description = models.TextField()
 
     status = models.CharField(
-        max_length=20,
+        max_length=40,
         choices=STATUS_CHOICES,
-        default="Pending"
+        default="Submitted"
     )
 
     filed_by = models.ForeignKey(
@@ -425,6 +489,25 @@ class Complaint(models.Model):
     null=True,
     blank=True
 )
+
+    meeting_datetime = models.DateTimeField(null=True, blank=True)
+    meeting_location = models.CharField(max_length=255, blank=True)
+    meeting_purpose = models.CharField(max_length=255, blank=True)
+    secretary_notes = models.TextField(blank=True)
+    resident_schedule_response = models.CharField(
+        max_length=30,
+        choices=SCHEDULE_RESPONSE_CHOICES,
+        default="Pending Response",
+    )
+    resident_schedule_responded_at = models.DateTimeField(null=True, blank=True)
+    resident_schedule_response_note = models.TextField(blank=True)
+    scheduled_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="scheduled_complaints",
+    )
 
     date_filed = models.DateTimeField(auto_now_add=True)
 
@@ -485,5 +568,33 @@ class AuditLog(models.Model):
             models.Index(fields=["model_name"]),
         ]
 
+
+class Notification(models.Model):
+    CATEGORY_CHOICES = [
+        ("service_request", "Service Request"),
+        ("account", "Account"),
+        ("complaint", "Complaint"),
+        ("payment", "Payment"),
+        ("general", "General"),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    title = models.CharField(max_length=120)
+    message = models.TextField()
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="general")
+    target_url = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["user", "is_read", "created_at"]),
+        ]
+
     def __str__(self):
-        return f"{self.user} - {self.action} - {self.model_name}"
+        return f"{self.user} - {self.title}"

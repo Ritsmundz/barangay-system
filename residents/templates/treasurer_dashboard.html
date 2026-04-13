@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 
-{% block page_title %}Treasurer Dashboard{% endblock %}
-{% block page_subtitle %}Financial overview and revenue tracking{% endblock %}
-
 {% block content %}
 
 <style>
@@ -225,6 +222,14 @@
     <span class="cur">Treasurer Dashboard</span>
 </div>
 
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Treasurer Dashboard</div>
+        <div class="page-subtitle">Financial overview and revenue tracking</div>
+    </div>
+</div>
+
 <!-- Revenue Cards -->
 <div class="dashboard-grid">
     <!-- Total Revenue -->
@@ -326,16 +331,16 @@
             </tr>
         </thead>
         <tbody>
-            {% for clearance in recent_payments %}
+            {% for payment in recent_payments %}
             <tr>
                 <td>
-                    <strong>{{ clearance.resident }}</strong>
+                    <strong>{{ payment.service_request.resident }}</strong>
                 </td>
-                <td>{{ clearance.document_type }}</td>
+                <td>{{ payment.service_request.service_type }}</td>
                 <td>
-                    <strong style="color: #10B981;">₱{{ clearance.fee|floatformat:2 }}</strong>
+                    <strong style="color: #10B981;">₱{{ payment.amount|floatformat:2 }}</strong>
                 </td>
-                <td>{{ clearance.date_issued|date:"M d, Y - h:i A" }}</td>
+                <td>{{ payment.payment_date|date:"M d, Y - h:i A" }}</td>
             </tr>
             {% endfor %}
         </tbody>

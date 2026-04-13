@@ -82,6 +82,6 @@ class AuditLogAdmin(admin.ModelAdmin):
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "resident", "first_name", "last_name", "birth_date", "is_verified", "is_auto_matched", "created_at")
+    list_display = ("user", "resident", "first_name", "last_name", "birth_date", "address", "is_verified", "is_auto_matched", "created_at")
     list_filter = ("is_verified", "is_auto_matched")
     search_fields = ("user__username", "first_name", "last_name", "resident__first_name", "resident__last_name")

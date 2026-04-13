@@ -1,1209 +1,352 @@
 {% extends "base.html" %}
 
 {% block page_title %}Add New Resident{% endblock %}
-{% block page_subtitle %}Register a new resident in the barangay system{% endblock %}
+{% block page_subtitle %}Enter resident details to create a new record{% endblock %}
+
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
-
 <style>
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
-    }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* ── Layout ── */
-    .resident-layout {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        gap: 18px;
-        align-items: start;
-        max-width: 1140px;
-        margin: 0 auto;
-        padding: 0 16px;
-    }
-    .resident-layout-centered {
-        grid-template-columns: minmax(0, 880px);
-        justify-content: center;
-    }
-    .form-column {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        width: 100%;
-    }
-    @media (max-width: 920px) {
-        .resident-layout { 
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* ── Form card ── */
-    .form-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .form-card-hdr {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 18px 24px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .form-card-hdr-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
-    .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
-    .form-card-hdr-sub { font-size: 11.5px; color: rgba(255,255,255,.7); margin-top: 1px; }
-    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-    .form-alert {
-        background: #FEF2F2;
-        border: 1px solid #FECACA;
-        color: #991B1B;
-        border-radius: 8px;
-        padding: 10px 12px;
-        font-size: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .form-alert svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-    }
-    .form-alert-list {
-        margin: 6px 0 0 22px;
-        padding: 0;
-    }
-    .scan-box {
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 8px;
-        padding: 10px 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    .scan-text {
-        font-size: 12px;
-        color: #1E3A8A;
-    }
-    .scan-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .scan-status {
-        font-size: 11px;
-        color: #1E40AF;
-    }
-    .scan-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 20px;
-    }
-    .scan-modal.show {
-        display: flex;
-    }
-    .scan-panel {
-        background: #fff;
-        border-radius: 10px;
-        width: 100%;
-        max-width: 900px;
-        border: 1px solid #E2E8F0;
-        overflow: hidden;
-    }
-    .scan-panel-head {
-        padding: 12px 16px;
-        border-bottom: 1px solid #E2E8F0;
-        font-size: 14px;
-        font-weight: 600;
-        color: #1E293B;
-    }
-    .scan-panel-body {
-        padding: 14px 16px;
-    }
-    .crop-canvas-wrap {
-        border: 1px dashed #94A3B8;
-        border-radius: 8px;
-        overflow: auto;
-        max-height: 65vh;
-        text-align: center;
-        background: #F8FAFC;
-    }
-    #crop-canvas {
-        cursor: crosshair;
-        max-width: 100%;
-    }
-    .scan-panel-foot {
-        padding: 12px 16px;
-        border-top: 1px solid #E2E8F0;
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        flex-wrap: wrap;
-        background: #FAFAFA;
-    }
-    .review-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px 12px;
-    }
-    .review-grid .full {
-        grid-column: 1 / -1;
-    }
-    @media (max-width: 700px) {
-        .review-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* ── Form sections ── */
-    .form-section {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-    }
-    .section-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E293B;
-        padding-bottom: 8px;
-        border-bottom: 2px solid #E2E8F0;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .section-title svg { width: 16px; height: 16px; color: #2563EB; }
-
-    /* ── Field grid ── */
-    .field-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-    .field-full { grid-column: 1 / -1; }
-    @media (max-width: 640px) {
-        .field-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── Field group ── */
-    .field-group { display: flex; flex-direction: column; gap: 6px; }
-    .field-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #374151;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .field-required { color: #DC2626; }
-    .field-hint { font-size: 11px; color: #94A3B8; margin-top: 3px; }
-    .field-error {
-        font-size: 11px;
-        color: #DC2626;
-        margin-top: 3px;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .field-error svg { width: 12px; height: 12px; flex-shrink: 0; }
-
-    /* ── Inputs ── */
-    .bmis-input,
-    .bmis-select,
-    .bmis-textarea {
-        width: 100%;
-        padding: 0 12px;
-        height: 40px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        font-size: 13px;
-        font-family: inherit;
-        color: #1E293B;
-        background: #F8FAFC;
-        outline: none;
-        transition: border-color .15s, background .15s, box-shadow .15s;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-    .bmis-textarea {
-        height: auto;
-        min-height: 80px;
-        padding: 10px 12px;
-        resize: vertical;
-        line-height: 1.6;
-    }
-    .bmis-input:focus,
-    .bmis-select:focus,
-    .bmis-textarea:focus {
-        border-color: #2563EB;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
-    }
-    .bmis-input:hover,
-    .bmis-select:hover,
-    .bmis-textarea:hover { border-color: #CBD5E1; }
-    .bmis-input.error,
-    .bmis-select.error,
-    .bmis-textarea.error {
-        border-color: #DC2626;
-    }
-
-    /* Custom select arrow */
-    .select-wrap { position: relative; }
-    .select-wrap::after {
-        content: '';
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-left: 4px solid transparent;
-        border-right: 4px solid transparent;
-        border-top: 5px solid #94A3B8;
-        pointer-events: none;
-    }
-    .select-wrap .bmis-select { padding-right: 32px; cursor: pointer; }
-
-    /* ── Checkbox/Radio groups ── */
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 12px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        background: #F8FAFC;
-        cursor: pointer;
-        transition: all .15s;
-    }
-    .checkbox-group:hover {
-        border-color: #CBD5E1;
-        background: #fff;
-    }
-    .checkbox-group input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        accent-color: #2563EB;
-    }
-    .checkbox-group label {
-        font-size: 13px;
-        color: #1E293B;
-        cursor: pointer;
-        flex: 1;
-    }
-
-    /* ── Form footer ── */
-    .form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 24px;
-        border-top: 1px solid #E2E8F0;
-        background: #FAFAFA;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .footer-note {
-        font-size: 11.5px;
-        color: #94A3B8;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .footer-note svg { width: 13px; height: 13px; flex-shrink: 0; }
-    .footer-actions { display: flex; align-items: center; gap: 8px; }
-
-    /* ── Buttons ── */
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        line-height: 1;
-        white-space: nowrap;
-        border: none;
-    }
-    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .btn-primary { background: #2563EB; color: #fff; }
-    .btn-primary:hover { background: #1D4ED8; color: #fff; text-decoration: none; }
-    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
-    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
-
-    /* ── Sidebar ── */
-    .sidebar {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-
-    /* ── Household info card ── */
-    .household-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .household-card-top {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 20px 16px;
-        text-align: center;
-    }
-    .household-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.2);
-        border: 2px solid rgba(255,255,255,.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 10px;
-    }
-    .household-icon svg { width: 24px; height: 24px; color: #fff; }
-    .household-title {
-        font-size: 13.5px;
-        font-weight: 600;
-        color: #fff;
-        line-height: 1.3;
-    }
-    .household-label {
-        font-size: 10.5px;
-        color: rgba(255,255,255,.6);
-        margin-top: 3px;
-    }
-    .household-card-body { padding: 14px 16px; }
-    .household-info-row {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        padding: 7px 0;
-        border-bottom: 1px solid #F1F5F9;
-        gap: 8px;
-    }
-    .household-info-row:last-child { border-bottom: none; }
-    .household-info-key { font-size: 11px; color: #94A3B8; font-weight: 500; }
-    .household-info-val { font-size: 12px; font-weight: 500; color: #1E293B; text-align: right; }
-
-    /* ── Help card ── */
-    .info-card {
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 10px;
-        padding: 12px 14px;
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-    }
-    .info-card svg { width: 16px; height: 16px; color: #2563EB; flex-shrink: 0; margin-top: 2px; }
-    .info-card-content { flex: 1; }
-    .info-card-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #1E40AF;
-        margin-bottom: 4px;
-    }
-    .info-card-text { font-size: 11.5px; color: #1E3A8A; line-height: 1.6; }
-
-    /* Hide default Django form rendering */
-    .form-body form > p { display: none; }
-    .form-body form > ul { display: none; }
+    .add-page{display:grid;gap:20px;max-width:1280px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .add-layout{display:grid;grid-template-columns:minmax(0,1.45fr) 330px;gap:18px;align-items:start}
+    .left-col{display:grid;gap:18px}
+    .ui-panel{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)}
+    .hero{padding:22px 24px;background:radial-gradient(circle at top right, rgba(147,197,253,.22), transparent 32%),linear-gradient(180deg,#fff,#f7fbff)}
+    .hero h1{font-size:28px;line-height:1.1;margin:0;color:#16243d}
+    .hero p{margin:8px 0 0;color:#66768d;font-size:14px}
+    .hint{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border:1px solid #dbe7f7;border-radius:16px;background:#f8fbff;font-size:13px;color:#46607e}
+    .hint strong{color:#1d2d47}
+    .scan-card{padding:18px}
+    .scan-row{display:grid;grid-template-columns:1fr auto 100px;gap:14px;align-items:center;padding:16px;border:1px solid #dbe7f7;border-radius:16px;background:linear-gradient(180deg,#f8fbff,#eef5ff)}
+    .scan-title{font-size:16px;font-weight:700;color:#16243d}
+    .scan-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .scan-mini{font-size:12px;color:#5f7089}
+    .avatar-preview{width:96px;height:96px;border-radius:24px;background:linear-gradient(180deg,#9ab7f5,#7ca4f4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:32px;font-weight:700}
+    .section{overflow:hidden}
+    .section-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .section-title{font-size:15px;font-weight:700;color:#1c2d47}
+    .section-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .section-body{padding:18px 20px}
+    .grid-2,.grid-3,.toggles{display:grid;gap:14px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .span-2{grid-column:span 2}
+    .field{display:grid;gap:7px}
+    .field label,.mini-title{font-size:12px;font-weight:700;color:#41526d}
+    .req{color:#dc2626}
+    .field small{font-size:11px;color:#8b9bb0}
+    .bmis-input,.bmis-select{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s}
+    .bmis-input:focus,.bmis-select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .readonly{min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid #e2e8f0;background:#f8fafc;color:#5d6e85;font-size:13px}
+    .status-pill{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700}
+    .status-pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor}
+    .toggles{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .toggle-card{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
+    .toggle-copy{font-size:12px;color:#7b8ba4;margin-top:4px;line-height:1.5}
+    .switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#dbe5f0;border-radius:999px;transition:.2s}
+    .slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 4px 10px rgba(15,23,42,.16)}
+    .switch input:checked + .slider{background:#2563eb}.switch input:checked + .slider:before{transform:translateX(20px)}
+    .aside{display:grid;gap:18px}
+    .preview-card{padding:18px}
+    .preview-card h3,.extra-card h3{margin:0 0 14px;font-size:16px;color:#16243d}
+    .preview-top{display:flex;gap:12px;align-items:center;padding-bottom:14px;border-bottom:1px solid #e7eef6}
+    .preview-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(180deg,#6c9df0,#5988db);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+    .preview-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .preview-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .preview-list,.extra-list{display:grid;gap:12px;margin-top:14px}
+    .preview-item,.extra-item{padding-bottom:12px;border-bottom:1px solid #edf2f7}
+    .preview-item:last-child,.extra-item:last-child{padding-bottom:0;border-bottom:none}
+    .preview-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+    .preview-value{font-size:14px;color:#1e293b;font-weight:600;line-height:1.45}
+    .extra-card{padding:18px}
+    .sticky-bar{position:sticky;bottom:14px;z-index:20;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;border:1px solid #dbe6f2;border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(17,37,77,.12)}
+    .sticky-note{font-size:12px;color:#6b7a90}.sticky-note strong{color:#1d2d47}
+    .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .scan-status,.field-error{font-size:11px}
+    .scan-status{color:#1e40af}.field-error{color:#dc2626}
+    @media (max-width:1100px){.add-layout{grid-template-columns:1fr}.aside{grid-template-columns:1fr 1fr}}
+    @media (max-width:820px){.grid-2,.grid-3,.toggles,.aside,.scan-row{grid-template-columns:1fr}.span-2{grid-column:auto}.avatar-preview{width:72px;height:72px;border-radius:20px;font-size:24px}}
 </style>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="{% url 'resident_list' %}">Residents</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    {% if household %}
-    <a href="{% url 'household_detail' household.id %}">Household {{ household.house_number }}</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    {% endif %}
-    <span class="cur">Add Resident</span>
-</div>
+<div class="add-page">
+    <div class="crumbs">
+        <a href="{% url 'dashboard' %}">Dashboard</a><span>&gt;</span>
+        <a href="{% url 'resident_list' %}">Residents</a><span>&gt;</span>
+        <span>Add Resident</span>
+    </div>
 
-<!-- Main Layout -->
-<div class="resident-layout{% if not household %} resident-layout-centered{% endif %}">
-
-    <!-- Left: Form -->
-    <div class="form-column">
-        <div class="info-card">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-            </svg>
-            <div class="info-card-content">
-                <div class="info-card-title">About Resident Information</div>
-                <div class="info-card-text">
-                    Make sure all required fields marked with <span style="color:#DC2626;">*</span> are filled out correctly.
-                    Date of birth should be entered in YYYY-MM-DD format before saving the record.
+    <div class="add-layout">
+        <div class="left-col">
+            <section class="ui-panel hero">
+                <h1>Add New Resident</h1>
+                <p>Enter resident details to create a new record in a cleaner, more guided layout.</p>
+                <div class="hint" style="margin-top:18px;">
+                    <div><strong>Hint</strong><br>Fill out all required fields to enable a smooth save flow and create a complete resident record.</div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <div class="form-card">
-            <div class="form-card-hdr">
-                <div class="form-card-hdr-icon">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
-                    </svg>
+            <section class="ui-panel scan-card">
+                <div class="scan-row">
+                    <div>
+                        <div class="scan-title">Scan ID to auto-fill resident details</div>
+                        <div class="scan-sub">Upload a clear ID image to auto-fill supported fields from QR data or OCR text.</div>
+                        <div class="scan-mini" id="scan-status">{{ scan_support.message }}</div>
+                    </div>
+                    <div>
+                        <input type="file" id="id-scan-file" accept="image/*" hidden>
+                        <button type="button" class="btn-bmis btn-secondary" id="scan-id-btn">Upload ID Card</button>
+                    </div>
+                    <div class="avatar-preview" id="scan-avatar">NR</div>
                 </div>
-                <div>
-                    <div class="form-card-hdr-title">Resident Information</div>
-                    <div class="form-card-hdr-sub">Fill in the details below</div>
-                </div>
-            </div>
+            </section>
 
-            <form method="POST">
-            {% csrf_token %}
-
-            <div class="form-body">
+            <form id="resident-form" method="POST">
+                {% csrf_token %}
                 {% if messages %}
                     {% for message in messages %}
-                    <div class="form-alert">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 012 0v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/>
-                        </svg>
-                        <div>
-                            <span>{{ message }}</span>
-                            {% if validation_errors %}
-                            <ul class="form-alert-list">
-                                {% for field_label in validation_errors %}
-                                <li>{{ field_label }}</li>
-                                {% endfor %}
-                            </ul>
-                            {% endif %}
-                        </div>
-                    </div>
+                    <div class="ui-alert" style="margin-bottom:16px;">{{ message }}</div>
                     {% endfor %}
                 {% endif %}
 
-                {% if form.errors and not messages %}
-                <div class="form-alert">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 012 0v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/>
-                    </svg>
-                    <span>Please check the highlighted fields and try again.</span>
-                </div>
-                {% endif %}
-
-                <div class="scan-box">
-                    <div class="scan-text">Scan ID image to auto-fill resident fields.</div>
-                    <div class="scan-actions">
-                        <input type="file" id="id-scan-file" accept="image/*" style="display:none;">
-                        <button type="button" class="btn-bmis btn-ghost" id="scan-id-btn">Scan ID</button>
-                        <span class="scan-status" id="scan-status"></span>
+                <section class="ui-panel section">
+                    <div class="section-head"><div><div class="section-title">Personal Information</div><div class="section-sub">Identity and demographic details.</div></div><div class="status-pill" id="age-pill">Age pending</div></div>
+                    <div class="section-body">
+                        <div class="grid-2">
+                            <div class="field"><label for="id_first_name">First Name <span class="req">*</span></label>{{ form.first_name }}{% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_middle_name">Middle Name</label>{{ form.middle_name }}</div>
+                            <div class="field"><label for="id_last_name">Last Name <span class="req">*</span></label>{{ form.last_name }}{% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_suffix">Suffix</label>{{ form.suffix }}</div>
+                            <div class="field"><label for="id_birth_date">Date of Birth <span class="req">*</span></label>{{ form.birth_date }}{% if form.birth_date.errors %}<div class="field-error">{{ form.birth_date.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_place_of_birth">Place of Birth</label>{{ form.place_of_birth }}</div>
+                            <div class="field"><label for="id_gender">Gender <span class="req">*</span></label>{{ form.gender }}{% if form.gender.errors %}<div class="field-error">{{ form.gender.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_civil_status">Civil Status <span class="req">*</span></label>{{ form.civil_status }}{% if form.civil_status.errors %}<div class="field-error">{{ form.civil_status.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_nationality">Nationality</label>{{ form.nationality }}</div>
+                            <div class="field"><label for="id_religion">Religion</label>{{ form.religion }}</div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Personal Information Section -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                        </svg>
-                        Personal Information
+                <section class="ui-panel section">
+                    <div class="section-head"><div><div class="section-title">Contact Information</div><div class="section-sub">Contact details for resident communication.</div></div></div>
+                    <div class="section-body">
+                        <div class="grid-2">
+                            <div class="field"><label for="id_contact_number">Contact Number</label>{{ form.contact_number }}<small>Mobile number is formatted automatically.</small>{% if form.contact_number.errors %}<div class="field-error">{{ form.contact_number.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_email">Email Address</label>{{ form.email }}{% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}</div>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="field-grid">
-                        <!-- First Name -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_first_name">
-                                First Name <span class="field-required">*</span>
-                            </label>
-                            {{ form.first_name }}
-                            {% if form.first_name.errors %}
-                            <div class="field-error">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ form.first_name.errors.0 }}
-                            </div>
+                <section class="ui-panel section">
+                    <div class="section-head"><div><div class="section-title">Address Information</div><div class="section-sub">Address is currently linked through the household record.</div></div></div>
+                    <div class="section-body">
+                        <div class="grid-3">
+                            <div class="field"><label>Barangay</label><div class="readonly">Gulod</div></div>
+                            <div class="field"><label>City</label><div class="readonly">Not configured in resident model</div></div>
+                            <div class="field"><label>Province</label><div class="readonly">Not configured in resident model</div></div>
+                        </div>
+                        <div class="grid-2" style="margin-top:14px;">
+                            {% if household %}
+                            <div class="field span-2"><label>Assigned Household</label><div class="readonly">{{ household.house_number }} {{ household.street }}{% if household.purok %}, {{ household.purok }}{% endif %}</div></div>
+                            {% else %}
+                            <div class="field span-2"><label for="id_household">Household</label>{{ form.household }}<small>Select the official household record used as this resident's address.</small>{% if form.household.errors %}<div class="field-error">{{ form.household.errors.0 }}</div>{% endif %}</div>
                             {% endif %}
                         </div>
+                    </div>
+                </section>
 
-                        <!-- Middle Name -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_middle_name">
-                                Middle Name
-                            </label>
-                            {{ form.middle_name }}
-                        </div>
-
-                        <!-- Last Name -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_last_name">
-                                Last Name <span class="field-required">*</span>
-                            </label>
-                            {{ form.last_name }}
-                            {% if form.last_name.errors %}
-                            <div class="field-error">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ form.last_name.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Suffix -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_suffix">
-                                Suffix
-                            </label>
-                            {{ form.suffix }}
-                            <div class="field-hint">Jr., Sr., III, etc.</div>
-                        </div>
-
-                        <!-- Date of Birth -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_birth_date">
-                                Date of Birth <span class="field-required">*</span>
-                            </label>
-                            {{ form.birth_date }}
-                            {% if form.birth_date.errors %}
-                            <div class="field-error">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                </svg>
-                                {{ form.birth_date.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Place of Birth -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_place_of_birth">
-                                Place of Birth
-                            </label>
-                            {{ form.place_of_birth }}
-                        </div>
-
-                        <!-- Gender -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_gender">
-                                Gender <span class="field-required">*</span>
-                            </label>
-                            <div class="select-wrap">
-                                {{ form.gender }}
-                            </div>
-                        </div>
-
-                        <!-- Civil Status -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_civil_status">
-                                Civil Status <span class="field-required">*</span>
-                            </label>
-                            <div class="select-wrap">
-                                {{ form.civil_status }}
-                            </div>
-                        </div>
-
-                        <!-- Nationality -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_nationality">
-                                Nationality
-                            </label>
-                            {{ form.nationality }}
-                        </div>
-
-                        <!-- Religion -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_religion">
-                                Religion
-                            </label>
-                            {{ form.religion }}
+                <section class="ui-panel section">
+                    <div class="section-head"><div><div class="section-title">Additional Information</div><div class="section-sub">Administrative record details.</div></div></div>
+                    <div class="section-body">
+                        <div class="grid-2">
+                            <div class="field"><label for="id_occupation">Occupation</label>{{ form.occupation }}</div>
+                            <div class="field"><label for="id_educational_attainment">Educational Attainment</label>{{ form.educational_attainment }}</div>
+                            <div class="field"><label for="id_precinct">Precinct Number</label>{{ form.precinct }}</div>
+                            <div class="field"><label for="id_status">Resident Status</label>{{ form.status }}</div>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Contact Information Section -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
-                        </svg>
-                        Contact Information
-                    </div>
-
-                    <div class="field-grid">
-                        <!-- Contact Number -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_contact_number">
-                                Contact Number
-                            </label>
-                            {{ form.contact_number }}
-                            <div class="field-hint">Mobile or telephone number</div>
-                        </div>
-
-                        <!-- Email -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_email">
-                                Email Address
-                            </label>
-                            {{ form.email }}
+                <section class="ui-panel section">
+                    <div class="section-head"><div><div class="section-title">Special Tags / Status</div><div class="section-sub">Quick toggles for resident classifications.</div></div></div>
+                    <div class="section-body">
+                        <div class="toggles">
+                            <div class="toggle-card"><div><div class="mini-title">PWD</div><div class="toggle-copy">Person with disability marker.</div></div><label class="switch">{{ form.pwd }}<span class="slider"></span></label></div>
+                            <div class="toggle-card"><div><div class="mini-title">Solo Parent</div><div class="toggle-copy">Marks resident as a solo parent.</div></div><label class="switch">{{ form.solo_parent }}<span class="slider"></span></label></div>
+                            <div class="toggle-card"><div><div class="mini-title">Registered Voter</div><div class="toggle-copy">Used for voter-based service logic.</div></div><label class="switch">{{ form.voter_status }}<span class="slider"></span></label></div>
+                            <div class="toggle-card"><div><div class="mini-title">Indigenous Person</div><div class="toggle-copy">Marks membership in an indigenous community.</div></div><label class="switch">{{ form.indigenous }}<span class="slider"></span></label></div>
                         </div>
                     </div>
-                </div>
-
-                <!-- Additional Information Section -->
-                <div class="form-section">
-                    <div class="section-title">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
-                        Additional Information
-                    </div>
-
-                    <div class="field-grid">
-                        <!-- Occupation -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_occupation">
-                                Occupation
-                            </label>
-                            {{ form.occupation }}
-                        </div>
-
-                        <!-- Educational Attainment -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_educational_attainment">
-                                Educational Attainment
-                            </label>
-                            <div class="select-wrap">
-                                {{ form.educational_attainment }}
-                            </div>
-                        </div>
-
-                        <!-- PWD -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_pwd">
-                                PWD (Person with Disability)
-                            </label>
-                            <div class="checkbox-group">
-                                {{ form.pwd }}
-                                <label for="id_pwd">Person with Disability</label>
-                            </div>
-                        </div>
-
-                        <!-- Indigenous -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_indigenous">
-                                Indigenous Person
-                            </label>
-                            <div class="checkbox-group">
-                                {{ form.indigenous }}
-                                <label for="id_indigenous">Member of indigenous community</label>
-                            </div>
-                        </div>
-
-                        <!-- Solo Parent -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_solo_parent">
-                                Solo Parent
-                            </label>
-                            <div class="checkbox-group">
-                                {{ form.solo_parent }}
-                                <label for="id_solo_parent">Solo parent</label>
-                            </div>
-                        </div>
-
-                        <!-- Voter Status -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_voter_status">
-                                Registered Voter
-                            </label>
-                            <div class="checkbox-group">
-                                {{ form.voter_status }}
-                                <label for="id_voter_status">Registered voter</label>
-                            </div>
-                        </div>
-
-                        <!-- Precinct -->
-                        <div class="field-group">
-                            <label class="field-label" for="id_precinct">
-                                Precinct
-                            </label>
-                            {{ form.precinct }}
-                            <div class="field-hint">Voting precinct number/code</div>
-                        </div>
-
-                        <!-- Household (if not already set) -->
-                        {% if not household %}
-                        <div class="field-group field-full">
-                            <label class="field-label" for="id_household">
-                                Household
-                            </label>
-                            <div class="select-wrap">
-                                {{ form.household }}
-                            </div>
-                            <div class="field-hint">Select the household this resident belongs to</div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Footer: Submit + Cancel -->
-            <div class="form-footer">
-                <div class="footer-note">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
-                    All required fields must be filled
-                </div>
-                <div class="footer-actions">
-                    {% if household %}
-                    <a href="{% url 'household_detail' household.id %}" class="btn-bmis btn-ghost">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-                        </svg>
-                        Cancel
-                    </a>
-                    {% else %}
-                    <a href="{% url 'resident_list' %}" class="btn-bmis btn-ghost">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-                        </svg>
-                        Cancel
-                    </a>
-                    {% endif %}
-                    <button type="submit" class="btn-bmis btn-primary">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                        </svg>
-                        Save Resident
-                    </button>
-                </div>
-            </div>
-
+                </section>
             </form>
-        </div>
-    </div>
 
-    <!-- Right: Sidebar -->
-    {% if household %}
-    <div class="sidebar">
-
-        <!-- Household card (if household exists) -->
-        {% if household %}
-        <div class="household-card">
-            <div class="household-card-top">
-                <div class="household-icon">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-                    </svg>
-                </div>
-                <div class="household-title">Household {{ household.house_number }}</div>
-                <div class="household-label">Adding resident to this household</div>
-            </div>
-            <div class="household-card-body">
-                <div class="household-info-row">
-                    <span class="household-info-key">House No.</span>
-                    <span class="household-info-val">{{ household.house_number }}</span>
-                </div>
-                <div class="household-info-row">
-                    <span class="household-info-key">Street</span>
-                    <span class="household-info-val">{{ household.street }}</span>
-                </div>
-                <div class="household-info-row">
-                    <span class="household-info-key">Purok</span>
-                    <span class="household-info-val">Purok {{ household.purok }}</span>
+            <div class="sticky-bar">
+                <div class="sticky-note"><strong>All changes ready?</strong> Review the resident preview and save when the record looks complete.</div>
+                <div class="sticky-actions">
+                    {% if household %}
+                    <a href="{% url 'household_detail' household.id %}" class="btn-bmis btn-secondary">Cancel</a>
+                    {% else %}
+                    <a href="{% url 'resident_list' %}" class="btn-bmis btn-secondary">Cancel</a>
+                    {% endif %}
+                    <button form="resident-form" type="submit" class="btn-bmis btn-primary" id="sticky-save-btn">Save Resident</button>
                 </div>
             </div>
         </div>
-        {% endif %}
 
-    </div>
-    {% endif %}
+        <div class="aside">
+            <section class="ui-panel preview-card">
+                <h3>New Resident Preview</h3>
+                <div class="preview-top">
+                    <div class="preview-avatar" id="preview-avatar">NR</div>
+                    <div><div class="preview-name" id="preview-name">New Resident</div><div class="preview-sub" id="preview-sub">Profile preview updates as you type</div></div>
+                </div>
+                <div class="preview-list">
+                    <div class="preview-item"><div class="preview-label">Full Name</div><div class="preview-value" id="pv-full-name">Not yet provided</div></div>
+                    <div class="preview-item"><div class="preview-label">Date of Birth</div><div class="preview-value" id="pv-birth">Not yet selected</div></div>
+                    <div class="preview-item"><div class="preview-label">Gender</div><div class="preview-value" id="pv-gender">Not selected</div></div>
+                    <div class="preview-item"><div class="preview-label">Civil Status</div><div class="preview-value" id="pv-civil">Not selected</div></div>
+                    <div class="preview-item"><div class="preview-label">Religion</div><div class="preview-value" id="pv-religion">Not provided</div></div>
+                </div>
+            </section>
 
-</div>
-
-<div id="crop-modal" class="scan-modal">
-    <div class="scan-panel">
-        <div class="scan-panel-head">Crop ID Image</div>
-        <div class="scan-panel-body">
-            <div class="crop-canvas-wrap">
-                <canvas id="crop-canvas"></canvas>
-            </div>
-            <div class="field-hint" style="margin-top:8px;">Drag on the image to select the ID area, then scan.</div>
-        </div>
-        <div class="scan-panel-foot">
-            <button type="button" class="btn-bmis btn-ghost" id="crop-cancel-btn">Cancel</button>
-            <button type="button" class="btn-bmis btn-ghost" id="crop-reset-btn">Use Full Image</button>
-            <button type="button" class="btn-bmis btn-primary" id="crop-scan-btn">Scan Cropped Image</button>
-        </div>
-    </div>
-</div>
-
-<div id="review-modal" class="scan-modal">
-    <div class="scan-panel" style="max-width:760px;">
-        <div class="scan-panel-head">Review Scanned Data</div>
-        <div class="scan-panel-body">
-            <div class="review-grid">
-                <div>
-                    <label class="field-label" for="rv_first_name">First Name</label>
-                    <input id="rv_first_name" class="bmis-input" type="text">
+            <section class="ui-panel extra-card">
+                <h3>Additional Info</h3>
+                <div class="extra-list">
+                    <div class="extra-item"><div class="preview-label">Occupation</div><div class="preview-value" id="pv-occupation">Not provided</div></div>
+                    <div class="extra-item"><div class="preview-label">Educational Attainment</div><div class="preview-value" id="pv-education">Not selected</div></div>
+                    <div class="extra-item"><div class="preview-label">Household</div><div class="preview-value" id="pv-household">{% if household %}Preselected household{% else %}Not selected{% endif %}</div></div>
+                    <div class="extra-item"><div class="preview-label">Precinct #</div><div class="preview-value" id="pv-precinct">Not provided</div></div>
                 </div>
-                <div>
-                    <label class="field-label" for="rv_middle_name">Middle Name</label>
-                    <input id="rv_middle_name" class="bmis-input" type="text">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_last_name">Last Name</label>
-                    <input id="rv_last_name" class="bmis-input" type="text">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_suffix">Suffix</label>
-                    <input id="rv_suffix" class="bmis-input" type="text">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_birth_date">Birth Date</label>
-                    <input id="rv_birth_date" class="bmis-input" type="date">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_gender">Gender</label>
-                    <select id="rv_gender" class="bmis-select">
-                        <option value="">---------</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="field-label" for="rv_civil_status">Civil Status</label>
-                    <select id="rv_civil_status" class="bmis-select">
-                        <option value="">---------</option>
-                        <option value="Single">Single</option>
-                        <option value="Married">Married</option>
-                        <option value="Widowed">Widowed</option>
-                        <option value="Separated">Separated</option>
-                        <option value="Divorced">Divorced</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="field-label" for="rv_precinct">Precinct</label>
-                    <input id="rv_precinct" class="bmis-input" type="text">
-                </div>
-                <div class="full">
-                    <label class="field-label" for="rv_place_of_birth">Place of Birth</label>
-                    <input id="rv_place_of_birth" class="bmis-input" type="text">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_nationality">Nationality</label>
-                    <input id="rv_nationality" class="bmis-input" type="text">
-                </div>
-                <div>
-                    <label class="field-label" for="rv_religion">Religion</label>
-                    <input id="rv_religion" class="bmis-input" type="text">
-                </div>
-            </div>
-        </div>
-        <div class="scan-panel-foot">
-            <button type="button" class="btn-bmis btn-ghost" id="review-cancel-btn">Cancel</button>
-            <button type="button" class="btn-bmis btn-primary" id="review-apply-btn">Apply to Form</button>
+            </section>
         </div>
     </div>
 </div>
 
 <script>
-    (function () {
-        const fileInput = document.getElementById("id-scan-file");
-        const scanBtn = document.getElementById("scan-id-btn");
-        const statusEl = document.getElementById("scan-status");
-        const cropModal = document.getElementById("crop-modal");
-        const reviewModal = document.getElementById("review-modal");
-        const cropCanvas = document.getElementById("crop-canvas");
-        const cropCancelBtn = document.getElementById("crop-cancel-btn");
-        const cropResetBtn = document.getElementById("crop-reset-btn");
-        const cropScanBtn = document.getElementById("crop-scan-btn");
-        const reviewCancelBtn = document.getElementById("review-cancel-btn");
-        const reviewApplyBtn = document.getElementById("review-apply-btn");
-        if (!fileInput || !scanBtn || !cropCanvas) return;
+(() => {
+    const $ = (id) => document.getElementById(id);
+    const ids = ["first_name","middle_name","last_name","suffix","birth_date","gender","civil_status","religion","occupation","educational_attainment","precinct","household","contact_number"];
+    const inputs = Object.fromEntries(ids.map((k) => [k, $("id_" + k)]));
+    const previewAvatar = $("preview-avatar");
+    const scanAvatar = $("scan-avatar");
+    const agePill = $("age-pill");
+    const fullName = $("pv-full-name");
+    const previewName = $("preview-name");
+    const previewSub = $("preview-sub");
+    const birth = $("pv-birth");
+    const gender = $("pv-gender");
+    const civil = $("pv-civil");
+    const religion = $("pv-religion");
+    const occupation = $("pv-occupation");
+    const education = $("pv-education");
+    const household = $("pv-household");
+    const precinct = $("pv-precinct");
+    const topSave = $("top-save-btn");
+    const stickySave = $("sticky-save-btn");
 
-        const fieldMap = {
-            first_name: "id_first_name",
-            middle_name: "id_middle_name",
-            last_name: "id_last_name",
-            suffix: "id_suffix",
-            birth_date: "id_birth_date",
-            place_of_birth: "id_place_of_birth",
-            gender: "id_gender",
-            civil_status: "id_civil_status",
-            nationality: "id_nationality",
-            religion: "id_religion",
-            precinct: "id_precinct",
-        };
-        const reviewMap = {
-            first_name: "rv_first_name",
-            middle_name: "rv_middle_name",
-            last_name: "rv_last_name",
-            suffix: "rv_suffix",
-            birth_date: "rv_birth_date",
-            place_of_birth: "rv_place_of_birth",
-            gender: "rv_gender",
-            civil_status: "rv_civil_status",
-            nationality: "rv_nationality",
-            religion: "rv_religion",
-            precinct: "rv_precinct",
-        };
-        const reviewKeys = Object.keys(reviewMap);
+    function initials() {
+        const f = (inputs.first_name?.value || "").trim();
+        const l = (inputs.last_name?.value || "").trim();
+        return ((f[0] || "N") + (l[0] || "R")).toUpperCase();
+    }
+    function calcAge(v) {
+        if (!v) return null;
+        const d = new Date(v + "T00:00:00");
+        if (isNaN(d)) return null;
+        const t = new Date();
+        let a = t.getFullYear() - d.getFullYear();
+        const m = t.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && t.getDate() < d.getDate())) a--;
+        return a >= 0 ? a : null;
+    }
+    function fmtDate(v) {
+        if (!v) return "Not yet selected";
+        const d = new Date(v + "T00:00:00");
+        return isNaN(d) ? "Not yet selected" : d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    }
+    function group(age) {
+        if (age == null) return "Age pending";
+        if (age <= 12) return age + " yrs - Child";
+        if (age <= 17) return age + " yrs - Youth";
+        if (age <= 59) return age + " yrs - Adult";
+        return age + " yrs - Senior Citizen";
+    }
+    function updatePreview() {
+        const f = (inputs.first_name?.value || "").trim();
+        const m = (inputs.middle_name?.value || "").trim();
+        const l = (inputs.last_name?.value || "").trim();
+        const s = (inputs.suffix?.value || "").trim();
+        const name = [f, m, l, s].filter(Boolean).join(" ");
+        fullName.textContent = name || "Not yet provided";
+        previewName.textContent = name || "New Resident";
+        previewSub.textContent = name ? "Preview synced with form data" : "Profile preview updates as you type";
+        const ini = initials();
+        previewAvatar.textContent = ini;
+        scanAvatar.textContent = ini;
+        birth.textContent = fmtDate(inputs.birth_date?.value);
+        gender.textContent = inputs.gender?.value || "Not selected";
+        civil.textContent = inputs.civil_status?.value || "Not selected";
+        religion.textContent = inputs.religion?.value || "Not provided";
+        occupation.textContent = inputs.occupation?.value || "Not provided";
+        education.textContent = inputs.educational_attainment?.selectedOptions?.[0]?.text || "Not selected";
+        precinct.textContent = inputs.precinct?.value || "Not provided";
+        household.textContent = inputs.household?.selectedOptions?.[0]?.value ? inputs.household.selectedOptions[0].text : "{% if household %}Preselected household{% else %}Not selected{% endif %}";
+        agePill.textContent = group(calcAge(inputs.birth_date?.value));
+    }
+    if (inputs.contact_number) {
+        inputs.contact_number.addEventListener("input", () => {
+            const digits = inputs.contact_number.value.replace(/\D/g, "").slice(0, 11);
+            if (digits.length <= 4) inputs.contact_number.value = digits;
+            else if (digits.length <= 7) inputs.contact_number.value = digits.slice(0,4) + " " + digits.slice(4);
+            else inputs.contact_number.value = digits.slice(0,4) + " " + digits.slice(4,7) + " " + digits.slice(7);
+        });
+    }
+    Object.values(inputs).forEach((el) => el && ["input","change"].forEach((evt) => el.addEventListener(evt, updatePreview)));
+    updatePreview();
 
-        const ctx = cropCanvas.getContext("2d");
-        let loadedImage = null;
-        let cropRect = null;
-        let dragStart = null;
-        let drawing = false;
+    [topSave, stickySave].forEach((btn) => btn && btn.addEventListener("click", () => {
+        setTimeout(() => {
+            [topSave, stickySave].forEach((b) => { if (b) { b.disabled = true; b.textContent = "Saving..."; }});
+        }, 0);
+    }));
 
-        function setStatus(text, isError) {
-            if (!statusEl) return;
-            statusEl.textContent = text || "";
-            statusEl.style.color = isError ? "#B91C1C" : "#1E40AF";
-        }
-
-        function showModal(modalEl) {
-            if (modalEl) modalEl.classList.add("show");
-        }
-
-        function hideModal(modalEl) {
-            if (modalEl) modalEl.classList.remove("show");
-        }
-
-        function applyData(data) {
-            Object.keys(data || {}).forEach((key) => {
-                const inputId = fieldMap[key];
-                if (!inputId) return;
-                const input = document.getElementById(inputId);
-                if (!input) return;
-                input.value = data[key];
-                input.dispatchEvent(new Event("change", { bubbles: true }));
-            });
-        }
-
-        function fillReview(data) {
-            reviewKeys.forEach((key) => {
-                const el = document.getElementById(reviewMap[key]);
-                if (!el) return;
-                el.value = data && data[key] ? data[key] : "";
-            });
-        }
-
-        function readReview() {
-            const out = {};
-            reviewKeys.forEach((key) => {
-                const el = document.getElementById(reviewMap[key]);
-                if (!el) return;
-                const val = (el.value || "").trim();
-                if (val) out[key] = val;
-            });
-            return out;
-        }
-
-        function setupCanvasWithImage(img) {
-            loadedImage = img;
-            const maxW = 820;
-            const maxH = 500;
-            const scale = Math.min(maxW / img.width, maxH / img.height, 1);
-            cropCanvas.width = Math.floor(img.width * scale);
-            cropCanvas.height = Math.floor(img.height * scale);
-            cropRect = {
-                x: Math.floor(cropCanvas.width * 0.08),
-                y: Math.floor(cropCanvas.height * 0.08),
-                w: Math.floor(cropCanvas.width * 0.84),
-                h: Math.floor(cropCanvas.height * 0.84),
-            };
-            redrawCanvas();
-        }
-
-        function redrawCanvas() {
-            if (!loadedImage) return;
-            ctx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-            ctx.drawImage(loadedImage, 0, 0, cropCanvas.width, cropCanvas.height);
-            if (!cropRect) return;
-            ctx.save();
-            ctx.fillStyle = "rgba(15, 23, 42, 0.35)";
-            ctx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
-            ctx.clearRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
-            ctx.strokeStyle = "#2563EB";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
-            ctx.restore();
-        }
-
-        function getMousePos(evt) {
-            const rect = cropCanvas.getBoundingClientRect();
-            return {
-                x: Math.max(0, Math.min(cropCanvas.width, evt.clientX - rect.left)),
-                y: Math.max(0, Math.min(cropCanvas.height, evt.clientY - rect.top)),
-            };
-        }
-
-        function loadSelectedFile(file) {
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.onload = () => {
-                    setupCanvasWithImage(img);
-                    showModal(cropModal);
-                };
-                img.src = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function cropToBlob() {
-            return new Promise((resolve) => {
-                if (!loadedImage) {
-                    resolve(null);
-                    return;
-                }
-                const sx = loadedImage.width / cropCanvas.width;
-                const sy = loadedImage.height / cropCanvas.height;
-
-                const rx = Math.max(0, Math.floor(cropRect.x * sx));
-                const ry = Math.max(0, Math.floor(cropRect.y * sy));
-                const rw = Math.max(1, Math.floor(cropRect.w * sx));
-                const rh = Math.max(1, Math.floor(cropRect.h * sy));
-
-                const out = document.createElement("canvas");
-                out.width = rw;
-                out.height = rh;
-                const octx = out.getContext("2d");
-                octx.drawImage(loadedImage, rx, ry, rw, rh, 0, 0, rw, rh);
-                out.toBlob((blob) => resolve(blob), "image/jpeg", 0.95);
-            });
-        }
-
-        async function uploadAndScanBlob(blob) {
-            if (!blob) return;
-            setStatus("Scanning ID...", false);
-            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
-            const formData = new FormData();
-            formData.append("id_image", blob, "id-scan.jpg");
-
-            try {
-                const resp = await fetch("{% url 'scan_resident_id' %}", {
-                    method: "POST",
-                    headers: csrf ? { "X-CSRFToken": csrf } : {},
-                    body: formData,
-                });
-                const payload = await resp.json();
-                if (!resp.ok || !payload.ok) {
-                    const extra = payload.ocr_preview ? ` OCR preview: ${payload.ocr_preview}` : "";
-                    setStatus((payload.error || "Scan failed.") + extra, true);
-                    return;
-                }
-                fillReview(payload.data || {});
-                showModal(reviewModal);
-                setStatus("Scan complete. Review extracted fields before applying.", false);
-            } catch (err) {
-                setStatus("Scan failed. Please try again.", true);
+    const fileInput = $("id-scan-file");
+    const scanBtn = $("scan-id-btn");
+    const scanStatus = $("scan-status");
+    const scanMap = {first_name:"id_first_name",middle_name:"id_middle_name",last_name:"id_last_name",suffix:"id_suffix",birth_date:"id_birth_date",place_of_birth:"id_place_of_birth",gender:"id_gender",civil_status:"id_civil_status",nationality:"id_nationality",religion:"id_religion",precinct:"id_precinct"};
+    async function scanFile(file) {
+        if (!file) return;
+        scanStatus.textContent = "Scanning ID...";
+        const fd = new FormData();
+        fd.append("id_image", file);
+        const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+        try {
+            const resp = await fetch("{% url 'scan_resident_id' %}", { method:"POST", headers: csrf ? {"X-CSRFToken": csrf} : {}, body: fd });
+            const data = await resp.json();
+            if (!resp.ok || !data.ok) {
+                scanStatus.textContent = data.error || "Scan failed.";
+                return;
             }
+            Object.entries(data.data || {}).forEach(([k,v]) => {
+                const el = $(scanMap[k]);
+                if (el && v) {
+                    el.value = v;
+                    el.dispatchEvent(new Event("input", {bubbles:true}));
+                    el.dispatchEvent(new Event("change", {bubbles:true}));
+                }
+            });
+            scanStatus.textContent = data.warning || "ID scan complete. Extracted fields were applied to the form.";
+        } catch {
+            scanStatus.textContent = "Scan failed. Please try another image.";
         }
-
+    }
+    if (scanBtn && fileInput) {
         scanBtn.addEventListener("click", () => fileInput.click());
-        fileInput.addEventListener("change", () => {
-            const file = fileInput.files && fileInput.files[0];
-            loadSelectedFile(file);
-        });
-
-        cropCanvas.addEventListener("mousedown", (evt) => {
-            if (!loadedImage) return;
-            drawing = true;
-            dragStart = getMousePos(evt);
-            cropRect = { x: dragStart.x, y: dragStart.y, w: 1, h: 1 };
-            redrawCanvas();
-        });
-        cropCanvas.addEventListener("mousemove", (evt) => {
-            if (!drawing || !dragStart) return;
-            const pos = getMousePos(evt);
-            const x = Math.min(dragStart.x, pos.x);
-            const y = Math.min(dragStart.y, pos.y);
-            const w = Math.max(1, Math.abs(pos.x - dragStart.x));
-            const h = Math.max(1, Math.abs(pos.y - dragStart.y));
-            cropRect = { x, y, w, h };
-            redrawCanvas();
-        });
-        window.addEventListener("mouseup", () => {
-            drawing = false;
-            dragStart = null;
-        });
-
-        cropResetBtn.addEventListener("click", () => {
-            if (!loadedImage) return;
-            cropRect = { x: 0, y: 0, w: cropCanvas.width, h: cropCanvas.height };
-            redrawCanvas();
-        });
-
-        cropCancelBtn.addEventListener("click", () => {
-            hideModal(cropModal);
-            setStatus("Scan cancelled.", false);
-        });
-
-        cropScanBtn.addEventListener("click", async () => {
-            hideModal(cropModal);
-            const blob = await cropToBlob();
-            uploadAndScanBlob(blob);
-        });
-
-        reviewCancelBtn.addEventListener("click", () => {
-            hideModal(reviewModal);
-            setStatus("Scan result not applied.", false);
-        });
-
-        reviewApplyBtn.addEventListener("click", () => {
-            const reviewedData = readReview();
-            applyData(reviewedData);
-            hideModal(reviewModal);
-            setStatus("Scanned data applied to form.", false);
-        });
-    })();
+        fileInput.addEventListener("change", () => scanFile(fileInput.files?.[0]));
+    }
+})();
 </script>
-
 {% endblock %}

@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 
-{% block page_title %}Service Request{% endblock %}
-{% block page_subtitle %}Submit a new document request for this resident{% endblock %}
-
 {% block content %}
 
 <style>
@@ -344,17 +341,19 @@
 
 <!-- Breadcrumb -->
 <div class="breadcrumb">
-    {% if not is_portal_resident_user %}
     <a href="{% url 'resident_list' %}">Residents</a>
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    {% endif %}
-    {% if is_portal_resident_user %}
-    <a href="{% url 'portal_my_profile' %}">{{ resident.first_name }} {{ resident.last_name }}</a>
-    {% else %}
     <a href="{% url 'resident_profile' resident.id %}">{{ resident.first_name }} {{ resident.last_name }}</a>
-    {% endif %}
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
     <span class="cur">New Service Request</span>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+    <div>
+        <div class="page-title">Service Request</div>
+        <div class="page-subtitle">Submit a new document request for this resident</div>
+    </div>
 </div>
 
 <!-- ═══════════════ MAIN LAYOUT ═══════════════ -->
@@ -485,14 +484,10 @@
                     <svg viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                     </svg>
-                    Request will be logged under Pending status.
+                    Request will be logged under Submitted status.
                 </div>
                 <div class="footer-actions">
-                    {% if is_portal_resident_user %}
-                    <a href="{% url 'service_requests' %}" class="btn-bmis btn-ghost">
-                    {% else %}
                     <a href="{% url 'resident_profile' resident.id %}" class="btn-bmis btn-ghost">
-                    {% endif %}
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
                         </svg>
@@ -586,9 +581,9 @@
                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
             </svg>
             <div class="notice-card-text">
-                <strong>Processing reminder:</strong> Submitted requests are set to
-                <strong>Pending</strong> by default. The Secretary must review and
-                update the status before the document can be released.
+                <strong>Processing reminder:</strong> New requests start as
+                <strong>Submitted</strong>. The Secretary will move them through
+                review, validation, processing, and release stages.
             </div>
         </div>
 
@@ -642,7 +637,16 @@
                     feeTypeLabel.textContent = isVoter ? "Voter" : "Non-Voter";
                 }
             }
-            const showPurpose = serviceName === "indigency" || serviceName === "service request";
+            const showPurpose = [
+                "barangay clearance",
+                "certificate of residency",
+                "indigency",
+                "service request",
+                "first time job seeker",
+                "business clearance",
+                "barangay permit",
+                "solo parent id"
+            ].includes(serviceName);
             const showEmergency = serviceName === "barangay id";
             const showResidency = serviceName === "qcid" || serviceName === "qc id";
 

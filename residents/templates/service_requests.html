@@ -1,584 +1,222 @@
 {% extends "base.html" %}
 
 {% block page_title %}Service Requests{% endblock %}
-{% block page_subtitle %}Manage and track all document requests{% endblock %}
+{% block page_subtitle %}Track every request in one queue and let the Secretary handle each stage with a clear, consistent workflow.{% endblock %}
 
 {% block content %}
-
 <style>
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
-    }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* ── Stats cards ── */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-    .stat-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .stat-icon svg { width: 20px; height: 20px; }
-    .stat-content { flex: 1; }
-    .stat-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
-    .stat-value { font-size: 20px; font-weight: 600; color: #1E293B; margin-top: 2px; }
-
-    /* Icon colors */
-    .stat-icon.pending { background: #FEF3C7; }
-    .stat-icon.pending svg { color: #F59E0B; }
-    .stat-icon.processing { background: #DBEAFE; }
-    .stat-icon.processing svg { color: #3B82F6; }
-    .stat-icon.approved { background: #D1FAE5; }
-    .stat-icon.approved svg { color: #10B981; }
-    .stat-icon.released { background: #D1FAE5; }
-    .stat-icon.released svg { color: #059669; }
-
-    /* ── Table card ── */
-    .table-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .table-card-header {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 18px 24px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-    .table-card-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .table-card-title svg { width: 18px; height: 18px; }
-
-    /* ── Search and filter ── */
-    .table-controls {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    .search-box {
-        position: relative;
-        min-width: 200px;
-    }
-    .search-box input {
-        width: 100%;
-        padding: 6px 12px 6px 32px;
-        border: 1px solid rgba(255,255,255,.3);
-        border-radius: 6px;
-        font-size: 12px;
-        background: rgba(255,255,255,.15);
-        color: #fff;
-        outline: none;
-    }
-    .search-box input::placeholder { color: rgba(255,255,255,.6); }
-    .search-box svg {
-        position: absolute;
-        left: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 14px;
-        height: 14px;
-        color: rgba(255,255,255,.6);
-    }
-    .filter-select {
-        padding: 6px 12px;
-        border: 1px solid rgba(255,255,255,.3);
-        border-radius: 6px;
-        font-size: 12px;
-        background: rgba(255,255,255,.15);
-        color: #fff;
-        outline: none;
-        cursor: pointer;
-    }
-    .filter-select option { background: #1E3A8A; }
-
-    /* ── Table ── */
-    .requests-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .requests-table thead {
-        background: #F8FAFC;
-        border-bottom: 1px solid #E2E8F0;
-    }
-    .requests-table th {
-        padding: 12px 16px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .requests-table td {
-        padding: 14px 16px;
-        font-size: 13px;
-        color: #1E293B;
-        border-bottom: 1px solid #F1F5F9;
-    }
-    .requests-table tr:last-child td { border-bottom: none; }
-    .requests-table tbody tr:hover { background: #F8FAFC; }
-
-    /* ── Status badges ── */
-    .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-    .status-badge svg { width: 12px; height: 12px; flex-shrink: 0; }
-    
-    .status-pending {
-        background: #FEF3C7;
-        color: #92400E;
-    }
-    .status-processing {
-        background: #DBEAFE;
-        color: #1E40AF;
-    }
-    .status-approved {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-    .status-released {
-        background: #D1FAE5;
-        color: #065F46;
-    }
-    .status-rejected {
-        background: #FEE2E2;
-        color: #991B1B;
-    }
-
-    /* ── Payment badge ── */
-    .payment-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-    .payment-badge svg { width: 14px; height: 14px; }
-    .payment-paid { color: #16A34A; }
-    .payment-unpaid { color: #DC2626; }
-
-    /* ── Action buttons ── */
-    .action-cell {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        align-items: flex-start;
-    }
-    .status-form {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-    }
-    .status-select {
-        padding: 5px 10px;
-        border: 1px solid #E2E8F0;
-        border-radius: 6px;
-        font-size: 12px;
-        background: #F8FAFC;
-        color: #1E293B;
-        outline: none;
-        cursor: pointer;
-    }
-    .status-select:focus {
-        border-color: #2563EB;
-        background: #fff;
-    }
-
-    /* ── Buttons ── */
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        border: none;
-        white-space: nowrap;
-    }
-    .btn-bmis svg { width: 13px; height: 13px; flex-shrink: 0; }
-    
-    .btn-update {
-        background: #2563EB;
-        color: #fff;
-    }
-    .btn-update:hover {
-        background: #1D4ED8;
-    }
-    
-    .btn-generate {
-        background: #10B981;
-        color: #fff;
-    }
-    .btn-generate:hover {
-        background: #059669;
-        text-decoration: none;
-    }
-
-    .btn-view {
-        background: #EFF6FF;
-        color: #1D4ED8;
-        border: 1px solid #BFDBFE;
-    }
-    .btn-view:hover {
-        background: #DBEAFE;
-        color: #1E40AF;
-        text-decoration: none;
-    }
-    
-    .btn-print {
-        background: #8B5CF6;
-        color: #fff;
-    }
-    .btn-print:hover {
-        background: #7C3AED;
-        text-decoration: none;
-    }
-
-    .released-text {
-        color: #16A34A;
-        font-size: 12px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .released-text svg { width: 14px; height: 14px; }
-
-    /* ── Empty state ── */
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    .empty-state-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 16px;
-        border-radius: 50%;
-        background: #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .empty-state-icon svg {
-        width: 32px;
-        height: 32px;
-        color: #94A3B8;
-    }
-    .empty-state-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 6px;
-    }
-    .empty-state-text {
-        font-size: 13px;
-        color: #64748B;
-    }
-
-    /* ── Responsive ── */
-    @media (max-width: 1200px) {
-        .requests-table {
-            display: block;
-            overflow-x: auto;
-        }
-    }
+    .request-page{display:grid;gap:18px}
+    .breadcrumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
+    .breadcrumb a{color:var(--txt2);text-decoration:none}
+    .breadcrumb a:hover{color:var(--pri2)}
+    .breadcrumb svg{width:12px;height:12px}
+    .stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .stat-card,.table-card{background:linear-gradient(180deg,#fff,var(--card-soft));border:1px solid var(--brd);border-radius:18px;box-shadow:var(--shadow-md)}
+    .stat-card{padding:16px;display:flex;align-items:center;gap:12px}
+    .stat-icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+    .stat-icon svg{width:20px;height:20px}
+    .stat-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em}
+    .stat-value{margin-top:4px;font-size:22px;font-weight:700;color:var(--txt)}
+    .icon-submitted{background:#eaf2ff;color:#2c67d6}
+    .icon-review{background:#eef4ff;color:#466fe0}
+    .icon-validation{background:#f2ecff;color:#7554d9}
+    .icon-processing{background:#e9fbf7;color:#14806b}
+    .icon-ready{background:#fff4db;color:#b57518}
+    .table-card{overflow:hidden}
+    .table-head{padding:18px 20px;background:linear-gradient(135deg,var(--pri),var(--pri2));display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .table-title{display:flex;align-items:center;gap:8px;color:#fff;font-size:15px;font-weight:700}
+    .table-title svg{width:18px;height:18px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    .filter-form{display:flex;gap:10px;flex-wrap:wrap}
+    .search-box{position:relative;min-width:240px}
+    .search-box svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:rgba(255,255,255,.66)}
+    .search-box input,.filter-select{min-height:38px;border-radius:10px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.14);color:#fff;outline:none}
+    .search-box input{width:100%;padding:0 12px 0 32px}
+    .search-box input::placeholder{color:rgba(255,255,255,.66)}
+    .filter-select{padding:0 12px}
+    .filter-select option{color:#17305b;background:#fff}
+    .filter-btn{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 14px;border:none;border-radius:10px;background:#fff;color:var(--pri-strong);font-weight:700;cursor:pointer}
+    .requests-table{width:100%;border-collapse:collapse}
+    .requests-table thead{background:#f6f9ff;border-bottom:1px solid var(--brd)}
+    .requests-table th{padding:12px 16px;font-size:11px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.06em;text-align:left}
+    .requests-table td{padding:16px;border-bottom:1px solid var(--brd);vertical-align:top;font-size:13px;color:var(--txt)}
+    .requests-table tbody tr:hover{background:#fbfdff}
+    .requests-table tbody tr:last-child td{border-bottom:none}
+    .doc-link{color:var(--pri-strong);font-weight:700;text-decoration:none}
+    .doc-link:hover{color:var(--pri2)}
+    .muted{display:block;margin-top:4px;color:var(--txt3);font-size:12px}
+    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+    .status-badge svg{width:13px;height:13px}
+    .status-submitted{background:#eaf2ff;color:#2c67d6}
+    .status-review{background:#eef4ff;color:#466fe0}
+    .status-validation{background:#f2ecff;color:#7554d9}
+    .status-processing{background:#e9fbf7;color:#14806b}
+    .status-ready{background:#fff4db;color:#b57518}
+    .status-released{background:#eafaf5;color:#14835b}
+    .status-pendingreq{background:#fff7e8;color:#bd7a12}
+    .status-onhold{background:#fff1e8;color:#c96d2d}
+    .status-rejected{background:#fff0f0;color:#be3d3d}
+    .status-cancelled{background:#eef2f7;color:#64748b}
+    .payment-badge{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+    .payment-badge svg{width:14px;height:14px}
+    .payment-paid{color:#15806f}
+    .payment-unpaid{color:#cb3a3a}
+    .action-cell{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+    .status-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .status-select{min-height:36px;padding:0 10px;border-radius:10px;border:1px solid var(--brd);background:#fff;color:var(--txt);outline:none}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:0 12px;border:none;border-radius:10px;text-decoration:none;font-weight:700;cursor:pointer}
+    .btn svg{width:14px;height:14px}
+    .btn-primary{background:linear-gradient(180deg,#4c92ff,#3575e3);color:#fff}
+    .btn-primary:hover{color:#fff;text-decoration:none}
+    .btn-soft{background:#eef4ff;color:#275cb8}
+    .btn-soft:hover{text-decoration:none;color:#1d4ca6}
+    .btn-release{background:linear-gradient(180deg,#3fb98a,#1d9c6c);color:#fff}
+    .btn-release:hover{color:#fff;text-decoration:none}
+    .empty-state{padding:60px 20px;text-align:center}
+    .empty-state h3{font-size:18px;color:var(--txt)}
+    .empty-state p{margin-top:8px;color:var(--txt2)}
+    @media (max-width:1280px){.stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media (max-width:920px){.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.requests-table{display:block;overflow-x:auto}}
+    @media (max-width:680px){.stats-grid{grid-template-columns:1fr}.search-box{min-width:100%}}
 </style>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="{% url 'dashboard' %}">Dashboard</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">Service Requests</span>
-</div>
+<div class="request-page">
+    <div class="breadcrumb">
+        <a href="{% url 'role_redirect' %}">Dashboard</a>
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+        <span>Service Requests</span>
+    </div>
 
-<!-- Stats grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon pending">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-            </svg>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Pending</div>
-            <div class="stat-value">{{ requests|length }}</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon processing">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/>
-            </svg>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Processing</div>
-            <div class="stat-value">0</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon approved">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-            </svg>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Approved</div>
-            <div class="stat-value">0</div>
-        </div>
-    </div>
-    
-    <div class="stat-card">
-        <div class="stat-icon released">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-            </svg>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Released</div>
-            <div class="stat-value">0</div>
-        </div>
-    </div>
-</div>
+    <section class="stats-grid">
+        <article class="stat-card">
+            <div class="stat-icon icon-submitted"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 101.414-1.414L11 9.586V7z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-label">Submitted</div><div class="stat-value">{{ submitted_total }}</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-review"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zm-3 4a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2H6zm2 3a1 1 0 000 2h4a1 1 0 100-2H8zm0 3a1 1 0 100 2h2a1 1 0 100-2H8z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-label">Under Review</div><div class="stat-value">{{ review_total }}</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-validation"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-label">For Validation</div><div class="stat-value">{{ validation_total }}</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-processing"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/></svg></div>
+            <div><div class="stat-label">Processing</div><div class="stat-value">{{ processing_total }}</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-ready"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v3a1 1 0 102 0V4h8v3a1 1 0 102 0V4a2 2 0 00-2-2H6zm-2 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zm3 1a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-label">Ready for Release</div><div class="stat-value">{{ ready_total }}</div></div>
+        </article>
+    </section>
 
-<!-- Table card -->
-<div class="table-card">
-    <div class="table-card-header">
-        <div class="table-card-title">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-            </svg>
-            All Requests
-        </div>
-        
-        <div class="table-controls">
-            <div class="search-box">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-                </svg>
-                <input type="text" placeholder="Search requests...">
+    <section class="table-card">
+        <div class="table-head">
+            <div class="table-title">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h6a1 1 0 100-2H7zm0 4a1 1 0 100 2h4a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                Request Queue
             </div>
-            
-            <select class="filter-select">
-                <option value="">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Approved">Approved</option>
-                <option value="Released">Released</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-        </div>
-    </div>
-
-    {% if requests %}
-    <table class="requests-table">
-        <thead>
-            <tr>
-                <th>Doc No.</th>
-                <th>Resident</th>
-                <th>Service Type</th>
-                <th>Fee</th>
-                <th>Purpose</th>
-                <th>Status</th>
-                <th>Date</th>
-                <th>Payment</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for sr in requests %}
-            <tr>
-                <td><strong>{{ sr.document_number }}</strong></td>
-                <td>{{ sr.resident }}</td>
-                <td>{{ sr.service_type }}</td>
-                <td><strong>₱{{ sr.fee }}</strong></td>
-                <td>{{ sr.purpose|truncatewords:5 }}</td>
-                <td>
-                    {% if sr.status == "Pending" %}
-                    <span class="status-badge status-pending">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                        </svg>
-                        Pending
-                    </span>
-                    {% elif sr.status == "Processing" %}
-                    <span class="status-badge status-processing">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/>
-                        </svg>
-                        Processing
-                    </span>
-                    {% elif sr.status == "Approved" %}
-                    <span class="status-badge status-approved">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Approved
-                    </span>
-                    {% elif sr.status == "Released" %}
-                    <span class="status-badge status-released">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-                        </svg>
-                        Released
-                    </span>
-                    {% elif sr.status == "Rejected" %}
-                    <span class="status-badge status-rejected">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                        Rejected
-                    </span>
-                    {% endif %}
-                </td>
-                <td>{{ sr.request_date|date:"M d, Y" }}</td>
-                <td>
-                    {% if sr.payment %}
-                    <span class="payment-badge payment-paid">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                        </svg>
-                        Paid
-                    </span>
-                    {% else %}
-                    <span class="payment-badge payment-unpaid">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                        </svg>
-                        Unpaid
-                    </span>
-                    {% endif %}
-                </td>
-                <td>
-                    <div class="action-cell">
-                        <a href="{% url 'service_request_detail' sr.id %}" class="btn-bmis btn-view">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 3C5 3 1.73 7.11.46 9.02a1.69 1.69 0 000 1.96C1.73 12.89 5 17 10 17s8.27-4.11 9.54-6.02a1.69 1.69 0 000-1.96C18.27 7.11 15 3 10 3zm0 11a4 4 0 110-8 4 4 0 010 8zm0-2.2A1.8 1.8 0 1010 8.2a1.8 1.8 0 000 3.6z"/>
-                            </svg>
-                            View
-                        </a>
-                        {% if sr.status == "Released" %}
-                        <span class="released-text">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Released
-                        </span>
-                        {% else %}
-                        <form method="POST" action="{% url 'update_service_request_status' sr.id %}" class="status-form">
-                            {% csrf_token %}
-                            <select name="status" class="status-select">
-                                <option value="Pending" {% if sr.status == "Pending" %}selected{% endif %}>Pending</option>
-                                <option value="Processing" {% if sr.status == "Processing" %}selected{% endif %}>Processing</option>
-                                <option value="Approved" {% if sr.status == "Approved" %}selected{% endif %}>Approved</option>
-                                <option value="Rejected" {% if sr.status == "Rejected" %}selected{% endif %}>Rejected</option>
-                            </select>
-                            <button type="submit" class="btn-bmis btn-update">
-                                <svg viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
-                                </svg>
-                                Update
-                            </button>
-                        </form>
-                        {% endif %}
-
-                        {% if sr.status == "Approved" %}
-                        <a href="{% url 'generate_document' sr.id %}" class="btn-bmis btn-generate">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
-                            </svg>
-                            Generate
-                        </a>
-                        {% endif %}
-
-                        {% if sr.status == "Released" %}
-                        <a href="{% url 'generate_document' sr.id %}" class="btn-bmis btn-print">
-                            <svg viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"/>
-                            </svg>
-                            Print
-                        </a>
-                        {% endif %}
+            <div class="controls">
+                <form method="get" class="filter-form">
+                    <div class="search-box">
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+                        <input type="text" name="q" value="{{ q }}" placeholder="Search request no., resident, service">
                     </div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
-                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
-            </svg>
+                    <select name="status" class="filter-select">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="filter-btn">Apply</button>
+                </form>
+            </div>
         </div>
-        <div class="empty-state-title">No service requests yet</div>
-        <div class="empty-state-text">Service requests will appear here once residents submit them.</div>
-    </div>
-    {% endif %}
-</div>
 
+        {% if requests %}
+        <table class="requests-table">
+            <thead>
+                <tr>
+                    <th>Request</th>
+                    <th>Resident</th>
+                    <th>Service</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Payment</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sr in requests %}
+                <tr>
+                    <td>
+                        <a class="doc-link" href="{% url 'service_request_detail' sr.id %}">{{ sr.document_number }}</a>
+                        <span class="muted">{{ sr.purpose_display|default:"No purpose provided"|truncatewords:7 }}</span>
+                    </td>
+                    <td>{{ sr.resident }}</td>
+                    <td>{{ sr.service_type }}</td>
+                    <td>
+                        {% if sr.status == "Submitted" %}
+                        <span class="status-badge status-submitted"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3a1 1 0 00.293.707l2 2a1 1 0 101.414-1.414L11 9.586V7z" clip-rule="evenodd"/></svg>Submitted</span>
+                        {% elif sr.status == "Under Review" %}
+                        <span class="status-badge status-review"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zm-3 4a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2V8a2 2 0 00-2-2H6z" clip-rule="evenodd"/></svg>Under Review</span>
+                        {% elif sr.status == "For Validation" %}
+                        <span class="status-badge status-validation"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>For Validation</span>
+                        {% elif sr.status == "Processing" %}
+                        <span class="status-badge status-processing"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/></svg>Processing</span>
+                        {% elif sr.status == "Ready for Release" %}
+                        <span class="status-badge status-ready"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v3a1 1 0 102 0V4h8v3a1 1 0 102 0V4a2 2 0 00-2-2H6zm-2 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4z" clip-rule="evenodd"/></svg>Ready for Release</span>
+                        {% elif sr.status == "Released" %}
+                        <span class="status-badge status-released"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Released</span>
+                        {% elif sr.status == "Pending Requirements" %}
+                        <span class="status-badge status-pendingreq"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.721-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.419c-1.53 0-2.492-1.647-1.742-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-6a1 1 0 00-1 1v3a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>Pending Requirements</span>
+                        {% elif sr.status == "On Hold" %}
+                        <span class="status-badge status-onhold"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>On Hold</span>
+                        {% elif sr.status == "Cancelled" %}
+                        <span class="status-badge status-cancelled"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>Cancelled</span>
+                        {% else %}
+                        <span class="status-badge status-rejected"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ sr.request_date|date:"M d, Y" }}</td>
+                    <td>
+                        {% if sr.has_payment %}
+                        <span class="payment-badge payment-paid"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-7.25 7.25a1 1 0 01-1.414 0l-3.25-3.25a1 1 0 111.414-1.414l2.543 2.543 6.543-6.543a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>Paid</span>
+                        {% else %}
+                        <span class="payment-badge payment-unpaid"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="action-cell">
+                            <a href="{% url 'service_request_detail' sr.id %}" class="btn btn-soft">View Details</a>
+                            {% if can_manage_requests and sr.status != "Released" and sr.status != "Rejected" and sr.status != "Cancelled" %}
+                            <form method="post" action="{% url 'update_service_request_status' sr.id %}" class="status-form">
+                                {% csrf_token %}
+                                <select name="status" class="status-select">
+                                    {% for next_status in sr.allowed_statuses %}
+                                    <option value="{{ next_status }}">{{ next_status }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary">Update</button>
+                            </form>
+                            {% endif %}
+                            {% if can_manage_requests and sr.status == "Ready for Release" %}
+                            <a href="{% url 'print_and_release_document' sr.id %}" class="btn btn-release">Release & Print</a>
+                            {% elif sr.status == "Released" %}
+                            <a href="{% url 'generate_document' sr.id %}" class="btn btn-soft">Reprint</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <h3>No matching service requests</h3>
+            <p>Try adjusting the search term or status filter.</p>
+        </div>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}

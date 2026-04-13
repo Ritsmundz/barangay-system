@@ -1,456 +1,193 @@
 {% extends "base.html" %}
 
 {% block page_title %}Households{% endblock %}
-{% block page_subtitle %}Manage household records in the barangay{% endblock %}
-{% block page_header_actions %}
-<a href="{% url 'add_household' %}" class="header-btn">
-    <svg viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-    </svg>
-    Add Household
-</a>
-{% endblock %}
+{% block page_subtitle %}Manage household records, addresses, and member assignments across the barangay.{% endblock %}
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
-
 <style>
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
+    .household-page{display:grid;gap:20px;max-width:1280px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .hero-card,.stat-card,.toolbar-card,.table-card{
+        background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)
     }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
+    .hero-card{padding:22px 24px;background:radial-gradient(circle at top right, rgba(37,99,235,.16), transparent 32%),radial-gradient(circle at left, rgba(15,159,143,.10), transparent 28%),linear-gradient(180deg,#fff,#f8fbff)}
+    .hero-grid{display:grid;grid-template-columns:minmax(0,1.35fr) 320px;gap:18px;align-items:center}
+    .hero-title{font-size:28px;line-height:1.1;font-weight:700;color:#16243d;margin:0}
+    .hero-copy{margin-top:8px;color:#66768d;font-size:14px;max-width:760px}
+    .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;background:#f8fbff;border:1px solid #dbe7f7;color:#37516d;font-size:12px;font-weight:700}
+    .hero-tag::before{content:"";width:8px;height:8px;border-radius:999px;background:#2563eb}
+    .hero-panel{padding:16px;border:1px solid #dbe7f7;border-radius:16px;background:linear-gradient(180deg,#f8fbff,#eef5ff)}
+    .hero-panel-title{font-size:12px;color:#7b8ba4;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+    .hero-panel-value{font-size:30px;font-weight:700;color:#16243d;line-height:1}
+    .hero-panel-sub{font-size:12px;color:#61738f;margin-top:8px}
+    .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .stat-card{padding:18px;display:flex;align-items:center;gap:14px}
+    .stat-icon{width:48px;height:48px;border-radius:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .stat-icon svg{width:20px;height:20px}
+    .icon-blue{background:#eff6ff;color:#2563eb}.icon-teal{background:#ecfdf5;color:#0f9f8f}.icon-amber{background:#fff7ed;color:#ea580c}
+    .stat-value{font-size:28px;font-weight:700;color:#16243d;line-height:1}
+    .stat-label{font-size:12px;color:#6b7a90;margin-top:6px}
+    .toolbar-card{padding:18px}
+    .toolbar-top{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+    .toolbar-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .toolbar-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .filter-form{display:grid;grid-template-columns:minmax(220px,1fr) 220px auto auto;gap:10px;align-items:center}
+    .search-wrap{position:relative}
+    .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#94a3b8}
+    .search-wrap input,.filter-form select{
+        width:100%;min-height:44px;border:1px solid #d9e4f0;border-radius:14px;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s
     }
-    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* ── Action button in header ── */
-    .header-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        background: #2563EB;
-        color: #fff;
-        text-decoration: none;
-        transition: all .15s;
-        border: none;
-    }
-    .header-btn:hover {
-        background: #1D4ED8;
-        text-decoration: none;
-        color: #fff;
-    }
-    .header-btn svg { width: 14px; height: 14px; }
-
-    /* ── Stats cards ── */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 12px;
-        margin-bottom: 20px;
-    }
-    .stat-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-        padding: 16px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .stat-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .stat-icon svg { width: 20px; height: 20px; }
-    .stat-content { flex: 1; }
-    .stat-label { font-size: 11px; color: #94A3B8; font-weight: 500; }
-    .stat-value { font-size: 20px; font-weight: 600; color: #1E293B; margin-top: 2px; }
-
-    /* Icon colors */
-    .stat-icon.total { background: #DBEAFE; }
-    .stat-icon.total svg { color: #3B82F6; }
-
-    /* ── Filter card ── */
-    .filter-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 20px 24px;
-        margin-bottom: 20px;
-    }
-    .filter-form {
-        display: flex;
-        gap: 12px;
-        align-items: flex-end;
-        flex-wrap: wrap;
-    }
-    .filter-group {
-        flex: 1;
-        min-width: 200px;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-    .filter-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #374151;
-    }
-    .filter-input,
-    .filter-select {
-        padding: 8px 12px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        font-size: 13px;
-        background: #F8FAFC;
-        color: #1E293B;
-        outline: none;
-        transition: all .15s;
-    }
-    .filter-input:focus,
-    .filter-select:focus {
-        border-color: #2563EB;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
-    }
-    .filter-select {
-        cursor: pointer;
-    }
-    .filter-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        background: #2563EB;
-        color: #fff;
-        border: none;
-        cursor: pointer;
-        transition: all .15s;
-        white-space: nowrap;
-    }
-    .filter-btn:hover {
-        background: #1D4ED8;
-    }
-    .filter-btn svg { width: 14px; height: 14px; }
-
-    /* ── Table card ── */
-    .table-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    .table-card-header {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 18px 24px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .table-card-title {
-        font-size: 14px;
-        font-weight: 600;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    .table-card-title svg { width: 18px; height: 18px; }
-
-    /* ── Table ── */
-    .households-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-    .households-table thead {
-        background: #F8FAFC;
-        border-bottom: 1px solid #E2E8F0;
-    }
-    .households-table th {
-        padding: 12px 16px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .households-table td {
-        padding: 14px 16px;
-        font-size: 13px;
-        color: #1E293B;
-        border-bottom: 1px solid #F1F5F9;
-    }
-    .households-table tr:last-child td { border-bottom: none; }
-    .households-table tbody tr:hover { background: #F8FAFC; }
-
-    /* ── Badge ── */
-    .member-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 500;
-        background: #EFF6FF;
-        color: #1E40AF;
-    }
-    .member-badge svg { width: 12px; height: 12px; }
-
-    .no-head {
-        color: #94A3B8;
-        font-style: italic;
-        font-size: 12px;
-    }
-
-    /* ── Action button ── */
-    .btn-view {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 500;
-        background: #2563EB;
-        color: #fff;
-        text-decoration: none;
-        transition: all .15s;
-    }
-    .btn-view:hover {
-        background: #1D4ED8;
-        text-decoration: none;
-        color: #fff;
-    }
-    .btn-view svg { width: 13px; height: 13px; }
-
-    /* ── Empty state ── */
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    .empty-state-icon {
-        width: 64px;
-        height: 64px;
-        margin: 0 auto 16px;
-        border-radius: 50%;
-        background: #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .empty-state-icon svg {
-        width: 32px;
-        height: 32px;
-        color: #94A3B8;
-    }
-    .empty-state-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: #1E293B;
-        margin-bottom: 6px;
-    }
-    .empty-state-text {
-        font-size: 13px;
-        color: #64748B;
-        margin-bottom: 16px;
-    }
-    .empty-state-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 18px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        background: #2563EB;
-        color: #fff;
-        text-decoration: none;
-        transition: all .15s;
-    }
-    .empty-state-btn:hover {
-        background: #1D4ED8;
-        text-decoration: none;
-        color: #fff;
-    }
-    .empty-state-btn svg { width: 14px; height: 14px; }
-
-    /* ── Responsive ── */
-    @media (max-width: 1200px) {
-        .households-table {
-            display: block;
-            overflow-x: auto;
-        }
-    }
+    .search-wrap input{padding:0 14px 0 40px}.filter-form select{padding:0 14px}
+    .search-wrap input:focus,.filter-form select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .table-card{overflow:hidden}
+    .table-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .table-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .table-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .table-actions{display:flex;gap:10px;flex-wrap:wrap}
+    .table-wrap{overflow-x:auto}
+    .table{width:100%;border-collapse:separate;border-spacing:0}
+    .table th{padding:14px 20px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#7b8ba4;text-align:left;border-bottom:1px solid #e7eef6;white-space:nowrap}
+    .table td{padding:16px 20px;border-bottom:1px solid #eef3f8;font-size:13px;color:#20314c;vertical-align:middle}
+    .table tbody tr:hover{background:#fbfdff}
+    .table tbody tr:last-child td{border-bottom:none}
+    .household-name{font-size:14px;font-weight:700;color:#1d2d47}
+    .household-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
+    .pill{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:700;line-height:1;white-space:nowrap}
+    .pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor;opacity:.9}
+    .pill-blue{background:#eff6ff;color:#2563eb}.pill-teal{background:#ecfdf5;color:#0f9f8f}.pill-neutral{background:#f8fafc;color:#64748b}
+    .action-cell{display:flex;gap:8px;flex-wrap:wrap}
+    .empty{padding:48px 24px;text-align:center}
+    .empty-icon{width:56px;height:56px;margin:0 auto 14px;border-radius:18px;background:#f3f7fb;color:#9aa9bb;display:flex;align-items:center;justify-content:center}
+    .empty-icon svg{width:24px;height:24px}
+    .empty h3{font-size:16px;color:#1c2d47;margin-bottom:6px}
+    .empty p{font-size:13px;color:#7b8ba4;max-width:420px;margin:0 auto}
+    @media (max-width:1100px){.hero-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+    @media (max-width:860px){.filter-form{grid-template-columns:1fr 1fr}.filter-form .full-row{grid-column:1/-1}}
+    @media (max-width:640px){.stats,.filter-form{grid-template-columns:1fr}}
 </style>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="{% url 'dashboard' %}">Dashboard</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">Households</span>
-</div>
-
-<!-- Stats grid -->
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon total">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-            </svg>
-        </div>
-        <div class="stat-content">
-            <div class="stat-label">Total Households</div>
-            <div class="stat-value">{{ households|length }}</div>
-        </div>
+<div class="household-page">
+    <div class="crumbs">
+        <a href="{% url 'dashboard' %}">Dashboard</a><span>&gt;</span>
+        <span>Households</span>
     </div>
-</div>
 
-<!-- Filter card -->
-<div class="filter-card">
-    <form method="GET" class="filter-form">
-        <div class="filter-group">
-            <label class="filter-label" for="search_street">Search Street</label>
-            <input 
-                type="text" 
-                name="q" 
-                id="search_street"
-                class="filter-input"
-                placeholder="Enter street name..."
-                value="{{ request.GET.q }}"
-            >
+    <section class="hero-card">
+        <div class="hero-grid">
+            <div>
+                <h1 class="hero-title">Household Directory</h1>
+                <div class="hero-copy">A stronger household page should help staff scan addresses, assess coverage, and open the correct household record quickly. This version focuses on metrics, cleaner filtering, and clearer household context.</div>
+                <div class="hero-tags">
+                    <span class="hero-tag">Address-based records</span>
+                    <span class="hero-tag">Member visibility</span>
+                    <span class="hero-tag">Quick details access</span>
+                </div>
+            </div>
+            <div class="hero-panel">
+                <div class="hero-panel-title">Filtered Result Set</div>
+                <div class="hero-panel-value">{{ filtered_total }}</div>
+                <div class="hero-panel-sub">Households currently visible based on the active street and purok filters.</div>
+            </div>
         </div>
-        
-        <div class="filter-group">
-            <label class="filter-label" for="filter_purok">Filter by Purok</label>
-            <select name="purok" id="filter_purok" class="filter-select">
+    </section>
+
+    <section class="stats">
+        <article class="stat-card">
+            <div class="stat-icon icon-blue"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>
+            <div><div class="stat-value">{{ total_households }}</div><div class="stat-label">Total Households</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-teal"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/></svg></div>
+            <div><div class="stat-value">{{ total_residents }}</div><div class="stat-label">Residents Assigned</div></div>
+        </article>
+        <article class="stat-card">
+            <div class="stat-icon icon-amber"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg></div>
+            <div><div class="stat-value">{{ filtered_total }}</div><div class="stat-label">Filtered Results</div></div>
+        </article>
+    </section>
+
+    <section class="toolbar-card">
+        <div class="toolbar-top">
+            <div>
+                <div class="toolbar-title">Search and Filter</div>
+                <div class="toolbar-sub">Find households by street or narrow the list by purok.</div>
+            </div>
+        </div>
+        <form method="GET" class="filter-form">
+            <div class="search-wrap full-row">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/></svg>
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search by street name">
+            </div>
+            <select name="purok">
                 <option value="">All Puroks</option>
-                <option value="1" {% if request.GET.purok == "1" %}selected{% endif %}>Purok 1</option>
-                <option value="2" {% if request.GET.purok == "2" %}selected{% endif %}>Purok 2</option>
-                <option value="3" {% if request.GET.purok == "3" %}selected{% endif %}>Purok 3</option>
-                <option value="4" {% if request.GET.purok == "4" %}selected{% endif %}>Purok 4</option>
+                {% for item in puroks %}
+                <option value="{{ item.id }}"{% if request.GET.purok == item.id|stringformat:"s" %} selected{% endif %}>{{ item }}</option>
+                {% endfor %}
             </select>
-        </div>
-        
-        <button type="submit" class="filter-btn">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd"/>
-            </svg>
-            Apply Filter
-        </button>
-    </form>
-</div>
+            <button type="submit" class="btn-bmis btn-primary">Apply Filters</button>
+            <a href="{% url 'household_list' %}" class="btn-bmis btn-secondary">Reset</a>
+        </form>
+    </section>
 
-<!-- Table card -->
-<div class="table-card">
-    <div class="table-card-header">
-        <div class="table-card-title">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-            </svg>
-            All Households
+    <section class="table-card">
+        <div class="table-head">
+            <div>
+                <div class="table-title">Household Directory</div>
+                <div class="table-sub">Review address records, assigned heads, and member counts in one table.</div>
+            </div>
+            <div class="table-actions">
+                <a href="{% url 'add_household' %}" class="btn-bmis btn-primary">Add Household</a>
+            </div>
         </div>
-    </div>
-
-    {% if households %}
-    <table class="households-table">
-        <thead>
-            <tr>
-                <th>House No.</th>
-                <th>Street</th>
-                <th>Purok</th>
-                <th>Household Head</th>
-                <th>Members</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for household in households %}
-            <tr>
-                <td><strong>{{ household.house_number }}</strong></td>
-                <td>{{ household.street }}</td>
-                <td>Purok {{ household.purok }}</td>
-                <td>
-                    {% if household.head %}
-                        <strong>{{ household.head.first_name }} {{ household.head.last_name }}</strong>
-                    {% else %}
-                        <span class="no-head">No head assigned</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <span class="member-badge">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                        </svg>
-                        {{ household.members.count }} member{{ household.members.count|pluralize }}
-                    </span>
-                </td>
-                <td>
-                    <a href="{% url 'household_detail' household.id %}" class="btn-view">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
-                        </svg>
-                        View Details
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-state-icon">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
-            </svg>
-        </div>
-        <div class="empty-state-title">No households found</div>
-        <div class="empty-state-text">
-            {% if request.GET.q or request.GET.purok %}
-                No households match your search criteria. Try adjusting your filters.
+        <div class="table-wrap">
+            {% if households %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Household</th>
+                        <th>Purok</th>
+                        <th>Household Head</th>
+                        <th>Members</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for household in households %}
+                    <tr>
+                        <td>
+                            <div class="household-name">Household {{ household.house_number }}</div>
+                            <div class="household-sub">{{ household.street }}</div>
+                        </td>
+                        <td><span class="pill pill-blue">{{ household.purok|default:"No purok" }}</span></td>
+                        <td>
+                            {% if household.head %}
+                            <div class="household-name">{{ household.head.first_name }} {{ household.head.last_name }}</div>
+                            <div class="household-sub">Assigned household head</div>
+                            {% else %}
+                            <span class="pill pill-neutral">No head assigned</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="pill pill-teal">{{ household.members.count }} member{{ household.members.count|pluralize }}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <a href="{% url 'household_detail' household.id %}" class="btn-bmis btn-secondary">View Details</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                Start by adding the first household to the system.
+            <div class="empty">
+                <div class="empty-icon"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg></div>
+                <h3>No households found</h3>
+                <p>{% if request.GET.q or request.GET.purok %}No household matched the current filters. Try adjusting your search terms or selected purok.{% else %}Start by creating the first household record for the barangay.{% endif %}</p>
+            </div>
             {% endif %}
         </div>
-        <a href="{% url 'add_household' %}" class="empty-state-btn">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-            </svg>
-            Add First Household
-        </a>
-    </div>
-    {% endif %}
+    </section>
 </div>
-
 {% endblock %}

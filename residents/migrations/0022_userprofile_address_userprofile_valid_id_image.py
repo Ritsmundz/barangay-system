@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("residents", "0021_userprofile_is_auto_matched"),
+        ('residents', '0021_userprofile_is_auto_matched'),
     ]
 
     operations = [
         migrations.AddField(
-            model_name="userprofile",
-            name="address",
+            model_name='userprofile',
+            name='address',
             field=models.CharField(blank=True, max_length=255),
         ),
         migrations.AddField(
-            model_name="userprofile",
-            name="valid_id_image",
-            field=models.ImageField(blank=True, null=True, upload_to="valid_ids/"),
+            model_name='userprofile',
+            name='valid_id_image',
+            field=models.ImageField(blank=True, null=True, upload_to='valid_ids/'),
         ),
     ]

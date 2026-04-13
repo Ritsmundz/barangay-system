@@ -9,60 +9,114 @@
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 
         :root {
-            --ink: #17314f;
-            --muted: #61738f;
-            --line: rgba(23, 49, 79, 0.16);
-            --panel: rgba(255, 255, 255, 0.93);
-            --left-overlay: rgba(20, 64, 128, 0.62);
-            --primary: #2b66cf;
-            --primary-deep: #193f84;
-            --pill: rgba(255, 255, 255, 0.16);
+            --text: #17304f;
+            --muted: #5c6f89;
+            --line: rgba(23, 48, 79, 0.14);
+            --primary: #2862d3;
+            --primary-deep: #183f85;
             --danger-bg: #fff2f2;
-            --danger-line: #f3caca;
-            --danger-text: #a33232;
+            --danger-line: #f2cccc;
+            --danger-text: #a33434;
             --info-bg: #edf8f5;
             --info-line: #bde7da;
             --info-text: #166456;
-            --shadow: 0 28px 70px rgba(9, 22, 46, 0.24);
+            --panel-shadow: 0 28px 60px rgba(7, 22, 49, 0.24);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             min-height: 100vh;
             font-family: 'IBM Plex Sans', sans-serif;
-            color: var(--ink);
+            color: var(--text);
             background:
-                linear-gradient(rgba(235, 242, 250, 0.18), rgba(235, 242, 250, 0.18)),
-                url("{% static 'residents/img/barangay-gulod-hall.png' %}") center center / cover no-repeat fixed;
+                radial-gradient(circle at top left, rgba(255, 255, 255, 0.42), transparent 28%),
+                linear-gradient(135deg, rgba(12, 36, 74, 0.22), rgba(24, 90, 171, 0.08)),
+                url("{{ barangay_hall_data_uri }}") center center / cover no-repeat fixed;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px 16px;
+            padding: 24px;
         }
 
         .shell {
-            width: min(1020px, 100%);
+            position: relative;
+            width: min(1180px, 100%);
+            min-height: 780px;
             display: grid;
-            grid-template-columns: minmax(280px, 0.88fr) minmax(360px, 1.12fr);
-            border-radius: 26px;
+            grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+            align-items: stretch;
+            gap: 0;
+            padding: 0;
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.54);
-            box-shadow: var(--shadow);
-            background: rgba(255,255,255,0.22);
-            backdrop-filter: blur(8px);
+            background: transparent;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.44);
+            box-shadow: 0 32px 70px rgba(8, 24, 52, 0.28);
+        }
+
+        .hall-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+
+        .shell::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.06) 100%),
+                linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.08) 100%);
+            pointer-events: none;
+        }
+
+        .shell::after {
+            content: "";
+            position: absolute;
+            inset: -18px 5% auto;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(169, 212, 255, 0.28);
+            filter: blur(48px);
+            pointer-events: none;
         }
 
         .intro {
-            min-height: 720px;
-            padding: 28px 26px;
+            position: relative;
+            min-height: 780px;
+            padding: 42px 36px;
             color: #fff;
             background:
-                linear-gradient(180deg, var(--left-overlay), rgba(41, 102, 199, 0.52)),
-                url("{% static 'residents/img/barangay-gulod-hall.png' %}") center center / cover no-repeat;
+                radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 24%),
+                linear-gradient(160deg, rgba(6, 26, 58, 0.96), rgba(13, 53, 121, 0.92));
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            z-index: 1;
+        }
+
+        .intro::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
+                linear-gradient(135deg, rgba(255,255,255,0.03), transparent 42%);
+            pointer-events: none;
+        }
+
+        .intro-content,
+        .intro-footer {
+            position: relative;
+            z-index: 1;
         }
 
         .brand-row {
@@ -78,7 +132,8 @@
             padding: 8px;
             border-radius: 16px;
             background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.24);
+            backdrop-filter: blur(8px);
         }
 
         .logo-box img {
@@ -93,8 +148,8 @@
             align-items: center;
             padding: 8px 14px;
             border-radius: 999px;
-            background: var(--pill);
-            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.22);
             font-size: 11px;
             font-weight: 700;
             letter-spacing: 0.08em;
@@ -106,39 +161,74 @@
             line-height: 0.96;
             letter-spacing: -0.05em;
             max-width: 9ch;
+            text-shadow: 0 16px 32px rgba(4, 14, 32, 0.54);
         }
 
         .intro p {
-            margin-top: 14px;
+            margin-top: 16px;
             max-width: 30ch;
             font-size: 14px;
-            line-height: 1.65;
+            line-height: 1.7;
             color: rgba(255,255,255,0.92);
+            text-shadow: 0 8px 18px rgba(4, 14, 32, 0.42);
         }
 
-        .mini-card {
+        .info-card {
             padding: 16px 18px;
-            border-radius: 18px;
-            background: rgba(255,255,255,0.14);
-            border: 1px solid rgba(255,255,255,0.18);
-            backdrop-filter: blur(6px);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.16);
+            backdrop-filter: blur(10px);
         }
 
-        .mini-card + .mini-card { margin-top: 12px; }
-        .mini-card strong { display: block; margin-bottom: 6px; font-size: 14px; }
-        .mini-card span { font-size: 12px; line-height: 1.55; color: rgba(255,255,255,0.84); }
+        .info-card + .info-card {
+            margin-top: 12px;
+        }
+
+        .info-card strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .info-card span {
+            font-size: 12px;
+            line-height: 1.55;
+            color: rgba(255,255,255,0.82);
+        }
 
         .form-side {
-            background: var(--panel);
-            padding: 30px 30px 26px;
+            position: relative;
+            z-index: 1;
+            min-height: 780px;
+            padding: 42px 36px;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .form-panel { width: min(430px, 100%); }
+        .form-side::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.92)),
+                linear-gradient(135deg, rgba(224, 239, 255, 0.38), transparent 48%);
+            pointer-events: none;
+        }
 
-        .form-head { margin-bottom: 20px; }
+        .form-panel {
+            position: relative;
+            z-index: 1;
+            width: min(470px, 100%);
+            padding: 10px 8px;
+        }
+
+        .form-head {
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
         .eyebrow {
             font-size: 12px;
             font-weight: 700;
@@ -146,17 +236,20 @@
             text-transform: uppercase;
             color: var(--primary);
         }
+
         .form-head h2 {
             margin-top: 10px;
-            font-size: clamp(1.85rem, 3vw, 2.4rem);
+            font-size: clamp(1.8rem, 3vw, 2.45rem);
             line-height: 1;
             letter-spacing: -0.05em;
         }
+
         .form-head p {
             margin-top: 10px;
-            color: var(--muted);
+            color: rgba(23, 48, 79, 0.92);
             font-size: 14px;
-            line-height: 1.65;
+            line-height: 1.7;
+            max-width: 36ch;
         }
 
         .msg-list,
@@ -181,40 +274,74 @@
             color: var(--danger-text);
         }
 
-        form { display: grid; gap: 14px; }
-        .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-        .field, .field-wide { display: grid; gap: 7px; }
-        .field-wide { grid-column: 1 / -1; }
-        label { font-size: 13px; font-weight: 700; }
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .field,
+        .field-wide {
+            display: grid;
+            gap: 7px;
+        }
+
+        .field-wide {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 13px;
+            font-weight: 700;
+        }
 
         input,
         textarea {
             width: 100%;
             border-radius: 14px;
-            border: 1px solid var(--line);
-            background: #f5f8fd;
-            color: var(--ink);
+            border: 1px solid rgba(23, 48, 79, 0.16);
+            background: rgba(255, 255, 255, 0.98);
+            color: var(--text);
             font: inherit;
-            outline: none;
             transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
         }
 
-        input { min-height: 48px; padding: 0 14px; }
-        textarea { min-height: 96px; padding: 12px 14px; resize: vertical; }
+        input {
+            min-height: 48px;
+            padding: 0 14px;
+        }
+
+        textarea {
+            min-height: 96px;
+            padding: 12px 14px;
+            resize: vertical;
+        }
 
         input:focus,
         textarea:focus {
+            outline: none;
             background: #fff;
-            border-color: rgba(43, 102, 207, 0.58);
-            box-shadow: 0 0 0 4px rgba(43, 102, 207, 0.12);
+            border-color: rgba(40, 98, 211, 0.58);
+            box-shadow: 0 0 0 4px rgba(40, 98, 211, 0.12);
         }
 
-        input[type="file"] { padding: 10px 12px; min-height: auto; }
+        input[type="file"] {
+            padding: 10px 12px;
+            min-height: auto;
+        }
 
-        .hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
+        .hint {
+            font-size: 11px;
+            color: var(--muted);
+            line-height: 1.5;
+        }
 
         .btn {
-            width: 100%;
             min-height: 50px;
             border: 0;
             border-radius: 14px;
@@ -223,50 +350,98 @@
             font: inherit;
             font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 14px 28px rgba(43, 102, 207, 0.22);
+            box-shadow: 0 16px 28px rgba(40, 98, 211, 0.22);
         }
 
-        .btn:hover { filter: brightness(1.03); }
+        .btn:hover {
+            filter: brightness(1.03);
+        }
 
-        .footer {
-            margin-top: 16px;
+        .signin {
             text-align: center;
             font-size: 12px;
             color: var(--muted);
         }
 
-        .footer a {
+        .signin a {
             color: var(--primary-deep);
             text-decoration: none;
             font-weight: 700;
         }
 
-        .footer a:hover { text-decoration: underline; }
+        .signin a:hover {
+            text-decoration: underline;
+        }
+
+        .top-actions {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            z-index: 3;
+            display: flex;
+            gap: 10px;
+        }
+
+        .top-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 0 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.86);
+            border: 1px solid rgba(23, 48, 79, 0.1);
+            color: var(--primary-deep);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            box-shadow: 0 10px 24px rgba(14, 38, 79, 0.1);
+        }
+
+        .top-link:hover {
+            background: #fff;
+        }
 
         @media (max-width: 960px) {
             .shell {
-                width: min(560px, 100%);
+                width: min(700px, 100%);
                 grid-template-columns: 1fr;
+                min-height: auto;
+                gap: 0;
+                border-radius: 28px;
             }
 
             .intro {
-                min-height: 300px;
-                padding: 22px;
+                min-height: 360px;
+                padding: 28px 22px;
             }
 
-            .intro-footer { display: none; }
-            .form-side { padding: 24px 22px; }
+            .form-side {
+                min-height: auto;
+                padding: 24px 22px 30px;
+            }
+
+            .form-panel {
+                width: 100%;
+                padding: 0;
+            }
         }
 
         @media (max-width: 560px) {
-            .field-grid { grid-template-columns: 1fr; }
+            .field-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <main class="shell">
+        <div class="top-actions">
+            <a class="top-link" href="{% url 'about_barangay' %}">About Barangay Gulod</a>
+        </div>
+        <img class="hall-bg" src="{{ barangay_hall_data_uri }}" alt="Barangay Gulod Hall background">
         <section class="intro">
-            <div>
+            <div class="intro-content">
                 <div class="brand-row">
                     <div class="logo-box">
                         <img src="{{ barangay_logo_data_uri }}" alt="Barangay Gulod logo">
@@ -278,13 +453,17 @@
             </div>
 
             <div class="intro-footer">
-                <div class="mini-card">
-                    <strong>Barangay Gulod Hall</strong>
-                    <span>The actual Barangay Gulod Hall image is now used directly in the background and the split panel.</span>
+                <div class="info-card">
+                    <strong>Verified Registration</strong>
+                    <span>Create your account once and wait for barangay staff to confirm your details before portal access is approved.</span>
                 </div>
-                <div class="mini-card">
-                    <strong>Resident Registration</strong>
-                    <span>Sign up once, wait for verification, then use the resident portal for requests and updates.</span>
+                <div class="info-card">
+                    <strong>Faster Resident Services</strong>
+                    <span>Use the resident portal for requests, updates, and tracking after your account has been verified.</span>
+                </div>
+                <div class="info-card">
+                    <strong>Valid ID Required</strong>
+                    <span>Upload a clear ID image so the review process can move faster and your registration details can be matched correctly.</span>
                 </div>
             </div>
         </section>
@@ -294,7 +473,7 @@
                 <div class="form-head">
                     <div class="eyebrow">Resident Online Portal</div>
                     <h2>Create Resident Account</h2>
-                    <p>Register using your barangay resident details so the verification process can move faster.</p>
+                    <p>Fill in your details below. Your account will stay pending until barangay staff verifies your registration.</p>
                 </div>
 
                 {% if messages %}
@@ -314,48 +493,57 @@
 
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+
                     <div class="field-grid">
                         <div class="field-wide">
                             <label for="id_username">Username</label>
                             {{ form.username }}
                         </div>
+
                         <div class="field">
                             <label for="id_first_name">First name</label>
                             {{ form.first_name }}
                         </div>
+
                         <div class="field">
                             <label for="id_last_name">Last name</label>
                             {{ form.last_name }}
                         </div>
+
                         <div class="field-wide">
                             <label for="id_birthdate">Birthdate</label>
                             {{ form.birthdate }}
                         </div>
+
                         <div class="field-wide">
                             <label for="id_address">Complete address</label>
                             {{ form.address }}
                             <div class="hint">Include house number, street, purok or subdivision, and other location details if available.</div>
                         </div>
+
                         <div class="field-wide">
                             <label for="id_valid_id_image">Upload valid ID</label>
                             {{ form.valid_id_image }}
                             <div class="hint">Make sure the ID photo and text are readable before uploading.</div>
                         </div>
+
                         <div class="field">
                             <label for="id_password1">Password</label>
                             {{ form.password1 }}
                         </div>
+
                         <div class="field">
                             <label for="id_password2">Confirm password</label>
                             {{ form.password2 }}
                         </div>
                     </div>
-                    <button type="submit" class="btn">Register Account</button>
-                </form>
 
-                <div class="footer">
-                    Already have an account? <a href="{% url 'login' %}">Sign in</a>
-                </div>
+                    <button type="submit" class="btn">Submit Registration</button>
+
+                    <div class="signin">
+                        Already have an account? <a href="{% url 'login' %}">Sign in</a>
+                    </div>
+                </form>
             </div>
         </section>
     </main>

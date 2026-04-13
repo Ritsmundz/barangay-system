@@ -1,485 +1,333 @@
 {% extends "base.html" %}
 
 {% block page_title %}Review Portal Account{% endblock %}
-{% block page_subtitle %}Verify and link resident account to existing record{% endblock %}
+{% block page_subtitle %}Inspect the submitted portal identity and uploaded ID. Secretaries can complete verification, while captains can review this page in view-only mode.{% endblock %}
+{% block page_header_actions %}{% endblock %}
 
 {% block content %}
-
 <style>
-    /* â”€â”€ Breadcrumb â”€â”€ */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
+    .rp-page{display:grid;gap:20px;max-width:1320px;margin:0 auto;padding-bottom:96px}
+    .rp-shell,.rp-stepbar,.rp-card{
+        background:linear-gradient(180deg,#fff,#fbfdff);
+        border:1px solid #dbe6f2;
+        border-radius:20px;
+        box-shadow:0 18px 40px rgba(17,37,77,.08);
     }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    /* â”€â”€ Page header â”€â”€ */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
+    .rp-shell{overflow:hidden}
+    .rp-head{padding:22px 24px 16px;background:linear-gradient(180deg,#fff,#f8fbff)}
+    .rp-title{font-size:18px;font-weight:700;color:#1c2d47}
+    .rp-sub{font-size:13px;color:#73839a;margin-top:6px}
+    .rp-stepbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:8px}
+    .rp-step{
+        display:flex;gap:12px;align-items:center;padding:16px 18px;border-radius:16px;
     }
-    .page-title { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* â”€â”€ Layout â”€â”€ */
-    .rv-layout {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 0 20px;
+    .rp-step.active{background:#f1f6ff}
+    .rp-step-num{
+        width:34px;height:34px;border-radius:12px;background:#eef2f7;color:#7b8ba4;
+        display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;
     }
-    @media (max-width: 1024px) {
-        .rv-layout { grid-template-columns: 1fr; }
+    .rp-step.active .rp-step-num{background:#2563eb;color:#fff}
+    .rp-step-title{font-size:14px;font-weight:700;color:#22324d}
+    .rp-step-sub{font-size:12px;color:#8191a7;margin-top:3px}
+    .rp-layout{display:grid;grid-template-columns:1.03fr 1fr;gap:18px}
+    .rp-card{overflow:hidden}
+    .rp-card-head{
+        padding:18px 20px;
+        border-bottom:1px solid #e7eef6;
+        background:linear-gradient(180deg,#f7fbff,#f1f6ff);
+        display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;
     }
-
-    /* â”€â”€ Messages â”€â”€ */
-    .messages-container {
-        max-width: 1400px;
-        margin: 0 auto 20px;
-        padding: 0 20px;
+    .rp-card-title{font-size:16px;font-weight:700;color:#1c2d47}
+    .rp-card-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .rp-card-body{padding:18px;display:grid;gap:16px}
+    .rp-pill{
+        display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;
+        font-size:11px;font-weight:700;line-height:1;white-space:nowrap;
     }
-    .rv-msg {
-        list-style: none;
-        margin: 0 0 12px 0;
-        padding: 12px 16px;
-        background: #EFF6FF;
-        border: 1px solid #BFDBFE;
-        border-radius: 10px;
-        color: #1E40AF;
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .rp-pill::before{content:"";width:8px;height:8px;border-radius:999px;background:currentColor}
+    .rp-pill.blue{background:#eff6ff;color:#2563eb}
+    .rp-pill.green{background:#ecfdf5;color:#0f9f8f}
+    .rp-pill.amber{background:#fff7ed;color:#ea580c}
+    .rp-pill.neutral{background:#f8fafc;color:#64748b}
+    .rp-id-grid{display:grid;grid-template-columns:minmax(280px,.95fr) 1fr;gap:16px}
+    .rp-id-preview{
+        border:1px solid #dbe6f2;border-radius:18px;background:linear-gradient(180deg,#f8fbff,#eef4ff);
+        padding:14px;
     }
-    .rv-msg li {
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .rp-id-preview img{
+        display:block;width:100%;max-height:360px;object-fit:contain;background:#fff;border-radius:14px;border:1px solid #dbe6f2;
     }
-    .rv-msg.warning {
-        background: #FFFBEB;
-        border-color: #FDE68A;
-        color: #92400E;
+    .rp-info-grid{display:grid;gap:12px}
+    .rp-info{
+        padding:14px 16px;border:1px solid #e7eef6;border-radius:16px;background:#fcfdff;
     }
-    .rv-msg.error {
-        background: #FEF2F2;
-        border-color: #FECACA;
-        color: #991B1B;
+    .rp-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+    .rp-value{font-size:14px;color:#1e293b;font-weight:700;margin-top:6px;line-height:1.45}
+    .rp-inline-row{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .rp-note{
+        padding:14px 16px;border:1px solid #dbe7f7;border-radius:16px;background:#f8fbff;
+        font-size:13px;color:#50627d;line-height:1.6;
     }
-    .rv-msg ul {
-        margin: 8px 0 0 0;
-        padding-left: 20px;
-        list-style: disc;
+    .rp-note strong{display:block;color:#1d2d47;margin-bottom:4px}
+    .rp-field{display:grid;gap:7px}
+    .rp-field label{font-size:12px;font-weight:700;color:#41526d;text-transform:uppercase;letter-spacing:.04em}
+    .rp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .rp-full{grid-column:1/-1}
+    .rp-search-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+    .rp-checkbox{
+        padding:12px 14px;border:1px solid #e7eef6;border-radius:14px;background:#fff;font-size:13px;color:#32445f;
     }
-
-    /* â”€â”€ Cards â”€â”€ */
-    .rv-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
+    .rp-sticky{
+        position:fixed;left:280px;right:24px;bottom:18px;z-index:40;
+        display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+        padding:14px 16px;border:1px solid #dbe6f2;border-radius:20px;background:rgba(255,255,255,.96);
+        box-shadow:0 16px 40px rgba(17,37,77,.14);backdrop-filter:blur(10px);
     }
-    .rv-head {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        color: #fff;
-        padding: 18px 24px;
-        font-size: 14px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .rp-sticky-note{font-size:12px;color:#6b7a90}
+    .rp-sticky-note strong{color:#1d2d47}
+    .rp-alert{margin-bottom:4px}
+    @media (max-width:1200px){
+        .rp-layout,.rp-id-grid,.rp-grid,.rp-stepbar,.rp-search-row{grid-template-columns:1fr}
+        .rp-sticky{position:static;grid-template-columns:1fr}
     }
-    .rv-head svg {
-        width: 18px;
-        height: 18px;
-    }
-    .rv-body {
-        padding: 24px;
-    }
-
-    /* â”€â”€ Info items â”€â”€ */
-    .rv-item {
-        margin-bottom: 14px;
-        padding-bottom: 14px;
-        border-bottom: 1px solid #F1F5F9;
-    }
-    .rv-item:last-of-type {
-        border-bottom: none;
-        margin-bottom: 20px;
-    }
-    .rv-label {
-        font-size: 11px;
-        color: #64748B;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-        margin-bottom: 4px;
-    }
-    .rv-value {
-        font-size: 14px;
-        color: #1E293B;
-        font-weight: 500;
-    }
-
-    /* â”€â”€ Form fields â”€â”€ */
-    .rv-field {
-        margin-bottom: 16px;
-    }
-    .rv-field label {
-        display: block;
-        font-size: 12px;
-        color: #374151;
-        font-weight: 500;
-        margin-bottom: 6px;
-    }
-    .rv-field input,
-    .rv-field select {
-        width: 100%;
-        height: 40px;
-        padding: 0 12px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        background: #F8FAFC;
-        font-size: 13px;
-        color: #1E293B;
-        outline: none;
-        transition: all .15s;
-    }
-    .rv-field input[type="checkbox"] {
-        width: auto;
-        height: auto;
-        margin-right: 8px;
-    }
-    .rv-field input:focus,
-    .rv-field select:focus {
-        border-color: #2563EB;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, .08);
-    }
-    .rv-field input:hover,
-    .rv-field select:hover {
-        border-color: #CBD5E1;
-    }
-
-    /* Checkbox label styling */
-    .rv-field label.checkbox-label {
-        display: flex;
-        align-items: flex-start;
-        gap: 8px;
-        font-size: 13px;
-        cursor: pointer;
-    }
-    .rv-field input[type="checkbox"] {
-        margin-top: 2px;
-        cursor: pointer;
-        accent-color: #2563EB;
-    }
-
-    /* â”€â”€ Section separator â”€â”€ */
-    .rv-separator {
-        height: 1px;
-        background: #E2E8F0;
-        margin: 20px 0;
-    }
-
-    /* â”€â”€ Actions â”€â”€ */
-    .rv-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        margin-top: 16px;
-    }
-    .rv-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 16px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all .15s;
-        white-space: nowrap;
-    }
-    .rv-btn svg {
-        width: 14px;
-        height: 14px;
-    }
-    .rv-btn.primary {
-        background: #2563EB;
-        color: #fff;
-    }
-    .rv-btn.primary:hover {
-        background: #1D4ED8;
-    }
-    .rv-btn.success {
-        background: #16A34A;
-        color: #fff;
-    }
-    .rv-btn.success:hover {
-        background: #15803D;
-    }
-    .rv-btn.danger {
-        background: #DC2626;
-        color: #fff;
-    }
-    .rv-btn.danger:hover {
-        background: #B91C1C;
-    }
-
-    /* â”€â”€ Back link â”€â”€ */
-    .rv-back {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 16px;
-        font-size: 13px;
-        color: #2563EB;
-        text-decoration: none;
-        font-weight: 500;
-        transition: color .15s;
-    }
-    .rv-back:hover {
-        color: #1D4ED8;
-        text-decoration: underline;
-    }
-    .rv-back svg {
-        width: 14px;
-        height: 14px;
+    @media (max-width:600px){
+        .rp-page{padding-bottom:24px}
     }
 </style>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="{% url 'dashboard' %}">Dashboard</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <a href="{% url 'pending_verifications' %}">Pending Verifications</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">Review Account</span>
-</div>
-
-<!-- Messages -->
 {% if messages %}
-<div class="messages-container">
-    <ul class="rv-msg">
-        {% for message in messages %}
-        <li>
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            {{ message }}
-        </li>
-        {% endfor %}
-    </ul>
-</div>
+    {% for message in messages %}
+    <div class="rp-alert ui-alert info">{{ message }}</div>
+    {% endfor %}
 {% endif %}
 
-<!-- Main Layout -->
-<div class="rv-layout">
-
-    <!-- Left Card: Link to Existing -->
-    <div class="rv-card">
-        <div class="rv-head">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-            </svg>
-            Portal Account Details
+<div class="rp-page">
+    <section class="rp-shell">
+        <div class="rp-head">
+            <div class="rp-title">Review Portal Account</div>
+            <div class="rp-sub">Verify the submitted portal identity, then link the account to an existing resident or create a new resident record.</div>
         </div>
-        <div class="rv-body">
-            <div class="rv-item">
-                <div class="rv-label">Username</div>
-                <div class="rv-value">{{ profile.user.username }}</div>
-            </div>
-            <div class="rv-item">
-                <div class="rv-label">Submitted Name</div>
-                <div class="rv-value">{{ profile.first_name }} {{ profile.last_name }}</div>
-            </div>
-            <div class="rv-item">
-                <div class="rv-label">Submitted Birthdate</div>
-                <div class="rv-value">{{ profile.birth_date }}</div>
-            </div>
-
-            <div class="rv-separator"></div>
-
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="approve">
-                
-                <div class="rv-field">
-                    <label for="resident_id">Link to existing resident record</label>
-                    <select name="resident_id" id="resident_id" required>
-                        <option value="">â€” Select a resident â€”</option>
-                        {% for resident in suggested_residents %}
-                        <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>
-                            {{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}
-                        </option>
-                        {% endfor %}
-                        {% for resident in available_residents %}
-                        <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>
-                            {{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}
-                        </option>
-                        {% endfor %}
-                    </select>
+        <div class="rp-stepbar">
+            <div class="rp-step active">
+                <div class="rp-step-num">1</div>
+                <div>
+                    <div class="rp-step-title">Review Submitted Info</div>
+                    <div class="rp-step-sub">Verify the submitted details</div>
                 </div>
+            </div>
+            <div class="rp-step {% if can_manage %}active{% endif %}">
+                <div class="rp-step-num">2</div>
+                <div>
+                    <div class="rp-step-title">{% if can_manage %}Choose Action{% else %}Verification Review{% endif %}</div>
+                    <div class="rp-step-sub">{% if can_manage %}Link or create resident{% else %}Secretary action required{% endif %}</div>
+                </div>
+            </div>
+            <div class="rp-step {% if can_manage %}active{% endif %}">
+                <div class="rp-step-num">3</div>
+                <div>
+                    <div class="rp-step-title">{% if can_manage %}Confirm Decision{% else %}Monitor Outcome{% endif %}</div>
+                    <div class="rp-step-sub">{% if can_manage %}Finalize the verification{% else %}Await secretary action{% endif %}</div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-                {% if mismatch_warning %}
-                <div class="rv-msg warning">
-                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;flex-shrink:0;">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                    </svg>
+    <section class="rp-layout">
+        <div style="display:grid;gap:18px;">
+            <article class="rp-card">
+                <div class="rp-card-head">
                     <div>
-                        <strong>Warning:</strong> The entered data does not match the selected resident.
-                        <ul>
-                            {% for item in mismatch_details %}
-                            <li>{{ item }}</li>
+                        <div class="rp-card-title">Submitted Portal Details</div>
+                        <div class="rp-card-sub">Review the information provided during portal registration.</div>
+                    </div>
+                    {% if profile.valid_id_image %}
+                    <div class="rp-pill green">Verified ID Uploaded</div>
+                    {% else %}
+                    <div class="rp-pill neutral">No ID Uploaded</div>
+                    {% endif %}
+                </div>
+                <div class="rp-card-body">
+                    <div class="rp-id-grid">
+                        <div class="rp-id-preview">
+                            {% if profile.valid_id_image %}
+                            <img src="{{ profile.valid_id_image.url }}" alt="Uploaded valid ID">
+                            {% else %}
+                            <div class="ui-alert warning">No valid ID image was uploaded for this portal request.</div>
+                            {% endif %}
+                        </div>
+                        <div class="rp-info-grid">
+                            <div class="rp-info">
+                                <div class="rp-label">Portal Username</div>
+                                <div class="rp-value">{{ profile.user.username }}</div>
+                            </div>
+                            <div class="rp-info">
+                                <div class="rp-label">Submitted Name</div>
+                                <div class="rp-value">{{ profile.first_name }} {{ profile.last_name }}</div>
+                            </div>
+                            <div class="rp-info">
+                                <div class="rp-label">Birthdate</div>
+                                <div class="rp-value">{{ profile.birth_date }}</div>
+                            </div>
+                            <div class="rp-info">
+                                <div class="rp-label">Address</div>
+                                <div class="rp-value">{{ profile.address|default:"No address submitted" }}</div>
+                            </div>
+                            <div class="rp-info">
+                                <div class="rp-label">Uploaded File</div>
+                                <div class="rp-inline-row">
+                                    <div class="rp-value">{% if profile.valid_id_image %}{{ profile.valid_id_image.name|cut:"valid_ids/" }}{% else %}No file{% endif %}</div>
+                                    {% if profile.valid_id_image %}
+                                    <a href="{{ profile.valid_id_image.url }}" target="_blank" rel="noopener" class="btn-bmis btn-secondary">View Full Image</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rp-note">
+                        <strong>Option 1: Link to an Existing Resident</strong>
+                        Search for a matching resident in the barangay database. If the portal user is brand-new and does not yet exist as a resident record, use the create form on the right.
+                    </div>
+
+                    {% if can_manage %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <div class="rp-search-row">
+                            <div class="rp-field">
+                                <label for="resident_id">Select Existing Resident</label>
+                                <select name="resident_id" id="resident_id" required>
+                                    <option value="">-- Select a resident --</option>
+                                    {% for resident in suggested_residents %}
+                                    <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>{{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}</option>
+                                    {% endfor %}
+                                    {% for resident in available_residents %}
+                                    <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>{{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit" class="btn-bmis btn-primary">Approve and Link</button>
+                        </div>
+
+                        {% if mismatch_warning %}
+                        <div class="ui-alert warning" style="margin-top:14px;">
+                            <strong>Selected resident data does not fully match the submitted portal details.</strong>
+                            <ul style="margin-top:8px;padding-left:18px;">
+                                {% for item in mismatch_details %}
+                                <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <label class="rp-checkbox" style="margin-top:12px;display:block;">
+                            <input type="checkbox" name="confirm_override" value="1">
+                            Confirm manual override for this mismatched link
+                        </label>
+                        {% endif %}
+                    </form>
+                    {% else %}
+                    <div class="ui-alert info">
+                        Captain view only: the Secretary must approve, reject, or create the resident record from this page.
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+
+        <div style="display:grid;gap:18px;">
+            <article class="rp-card">
+                <div class="rp-card-head">
+                    <div>
+                        <div class="rp-card-title">Create New Resident and Verify</div>
+                        <div class="rp-card-sub">Use this workflow when the portal user is new and does not yet have a resident record.</div>
+                    </div>
+                    <div class="rp-pill blue">Create Resident</div>
+                </div>
+                <div class="rp-card-body">
+                    {% if can_manage and create_form.errors %}
+                    <div class="ui-alert danger">
+                        <strong>Please correct the form before creating the resident.</strong>
+                        <ul style="margin-top:8px;padding-left:18px;">
+                            {% for field in create_form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in create_form.non_field_errors %}
+                            <li>{{ error }}</li>
                             {% endfor %}
                         </ul>
                     </div>
-                </div>
-                <div class="rv-field">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="confirm_override" value="1">
-                        <span>I confirm manual override and approve this mismatched link.</span>
-                    </label>
-                </div>
-                {% endif %}
+                    {% endif %}
 
-                <div class="rv-actions">
-                    <button type="submit" class="rv-btn primary">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                        </svg>
-                        Approve and Link
-                    </button>
-                </div>
-            </form>
+                    {% if can_manage %}
+                    <form method="post" id="create-resident-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="create">
 
-            <form method="post" style="margin-top: 12px;">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="reject">
-                <button type="submit" class="rv-btn danger" onclick="return confirm('Are you sure you want to reject this account?')">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                    Reject Account
-                </button>
-            </form>
+                        <div class="rp-note">
+                            <strong>Personal Information</strong>
+                            Review and complete the resident profile details before verification.
+                        </div>
+                        <div class="rp-grid">
+                            <div class="rp-field"><label for="id_first_name">First Name</label>{{ create_form.first_name }}</div>
+                            <div class="rp-field"><label for="id_middle_name">Middle Name</label>{{ create_form.middle_name }}</div>
+                            <div class="rp-field"><label for="id_last_name">Last Name</label>{{ create_form.last_name }}</div>
+                            <div class="rp-field"><label for="id_civil_status">Civil Status</label>{{ create_form.civil_status }}</div>
+                            <div class="rp-field"><label for="id_suffix">Suffix</label>{{ create_form.suffix }}</div>
+                            <div class="rp-field"><label for="id_birth_date">Birth Date</label>{{ create_form.birth_date }}</div>
+                            <div class="rp-field"><label for="id_gender">Gender</label>{{ create_form.gender }}</div>
+                            <div class="rp-field"><label for="id_household">Household</label>{{ create_form.household }}</div>
+                        </div>
+
+                        <div class="rp-note" style="margin-top:2px;">
+                            <strong>Contact Information</strong>
+                            Add the resident’s reachable details if available.
+                        </div>
+                        <div class="rp-grid">
+                            <div class="rp-field"><label for="id_contact_number">Contact Number</label>{{ create_form.contact_number }}</div>
+                            <div class="rp-field"><label for="id_email">Email</label>{{ create_form.email }}</div>
+                        </div>
+
+                        <div class="rp-note" style="margin-top:2px;">
+                            <strong>Other Information</strong>
+                            Set voter and resident status before final verification.
+                        </div>
+                        <div class="rp-grid">
+                            <div class="rp-field"><label for="id_voter_status">Voter Status</label>{{ create_form.voter_status }}</div>
+                            <div class="rp-field"><label for="id_status">Resident Status</label>{{ create_form.status }}</div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="ui-alert info">
+                        Captain view only: this section is visible for oversight, but only the Secretary can create and verify a new resident from the portal request.
+                    </div>
+                    {% endif %}
+                </div>
+            </article>
+        </div>
+    </section>
+
+    {% if can_manage %}
+    <div class="rp-sticky">
+        <div class="rp-sticky-note"><strong>Decision bar:</strong> reject the portal account if the submission is invalid, return to the queue, or create and verify when the portal user should become a brand-new resident record.</div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <button type="submit" class="btn-bmis btn-danger-bmis" onclick="return confirm('Reject this portal account request?')">Reject</button>
+        </form>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+            <a href="{% url 'pending_verifications' %}" class="btn-bmis btn-secondary">Back to Queue</a>
+            <button type="submit" form="create-resident-form" class="btn-bmis btn-success-bmis">Create and Verify</button>
         </div>
     </div>
-
-    <!-- Right Card: Create New -->
-    <div class="rv-card">
-        <div class="rv-head">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"/>
-            </svg>
-            Create New Resident and Link
-        </div>
-        <div class="rv-body">
-            {% if create_form.errors %}
-            <ul class="rv-msg error">
-                <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px;flex-shrink:0;">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                </svg>
-                <div>
-                    {% for field in create_form %}
-                        {% for error in field.errors %}
-                            <li>{{ field.label }}: {{ error }}</li>
-                        {% endfor %}
-                    {% endfor %}
-                    {% for error in create_form.non_field_errors %}
-                        <li>{{ error }}</li>
-                    {% endfor %}
-                </div>
-            </ul>
-            {% endif %}
-
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="create">
-
-                <div class="rv-field">
-                    <label for="id_first_name">First name</label>
-                    {{ create_form.first_name }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_middle_name">Middle name</label>
-                    {{ create_form.middle_name }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_last_name">Last name</label>
-                    {{ create_form.last_name }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_suffix">Suffix</label>
-                    {{ create_form.suffix }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_birth_date">Birth date</label>
-                    {{ create_form.birth_date }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_gender">Gender</label>
-                    {{ create_form.gender }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_civil_status">Civil status</label>
-                    {{ create_form.civil_status }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_household">Household</label>
-                    {{ create_form.household }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_contact_number">Contact number</label>
-                    {{ create_form.contact_number }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_email">Email</label>
-                    {{ create_form.email }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_voter_status">Voter status</label>
-                    {{ create_form.voter_status }}
-                </div>
-                <div class="rv-field">
-                    <label for="id_status">Resident status</label>
-                    {{ create_form.status }}
-                </div>
-
-                <div class="rv-actions">
-                    <button type="submit" class="rv-btn success">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
-                        </svg>
-                        Create + Verify
-                    </button>
-                </div>
-            </form>
-
-            <a href="{% url 'pending_verifications' %}" class="rv-back">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-                </svg>
-                Back to pending list
-            </a>
+    {% else %}
+    <div class="rp-sticky">
+        <div class="rp-sticky-note"><strong>Captain view:</strong> you can inspect the submitted registration details here, while the Secretary completes the actual verification decision.</div>
+        <div></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;">
+            <a href="{% url 'pending_verifications' %}" class="btn-bmis btn-secondary">Back to Queue</a>
         </div>
     </div>
-
+    {% endif %}
 </div>
-
 {% endblock %}

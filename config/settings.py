@@ -69,6 +69,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'residents.context_processors.app_shell',
             ],
         },
     },
@@ -117,6 +118,9 @@ else:
             'PASSWORD': os.getenv('DB_PASSWORD', 'admin123'),
             'HOST': os.getenv('DB_HOST', 'localhost'),
             'PORT': os.getenv('DB_PORT', '5432'),
+            'TEST': {
+                'NAME': os.getenv('TEST_DB_NAME', 'barangay_db_test_codex'),
+            },
         }
     }
 
@@ -158,6 +162,8 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
