@@ -145,9 +145,11 @@
             </div>
 
             <div class="hero-cta">
+                {% if primary_role != "Treasurer" %}
                 <a href="{% url 'edit_resident' resident.id %}" class="btn-bmis btn-secondary">Edit Profile</a>
                 {% if resident.status == "Alive" %}
                 <a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-primary">Create Request</a>
+                {% endif %}
                 {% endif %}
             </div>
         </div>
@@ -210,7 +212,7 @@
                             </select>
                             <button type="submit" class="btn-bmis btn-secondary">Apply</button>
                         </div>
-                        {% if resident.status == "Alive" %}
+                        {% if resident.status == "Alive" and primary_role != "Treasurer" %}
                         <a href="{% url 'create_service_request' resident.id %}" class="btn-bmis btn-primary">New Request</a>
                         {% endif %}
                     </form>

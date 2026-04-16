@@ -160,8 +160,12 @@
                 <div class="table-sub">Use this list to review identity details, resident status, and service eligibility.</div>
             </div>
             <div class="table-actions">
+                {% if primary_role == "Secretary" %}
                 <a href="{% url 'add_resident' %}" class="btn-bmis btn-primary">Add Resident</a>
                 <a href="{% url 'add_household' %}" class="btn-bmis btn-secondary">Add Household</a>
+                {% else %}
+                <span style="color:#64748B;font-size:13px;">Only the Secretary can add residents or households.</span>
+                {% endif %}
             </div>
         </div>
         <div class="table-wrap">
@@ -223,8 +227,10 @@
                         <td>
                             <div class="action-cell">
                                 <a href="/resident/{{ resident.id }}/" class="mini-btn">View Profile</a>
-                                {% if resident.status == "Alive" %}
+                                {% if resident.status == "Alive" and primary_role != "Treasurer" %}
                                 <a href="{% url 'create_service_request' resident.id %}" class="mini-btn mini-btn-service">Request Service</a>
+                                {% elif resident.status == "Alive" %}
+                                <span class="muted-note">Request service is restricted for this role.</span>
                                 {% else %}
                                 <span class="muted-note">Service requests unavailable</span>
                                 {% endif %}

@@ -139,7 +139,11 @@
                 <div class="table-sub">Review address records, assigned heads, and member counts in one table.</div>
             </div>
             <div class="table-actions">
+                {% if primary_role == "Secretary" %}
                 <a href="{% url 'add_household' %}" class="btn-bmis btn-primary">Add Household</a>
+                {% else %}
+                <span style="color:#64748B;font-size:13px;">Only the Secretary can add households.</span>
+                {% endif %}
             </div>
         </div>
         <div class="table-wrap">

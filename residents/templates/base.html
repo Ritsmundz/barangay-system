@@ -693,6 +693,40 @@
             <!-- ─── ROLE-BASED LINKS (unchanged logic) ─── -->
             {% for group in request.user.groups.all %}
 
+                {% if group.name == "Captain" %}
+                <div class="sb-section">Main</div>
+                <a href="{% url 'captain_dashboard' %}" class="sb-item {% if request.resolver_match.url_name == 'captain_dashboard' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/>
+                    </svg>
+                    Captain Dashboard
+                </a>
+                <a href="{% url 'resident_list' %}" class="sb-item {% if request.resolver_match.url_name == 'resident_list' or request.resolver_match.url_name == 'resident_profile' or request.resolver_match.url_name == 'edit_resident' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 17H5a5 5 0 014.07-4.99"/>
+                    </svg>
+                    Residents
+                </a>
+                <a href="{% url 'household_list' %}" class="sb-item {% if request.resolver_match.url_name == 'household_list' or request.resolver_match.url_name == 'household_detail' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Households
+                </a>
+                <a href="{% url 'service_requests' %}" class="sb-item {% if request.resolver_match.url_name == 'service_requests' or request.resolver_match.url_name == 'create_service_request' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                    </svg>
+                    Service Requests
+                </a>
+                <a href="{% url 'complaint_list' %}" class="sb-item {% if request.resolver_match.url_name == 'complaint_list' or request.resolver_match.url_name == 'complaint_detail' or request.resolver_match.url_name == 'file_complaint' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Complaints
+                </a>
+                {% endif %}
+
                 {% if group.name == "Treasurer" %}
                 <div class="sb-section">Finance</div>
                 <a href="{% url 'treasurer_dashboard' %}" class="sb-item {% if request.resolver_match.url_name == 'treasurer_dashboard' %}active{% endif %}">
@@ -877,7 +911,7 @@
 
     </div><!-- /bmis-main -->
 
-</div><!-- /bmis-layout -->
+    </div><!-- /bmis-layout -->
 
 </body>
 </html>
