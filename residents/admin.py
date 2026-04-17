@@ -1,5 +1,23 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import User
 from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile
+
+
+admin.site.unregister(User)
+
+
+@admin.register(User)
+class UserAdmin(DjangoUserAdmin):
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("username", "email", "usable_password", "password1", "password2"),
+            },
+        ),
+    )
 
 @admin.register(Purok)
 class PurokAdmin(admin.ModelAdmin):

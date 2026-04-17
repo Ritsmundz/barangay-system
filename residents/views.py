@@ -14,9 +14,11 @@ from django.http import JsonResponse
 from django.http import HttpResponseForbidden
 from django.http import HttpResponseNotAllowed
 from django.utils import timezone
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, Sum, Count
 from django.db.models.functions import ExtractMonth
+from django.core.mail import send_mail
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
@@ -39,6 +41,154 @@ from .forms import (
 from .audit import log_audit_event, snapshot_instance
 
 logger = logging.getLogger(__name__)
+
+
+def get_secretary_email_recipients():
+    return list(
+        User.objects.filter(groups__name="Secretary", is_active=True)
+        .exclude(email__isnull=True)
+        .exclude(email__exact="")
+        .values_list("email", flat=True)
+        .distinct()
+    )
+
+
+def notify_secretaries_of_pending_registration(request, profile):
+    secretary_emails = get_secretary_email_recipients()
+
+    if not secretary_emails:
+        return
+
+    resident_name = " ".join(
+        part for part in [profile.first_name, profile.last_name] if part
+    ).strip() or profile.user.username
+    subject = "Pending resident registration verification"
+    message = (
+        "A new resident registration is waiting for secretary verification.\n\n"
+        f"Resident name: {resident_name}\n"
+        f"Username: {profile.user.username}\n"
+        f"Birth date: {profile.birth_date:%Y-%m-%d}\n"
+        f"Address: {profile.address}\n"
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=secretary_emails,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception("Failed to send pending registration notification email.")
+
+
+def notify_secretaries_of_service_request(service_request):
+    secretary_emails = get_secretary_email_recipients()
+    if not secretary_emails:
+        return
+
+    resident = service_request.resident
+    resident_name = " ".join(
+        part for part in [resident.first_name, resident.last_name] if part
+    ).strip() or str(resident)
+    subject = "New resident service request submitted"
+    message = (
+        "A resident submitted a new service request and it is waiting for secretary review.\n\n"
+        f"Resident name: {resident_name}\n"
+        f"Service: {service_request.service_type.name}\n"
+        f"Reference: {service_request.document_number or service_request.clearance_number or f'Request #{service_request.id}'}\n"
+        f"Status: {service_request.status}\n"
+        f"Purpose: {service_request.purpose_display}\n"
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=secretary_emails,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send secretary service request notification email for request %s.",
+            service_request.id,
+        )
+
+
+def notify_secretaries_of_complaint(complaint):
+    secretary_emails = get_secretary_email_recipients()
+    if not secretary_emails:
+        return
+
+    resident = complaint.resident
+    resident_name = " ".join(
+        part for part in [resident.first_name, resident.last_name] if part
+    ).strip() or str(resident)
+    subject = "New resident complaint submitted"
+    message = (
+        "A resident submitted a new complaint and it is waiting for secretary review.\n\n"
+        f"Resident name: {resident_name}\n"
+        f"Complaint title: {complaint.title}\n"
+        f"Status: {complaint.status}\n"
+        f"Description: {complaint.description}\n"
+    )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=secretary_emails,
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send secretary complaint notification email for complaint %s.",
+            complaint.id,
+        )
+
+
+def notify_resident_registration_decision(profile, *, approved):
+    recipient = (profile.user.email or "").strip()
+    if not recipient:
+        return
+
+    resident_name = " ".join(
+        part for part in [profile.first_name, profile.last_name] if part
+    ).strip() or profile.user.username
+
+    if approved:
+        subject = "Your resident registration has been approved"
+        message = (
+            f"Hello {resident_name},\n\n"
+            "Your resident portal registration has been approved by Barangay Gulod.\n"
+            "You can now sign in to your resident account and access the portal services.\n\n"
+            "If you did not request this registration, please contact the barangay office.\n"
+        )
+    else:
+        subject = "Your resident registration has been rejected"
+        message = (
+            f"Hello {resident_name},\n\n"
+            "Your resident portal registration was not approved by Barangay Gulod.\n"
+            "If you believe this was a mistake or you need to correct your details, "
+            "please contact the barangay office before submitting a new request.\n"
+        )
+
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+    except Exception:
+        logger.exception(
+            "Failed to send resident registration decision email for profile %s.",
+            profile.id,
+        )
 
 
 def about_barangay(request):
@@ -686,13 +836,46 @@ def notify_resident_for_service_request(service_request, *, title, message):
     resident_profile = getattr(service_request.resident, "user_profile", None)
     if not resident_profile or not resident_profile.user_id:
         return None
-    return create_notification(
+
+    notification = create_notification(
         user=resident_profile.user,
         title=title,
         message=message,
         category="service_request",
         target_url=f"/service-requests/{service_request.id}/",
     )
+
+    recipient = (resident_profile.user.email or "").strip()
+    if recipient:
+        resident_name = " ".join(
+            part for part in [resident_profile.first_name, resident_profile.last_name] if part
+        ).strip() or resident_profile.user.username
+        service_name = service_request.service_type.name
+        request_reference = service_request.document_number or service_request.clearance_number or f"Request #{service_request.id}"
+        email_subject = f"Barangay Gulod Service Request Update: {title}"
+        email_message = (
+            f"Hello {resident_name},\n\n"
+            f"There is an update on your {service_name} request.\n\n"
+            f"Reference: {request_reference}\n"
+            f"Update: {title}\n"
+            f"Details: {message}\n\n"
+            "You may also check the same update in your resident portal notifications.\n"
+        )
+        try:
+            send_mail(
+                subject=email_subject,
+                message=email_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[recipient],
+                fail_silently=False,
+            )
+        except Exception:
+            logger.exception(
+                "Failed to send service request notification email for request %s.",
+                service_request.id,
+            )
+
+    return notification
 
 
 def notify_resident_for_complaint(complaint, *, title, message):
@@ -1035,6 +1218,7 @@ def handle_service_request_submission(request, resident, service_types, service_
         title="Request Submitted",
         message=f"Your {service.service_type.name} request has been submitted successfully.",
     )
+    notify_secretaries_of_service_request(service)
 
     return service, None
 
@@ -2283,6 +2467,7 @@ def resident_register(request):
                 user = form.save(commit=False)
                 user.first_name = form.cleaned_data["first_name"].strip()
                 user.last_name = form.cleaned_data["last_name"].strip()
+                user.email = form.cleaned_data.get("email", "").strip()
                 user.save()
 
                 resident_group, _ = Group.objects.get_or_create(name="Resident")
@@ -2290,8 +2475,24 @@ def resident_register(request):
                 user.groups.add(resident_group)
 
                 first_name = form.cleaned_data["first_name"].strip()
+                middle_name = form.cleaned_data.get("middle_name", "").strip()
                 last_name = form.cleaned_data["last_name"].strip()
+                suffix = form.cleaned_data.get("suffix", "").strip()
                 birth_date = form.cleaned_data["birthdate"]
+                place_of_birth = form.cleaned_data.get("place_of_birth", "").strip()
+                gender = form.cleaned_data.get("gender", "")
+                civil_status = form.cleaned_data.get("civil_status", "")
+                nationality = form.cleaned_data.get("nationality", "").strip()
+                religion = form.cleaned_data.get("religion", "").strip()
+                occupation = form.cleaned_data.get("occupation", "").strip()
+                educational_attainment = form.cleaned_data.get("educational_attainment", "")
+                contact_number = form.cleaned_data.get("contact_number", "").strip()
+                precinct = form.cleaned_data.get("precinct", "").strip()
+                pwd = form.cleaned_data.get("pwd", False)
+                indigenous = form.cleaned_data.get("indigenous", False)
+                solo_parent = form.cleaned_data.get("solo_parent", False)
+                voter_status = form.cleaned_data.get("voter_status", False)
+                status = form.cleaned_data.get("status", "Alive")
                 address = form.cleaned_data["address"].strip()
                 valid_id_image = form.cleaned_data["valid_id_image"]
 
@@ -2306,12 +2507,35 @@ def resident_register(request):
                     user=user,
                     resident=linked_resident,
                     first_name=first_name,
+                    middle_name=middle_name,
                     last_name=last_name,
+                    suffix=suffix,
                     birth_date=birth_date,
+                    place_of_birth=place_of_birth,
+                    gender=gender,
+                    civil_status=civil_status,
+                    nationality=nationality,
+                    religion=religion,
+                    occupation=occupation,
+                    educational_attainment=educational_attainment,
+                    pwd=pwd,
+                    indigenous=indigenous,
+                    solo_parent=solo_parent,
+                    voter_status=voter_status,
+                    status=status,
+                    contact_number=contact_number,
+                    precinct=precinct,
                     address=address,
                     valid_id_image=valid_id_image,
                     is_verified=False,
                     is_auto_matched=bool(linked_resident),
+                )
+
+                transaction.on_commit(
+                    lambda profile_id=profile.id: notify_secretaries_of_pending_registration(
+                        request,
+                        UserProfile.objects.select_related("user").get(pk=profile_id),
+                    )
                 )
 
             auth_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
@@ -2386,9 +2610,21 @@ def review_pending_verification(request, profile_id):
 
     create_form = ResidentVerificationCreateForm(initial={
         "first_name": profile.first_name,
+        "middle_name": profile.middle_name,
         "last_name": profile.last_name,
+        "suffix": profile.suffix,
         "birth_date": profile.birth_date,
-        "status": "Alive",
+        "place_of_birth": profile.place_of_birth,
+        "gender": profile.gender,
+        "civil_status": profile.civil_status,
+        "nationality": profile.nationality,
+        "religion": profile.religion,
+        "occupation": profile.occupation,
+        "educational_attainment": profile.educational_attainment,
+        "contact_number": profile.contact_number,
+        "email": profile.user.email,
+        "voter_status": profile.voter_status,
+        "status": profile.status or "Alive",
     })
     mismatch_warning = False
     mismatch_details = []
@@ -2449,13 +2685,24 @@ def review_pending_verification(request, profile_id):
                     request=request,
                 )
 
+                notify_resident_registration_decision(profile, approved=True)
                 messages.success(request, f"Verified account for {profile.user.username}.")
                 return redirect("pending_verifications")
 
         if action == "create":
             create_form = ResidentVerificationCreateForm(request.POST)
             if create_form.is_valid():
-                resident = create_form.save()
+                resident = create_form.save(commit=False)
+                resident.place_of_birth = resident.place_of_birth or profile.place_of_birth
+                resident.nationality = resident.nationality or profile.nationality
+                resident.religion = resident.religion or profile.religion
+                resident.occupation = resident.occupation or profile.occupation
+                resident.educational_attainment = resident.educational_attainment or profile.educational_attainment
+                resident.pwd = resident.pwd or profile.pwd
+                resident.indigenous = resident.indigenous or profile.indigenous
+                resident.solo_parent = resident.solo_parent or profile.solo_parent
+                resident.precinct = resident.precinct or profile.precinct
+                resident.save()
                 before_data = snapshot_instance(profile)
                 profile.resident = resident
                 profile.is_verified = True
@@ -2474,6 +2721,7 @@ def review_pending_verification(request, profile_id):
                     after_data=snapshot_instance(profile),
                     request=request,
                 )
+                notify_resident_registration_decision(profile, approved=True)
                 messages.success(request, f"Created new resident and verified {profile.user.username}.")
                 return redirect("pending_verifications")
         elif action == "reject":
@@ -2494,6 +2742,7 @@ def review_pending_verification(request, profile_id):
                 after_data=snapshot_instance(profile),
                 request=request,
             )
+            notify_resident_registration_decision(profile, approved=False)
             messages.warning(request, f"Rejected account {profile.user.username}.")
             return redirect("pending_verifications")
 
@@ -3454,6 +3703,7 @@ def file_complaint(request):
                 title="Complaint Submitted",
                 message="Your complaint has been submitted online and is waiting for secretary review.",
             )
+            notify_secretaries_of_complaint(complaint)
             return redirect("complaint_list")
 
     else:

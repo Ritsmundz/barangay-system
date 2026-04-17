@@ -153,8 +153,33 @@ class UserProfile(models.Model):
         related_name="user_profile",
     )
     first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100)
+    suffix = models.CharField(max_length=20, blank=True, null=True)
     birth_date = models.DateField()
+    place_of_birth = models.CharField(max_length=150, blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=Resident.GENDER_CHOICES, blank=True)
+    civil_status = models.CharField(max_length=20, blank=True)
+    nationality = models.CharField(max_length=100, blank=True, null=True)
+    religion = models.CharField(max_length=100, blank=True, null=True)
+    occupation = models.CharField(max_length=120, blank=True, null=True)
+    educational_attainment = models.CharField(
+        max_length=50,
+        choices=Resident.EDUCATIONAL_ATTAINMENT_CHOICES,
+        blank=True,
+        default="",
+    )
+    pwd = models.BooleanField(default=False)
+    indigenous = models.BooleanField(default=False)
+    solo_parent = models.BooleanField(default=False)
+    voter_status = models.BooleanField(default=False)
+    status = models.CharField(
+        max_length=20,
+        choices=Resident.STATUS_CHOICES,
+        default="Alive",
+    )
+    contact_number = models.CharField(max_length=15, blank=True, null=True)
+    precinct = models.CharField(max_length=50, blank=True, null=True)
     address = models.CharField(max_length=255, blank=True)
     valid_id_image = models.ImageField(upload_to="valid_ids/", blank=True, null=True)
     is_verified = models.BooleanField(default=False)

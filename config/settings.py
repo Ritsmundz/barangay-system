@@ -11,12 +11,34 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+import sys
 from pathlib import Path
 
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _load_local_env_file():
+    env_path = BASE_DIR / ".env"
+    if not env_path.exists():
+        return
+
+    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+_load_local_env_file()
 
 
 
@@ -28,7 +50,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-c7*rbd1x=z!*qwbyg3lyp&=_06ciyy=xw8zihd#988*2iij$dt')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+ON_RENDER = os.getenv('RENDER', '').lower() == 'true'
+DEBUG_ENV = os.getenv('DEBUG', '').strip().lower()
+DEBUG_TRUE_VALUES = {'1', 'true', 'yes', 'on', 'debug', 'dev', 'development', 'local'}
+DEBUG_FALSE_VALUES = {'0', 'false', 'no', 'off', 'release', 'prod', 'production'}
+
+if DEBUG_ENV in DEBUG_TRUE_VALUES:
+    DEBUG = True
+elif DEBUG_ENV in DEBUG_FALSE_VALUES:
+    DEBUG = False
+else:
+    DEBUG = not ON_RENDER
+
+if not ON_RENDER and 'runserver' in sys.argv:
+    DEBUG = True
 
 ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'barangay-system-4jua.onrender.com,localhost,127.0.0.1').split(',') if host.strip()]
 
@@ -87,7 +122,6 @@ PGDATABASE = os.getenv('PGDATABASE')
 PGUSER = os.getenv('PGUSER')
 PGPASSWORD = os.getenv('PGPASSWORD')
 PGPORT = os.getenv('PGPORT')
-ON_RENDER = os.getenv('RENDER', '').lower() == 'true'
 
 if DATABASE_URL:
     DATABASES = {
@@ -159,11 +193,23 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+)
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '25'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false').lower() == 'true'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'no-reply@barangay.local'
 
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'

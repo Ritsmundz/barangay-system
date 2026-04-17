@@ -2,6 +2,7 @@ import json
 import logging
 from threading import local
 
+from django.core.files.base import File
 from django.db import DatabaseError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms.models import model_to_dict
@@ -37,6 +38,12 @@ def get_client_ip(request):
 def _json_safe(data):
     if data is None:
         return None
+    if isinstance(data, dict):
+        return {key: _json_safe(value) for key, value in data.items()}
+    if isinstance(data, (list, tuple)):
+        return [_json_safe(value) for value in data]
+    if isinstance(data, File):
+        return getattr(data, "name", str(data)) or ""
     return json.loads(json.dumps(data, cls=DjangoJSONEncoder))
 
 

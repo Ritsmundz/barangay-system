@@ -447,6 +447,7 @@
                         <label for="id_password">Password</label>
                         <input type="password" name="password" id="id_password" autocomplete="current-password" required>
                         <div class="hint">Use the same username and password you created during resident registration.</div>
+                        <div class="hint"><a href="{% url 'password_reset' %}">Forgot your password?</a></div>
                     </div>
 
                     <button type="submit" class="btn">Sign In</button>

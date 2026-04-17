@@ -48,7 +48,7 @@
             width: min(1180px, 100%);
             min-height: 780px;
             display: grid;
-            grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.1fr);
+            grid-template-columns: minmax(260px, 0.68fr) minmax(760px, 1.32fr);
             align-items: stretch;
             gap: 0;
             padding: 0;
@@ -220,7 +220,7 @@
         .form-panel {
             position: relative;
             z-index: 1;
-            width: min(470px, 100%);
+            width: min(820px, 100%);
             padding: 10px 8px;
         }
 
@@ -276,7 +276,7 @@
 
         form {
             display: grid;
-            gap: 14px;
+            gap: 16px;
         }
 
         .field-grid {
@@ -288,7 +288,7 @@
         .field,
         .field-wide {
             display: grid;
-            gap: 7px;
+            gap: 6px;
         }
 
         .field-wide {
@@ -296,14 +296,15 @@
         }
 
         label {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
         }
 
         input,
-        textarea {
+        textarea,
+        select {
             width: 100%;
-            border-radius: 14px;
+            border-radius: 12px;
             border: 1px solid rgba(23, 48, 79, 0.16);
             background: rgba(255, 255, 255, 0.98);
             color: var(--text);
@@ -312,18 +313,19 @@
         }
 
         input {
-            min-height: 48px;
-            padding: 0 14px;
+            min-height: 40px;
+            padding: 0 11px;
         }
 
         textarea {
-            min-height: 96px;
-            padding: 12px 14px;
+            min-height: 84px;
+            padding: 10px 11px;
             resize: vertical;
         }
 
         input:focus,
-        textarea:focus {
+        textarea:focus,
+        select:focus {
             outline: none;
             background: #fff;
             border-color: rgba(40, 98, 211, 0.58);
@@ -335,6 +337,31 @@
             min-height: auto;
         }
 
+        .check-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 40px;
+            padding: 0 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(23, 48, 79, 0.12);
+            background: rgba(255, 255, 255, 0.92);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .check-item input[type="checkbox"] {
+            width: auto;
+            min-height: auto;
+            margin: 0;
+        }
+
         .hint {
             font-size: 11px;
             color: var(--muted);
@@ -342,13 +369,20 @@
         }
 
         .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             min-height: 50px;
+            min-width: 132px;
+            padding: 0 18px;
             border: 0;
             border-radius: 14px;
             background: linear-gradient(135deg, var(--primary-deep), var(--primary));
             color: #fff;
             font: inherit;
             font-weight: 700;
+            white-space: nowrap;
+            text-align: center;
             cursor: pointer;
             box-shadow: 0 16px 28px rgba(40, 98, 211, 0.22);
         }
@@ -402,9 +436,286 @@
             background: #fff;
         }
 
+        .form-panel {
+            width: min(860px, 100%);
+            padding: 18px 10px;
+        }
+
+        .form-head p {
+            max-width: 42ch;
+        }
+
+        .progress-shell {
+            margin-bottom: 20px;
+            padding: 14px 16px;
+            border-radius: 20px;
+            background: rgba(245, 248, 252, 0.94);
+            border: 1px solid rgba(23, 48, 79, 0.08);
+        }
+
+        .progress-meta,
+        .step-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .progress-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-deep);
+        }
+
+        .progress-count {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .progress-track {
+            height: 8px;
+            margin-top: 12px;
+            border-radius: 999px;
+            background: rgba(23, 48, 79, 0.08);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            width: 25%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--primary-deep), var(--primary));
+            transition: width .25s ease;
+        }
+
+        .progress-steps {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .progress-step {
+            padding: 10px 12px;
+            border-radius: 16px;
+            border: 1px solid transparent;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .progress-step strong {
+            display: block;
+            font-size: 12px;
+            color: inherit;
+        }
+
+        .progress-step.is-current,
+        .progress-step.is-complete {
+            background: rgba(255, 255, 255, 0.94);
+            border-color: rgba(23, 48, 79, 0.08);
+            color: var(--text);
+        }
+
+        .step-panel {
+            display: none;
+            animation: step-in .24s ease;
+        }
+
+        .step-panel.is-active {
+            display: block;
+        }
+
+        @keyframes step-in {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-card {
+            padding: 18px;
+            border-radius: 22px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(23, 48, 79, 0.08);
+            box-shadow: 0 12px 26px rgba(14, 38, 79, 0.06);
+        }
+
+        .section-card + .section-card {
+            margin-top: 14px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-head h3 {
+            font-size: 1rem;
+            line-height: 1.2;
+        }
+
+        .section-head p {
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
+        .section-tag {
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(40, 98, 211, 0.1);
+            color: var(--primary-deep);
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .field {
+            min-width: 0;
+        }
+
+        .field-wide {
+            grid-column: 1 / -1;
+        }
+
+        .field-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .field-meta {
+            display: none;
+        }
+
+        .required-mark {
+            color: var(--primary);
+            margin-left: 4px;
+        }
+
+        .field-error {
+            min-height: 15px;
+            font-size: 11px;
+            line-height: 1.4;
+            color: var(--danger-text);
+        }
+
+        .field.is-invalid input,
+        .field.is-invalid textarea,
+        .field.is-invalid select,
+        .field-wide.is-invalid input,
+        .field-wide.is-invalid textarea,
+        .field-wide.is-invalid select {
+            border-color: rgba(163, 52, 52, 0.45);
+            box-shadow: 0 0 0 4px rgba(163, 52, 52, 0.08);
+        }
+
+        .toggle-extra {
+            border: 0;
+            background: transparent;
+            color: var(--primary-deep);
+            font: inherit;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .toggle-extra::before {
+            content: "+ ";
+        }
+
+        .toggle-extra[aria-expanded="true"]::before {
+            content: "- ";
+        }
+
+        .extra-panel {
+            display: none;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(23, 48, 79, 0.08);
+        }
+
+        .extra-panel.is-open {
+            display: block;
+        }
+
+        .address-helper,
+        .password-meter,
+        .summary-item {
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(245, 248, 252, 0.86);
+            border: 1px solid rgba(23, 48, 79, 0.08);
+        }
+
+        .helper-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .ghost-btn {
+            min-height: 40px;
+            padding: 0 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(23, 48, 79, 0.14);
+            background: #fff;
+            color: var(--text);
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .password-meter {
+            display: grid;
+            gap: 8px;
+        }
+
+        .password-meter-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(23, 48, 79, 0.08);
+            overflow: hidden;
+        }
+
+        .password-meter-fill {
+            width: 0%;
+            height: 100%;
+            background: #d38c28;
+            transition: width .2s ease, background .2s ease;
+        }
+
+        .password-meter-text,
+        .summary-item strong,
+        .summary-item span {
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .summary-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-item strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .summary-item span {
+            color: var(--muted);
+            word-break: break-word;
+        }
+
         @media (max-width: 960px) {
             .shell {
-                width: min(700px, 100%);
+                width: min(980px, 100%);
                 grid-template-columns: 1fr;
                 min-height: auto;
                 gap: 0;
@@ -425,11 +736,26 @@
                 width: 100%;
                 padding: 0;
             }
+
+            .progress-steps {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
         }
 
         @media (max-width: 560px) {
             .field-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .progress-steps {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-meta,
+            .section-head,
+            .step-actions {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -491,54 +817,120 @@
                 </ul>
                 {% endif %}
 
-                <form method="post" enctype="multipart/form-data">
+                <div class="progress-shell">
+                    <div class="progress-meta">
+                        <div class="progress-title" id="progress-title">Step 1: Account Basics</div>
+                        <div class="progress-count" id="progress-count">Step 1 of 4</div>
+                    </div>
+                    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+                    <div class="progress-steps">
+                        <div class="progress-step" data-progress-step="0"><strong>1. Account</strong><span>Name and sign-in</span></div>
+                        <div class="progress-step" data-progress-step="1"><strong>2. Address</strong><span>Birth and location</span></div>
+                        <div class="progress-step" data-progress-step="2"><strong>3. Details</strong><span>Additional info</span></div>
+                        <div class="progress-step" data-progress-step="3"><strong>4. Review</strong><span>Check and submit</span></div>
+                    </div>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" id="resident-registration-form" novalidate>
                     {% csrf_token %}
 
-                    <div class="field-grid">
-                        <div class="field-wide">
-                            <label for="id_username">Username</label>
-                            {{ form.username }}
+                    <section class="step-panel" data-step="0" data-step-title="Step 1: Account Basics">
+                        <div class="section-card">
+                            <div class="section-head">
+                                <div>
+                                    <h3>Account basics</h3>
+                                    <p>Start with your name and login details. This step only shows the essentials.</p>
+                                </div>
+                                <div class="section-tag">Step 1</div>
+                            </div>
+                            <div class="field-grid">
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.first_name.id_for_label }}">First name<span class="required-mark">*</span></label></div>{{ form.first_name }}<div class="field-error">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.last_name.id_for_label }}">Last name<span class="required-mark">*</span></label></div>{{ form.last_name }}<div class="field-error">{% for error in form.last_name.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.middle_name.id_for_label }}">Middle name</label></div>{{ form.middle_name }}<div class="field-error">{% for error in form.middle_name.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.suffix.id_for_label }}">Suffix</label></div>{{ form.suffix }}<div class="field-error">{% for error in form.suffix.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.email.id_for_label }}">Email address</label></div>{{ form.email }}<div class="field-error">{% for error in form.email.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.username.id_for_label }}">Username<span class="required-mark">*</span></label></div>{{ form.username }}<div class="field-error">{% for error in form.username.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password1.id_for_label }}">Password<span class="required-mark">*</span></label></div>{{ form.password1 }}<div class="field-error">{% for error in form.password1.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password2.id_for_label }}">Confirm password<span class="required-mark">*</span></label></div>{{ form.password2 }}<div class="field-error">{% for error in form.password2.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field-wide"><div class="password-meter"><div class="password-meter-bar"><div class="password-meter-fill" id="password-meter-fill"></div></div><div class="password-meter-text" id="password-meter-text">Password strength will appear here.</div></div></div>
+                            </div>
                         </div>
+                    </section>
 
-                        <div class="field">
-                            <label for="id_first_name">First name</label>
-                            {{ form.first_name }}
+                    <section class="step-panel" data-step="1" data-step-title="Step 2: Address and Birth">
+                        <div class="section-card">
+                            <div class="section-head">
+                                <div>
+                                    <h3>Address and birth details</h3>
+                                    <p>Only the location and background details needed for matching are shown here.</p>
+                                </div>
+                                <div class="section-tag">Step 2</div>
+                            </div>
+                            <div class="field-grid">
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.birthdate.id_for_label }}">Birthdate<span class="required-mark">*</span></label></div>{{ form.birthdate }}<div class="field-error">{% for error in form.birthdate.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.place_of_birth.id_for_label }}">Place of birth</label></div>{{ form.place_of_birth }}<div class="field-error">{% for error in form.place_of_birth.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.nationality.id_for_label }}">Nationality</label></div>{{ form.nationality }}<div class="field-error">{% for error in form.nationality.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.religion.id_for_label }}">Religion</label></div>{{ form.religion }}<div class="field-error">{% for error in form.religion.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field-wide" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address.id_for_label }}">Complete address<span class="required-mark">*</span></label></div>{{ form.address }}<div class="hint">Include house number, street, purok, subdivision, city, and nearby details if available.</div><div class="field-error">{% for error in form.address.errors %}{{ error }}{% endfor %}</div></div>
+                            </div>
                         </div>
+                    </section>
 
-                        <div class="field">
-                            <label for="id_last_name">Last name</label>
-                            {{ form.last_name }}
+                    <section class="step-panel" data-step="2" data-step-title="Step 3: Additional Details">
+                        <div class="section-card">
+                            <div class="section-head">
+                                <div>
+                                    <h3>Additional details</h3>
+                                    <p>Finish the resident profile details. Optional information stays hidden until you add it.</p>
+                                </div>
+                                <div class="section-tag">Step 3</div>
+                            </div>
+                            <div class="field-grid">
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.gender.id_for_label }}">Gender<span class="required-mark">*</span></label></div>{{ form.gender }}<div class="field-error">{% for error in form.gender.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.civil_status.id_for_label }}">Civil status<span class="required-mark">*</span></label></div>{{ form.civil_status }}<div class="field-error">{% for error in form.civil_status.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.contact_number.id_for_label }}">Contact number</label></div>{{ form.contact_number }}<div class="field-error">{% for error in form.contact_number.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.occupation.id_for_label }}">Occupation</label></div>{{ form.occupation }}<div class="field-error">{% for error in form.occupation.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.educational_attainment.id_for_label }}">Educational attainment</label></div>{{ form.educational_attainment }}<div class="field-error">{% for error in form.educational_attainment.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field-wide" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.valid_id_image.id_for_label }}">Upload valid ID<span class="required-mark">*</span></label></div>{{ form.valid_id_image }}<div class="hint">Make sure the ID photo and text are readable before uploading.</div><div class="field-error">{% for error in form.valid_id_image.errors %}{{ error }}{% endfor %}</div></div>
+                            </div>
                         </div>
-
-                        <div class="field-wide">
-                            <label for="id_birthdate">Birthdate</label>
-                            {{ form.birthdate }}
+                        <div class="section-card">
+                            <button type="button" class="toggle-extra" data-toggle-panel="more-details" aria-expanded="{% if form.precinct.value or form.status.value or form.pwd.value or form.solo_parent.value or form.voter_status.value or form.indigenous.value %}true{% else %}false{% endif %}">+ Add optional information</button>
+                            <div class="extra-panel {% if form.precinct.value or form.status.value or form.pwd.value or form.solo_parent.value or form.voter_status.value or form.indigenous.value %}is-open{% endif %}" id="more-details">
+                                <div class="field-grid">
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.precinct.id_for_label }}">Precinct number</label></div>{{ form.precinct }}<div class="field-error">{% for error in form.precinct.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.status.id_for_label }}">Resident status</label></div>{{ form.status }}<div class="field-error">{% for error in form.status.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field-wide"><div class="field-label-row"><label>Special tags</label></div><div class="check-grid"><label class="check-item">{{ form.pwd }} PWD</label><label class="check-item">{{ form.solo_parent }} Solo parent</label><label class="check-item">{{ form.voter_status }} Registered voter</label><label class="check-item">{{ form.indigenous }} Indigenous person</label></div></div>
+                                </div>
+                            </div>
                         </div>
+                    </section>
 
-                        <div class="field-wide">
-                            <label for="id_address">Complete address</label>
-                            {{ form.address }}
-                            <div class="hint">Include house number, street, purok or subdivision, and other location details if available.</div>
+                    <section class="step-panel" data-step="3" data-step-title="Step 4: Review and Submit">
+                        <div class="section-card">
+                            <div class="section-head">
+                                <div>
+                                    <h3>Review before submitting</h3>
+                                    <p>Check the most important details here. You can still go back to edit anything.</p>
+                                </div>
+                                <div class="section-tag">Step 4</div>
+                            </div>
+                            <div class="summary-list">
+                                <div class="summary-item"><strong>Name</strong><span data-confirm="full_name">-</span></div>
+                                <div class="summary-item"><strong>Identity</strong><span data-confirm="identity">-</span></div>
+                                <div class="summary-item"><strong>Address</strong><span data-confirm="address">-</span></div>
+                                <div class="summary-item"><strong>Account</strong><span data-confirm="account">-</span></div>
+                            </div>
                         </div>
+                    </section>
 
-                        <div class="field-wide">
-                            <label for="id_valid_id_image">Upload valid ID</label>
-                            {{ form.valid_id_image }}
-                            <div class="hint">Make sure the ID photo and text are readable before uploading.</div>
-                        </div>
-
-                        <div class="field">
-                            <label for="id_password1">Password</label>
-                            {{ form.password1 }}
-                        </div>
-
-                        <div class="field">
-                            <label for="id_password2">Confirm password</label>
-                            {{ form.password2 }}
+                    <div class="step-actions">
+                        <button type="button" class="ghost-btn" id="prev-step">Back</button>
+                        <div class="helper-actions">
+                            <button type="button" class="btn" id="next-step">Continue</button>
+                            <button type="submit" class="btn" id="submit-step">Submit Registration</button>
                         </div>
                     </div>
-
-                    <button type="submit" class="btn">Submit Registration</button>
 
                     <div class="signin">
                         Already have an account? <a href="{% url 'login' %}">Sign in</a>
@@ -547,5 +939,203 @@
             </div>
         </section>
     </main>
+    <script>
+        (function () {
+            const form = document.getElementById('resident-registration-form');
+            const steps = Array.from(document.querySelectorAll('.step-panel'));
+            const stepLabels = Array.from(document.querySelectorAll('[data-progress-step]'));
+            const progressFill = document.getElementById('progress-fill');
+            const progressTitle = document.getElementById('progress-title');
+            const progressCount = document.getElementById('progress-count');
+            const prevButton = document.getElementById('prev-step');
+            const nextButton = document.getElementById('next-step');
+            const submitButton = document.getElementById('submit-step');
+            const passwordInput = document.getElementById('{{ form.password1.id_for_label }}');
+            const passwordConfirmInput = document.getElementById('{{ form.password2.id_for_label }}');
+            const meterFill = document.getElementById('password-meter-fill');
+            const meterText = document.getElementById('password-meter-text');
+            const addressField = document.getElementById('{{ form.address.id_for_label }}');
+            const summary = {
+                full_name: document.querySelector('[data-confirm="full_name"]'),
+                identity: document.querySelector('[data-confirm="identity"]'),
+                address: document.querySelector('[data-confirm="address"]'),
+                account: document.querySelector('[data-confirm="account"]')
+            };
+            const rules = {
+                '{{ form.first_name.id_for_label }}': { required: true, message: 'Enter your first name.' },
+                '{{ form.last_name.id_for_label }}': { required: true, message: 'Enter your last name.' },
+                '{{ form.email.id_for_label }}': { required: true, email: true, message: 'Enter a valid email address.' },
+                '{{ form.username.id_for_label }}': { required: true, minLength: 3, message: 'Choose a username with at least 3 characters.' },
+                '{{ form.password1.id_for_label }}': { required: true, minLength: 8, message: 'Create a password with at least 8 characters.' },
+                '{{ form.password2.id_for_label }}': { required: true, matches: '{{ form.password1.id_for_label }}', message: 'Passwords do not match yet.' },
+                '{{ form.birthdate.id_for_label }}': { required: true, message: 'Select your birthdate.' },
+                '{{ form.gender.id_for_label }}': { required: true, message: 'Select your gender.' },
+                '{{ form.civil_status.id_for_label }}': { required: true, message: 'Select your civil status.' },
+                '{{ form.contact_number.id_for_label }}': { pattern: /^(09\d{9}|\+639\d{9}|0\d{10,14}|\d{7,15})$/, message: 'Enter a valid contact number.' },
+                '{{ form.address.id_for_label }}': { required: true, message: 'Enter your complete address.' },
+                '{{ form.valid_id_image.id_for_label }}': { required: true, message: 'Upload a valid ID image.' }
+            };
+            const stepInputs = steps.map((step) => Array.from(step.querySelectorAll('[data-step-field] input, [data-step-field] select, [data-step-field] textarea')));
+
+            function getValue(input) {
+                if (!input) return '';
+                if (input.type === 'file') return input.files && input.files.length ? input.files[0].name : '';
+                return (input.value || '').trim();
+            }
+
+            function setError(input, message) {
+                const wrapper = input.closest('[data-field-wrapper]');
+                if (!wrapper) return;
+                wrapper.classList.toggle('is-invalid', Boolean(message));
+                const target = wrapper.querySelector('.field-error');
+                if (target) target.textContent = message || '';
+            }
+
+            function validateInput(input) {
+                const rule = rules[input.id];
+                if (!rule) return true;
+                const value = getValue(input);
+                if (rule.required && !value) {
+                    setError(input, rule.message);
+                    return false;
+                }
+                if (!value) {
+                    setError(input, '');
+                    return true;
+                }
+                if (rule.minLength && value.length < rule.minLength) {
+                    setError(input, rule.message);
+                    return false;
+                }
+                if (rule.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    setError(input, rule.message);
+                    return false;
+                }
+                if (rule.pattern && !rule.pattern.test(value.replace(/\s+/g, ''))) {
+                    setError(input, rule.message);
+                    return false;
+                }
+                if (rule.matches && value !== getValue(document.getElementById(rule.matches))) {
+                    setError(input, rule.message);
+                    return false;
+                }
+                setError(input, '');
+                return true;
+            }
+
+            function validateStep(index) {
+                return stepInputs[index].every(validateInput);
+            }
+
+            function passwordStrength() {
+                const value = passwordInput.value || '';
+                let score = 0;
+                if (value.length >= 8) score += 1;
+                if (/[a-z]/.test(value) && /[A-Z]/.test(value)) score += 1;
+                if (/\d/.test(value)) score += 1;
+                if (/[^A-Za-z0-9]/.test(value)) score += 1;
+                const levels = [
+                    ['Password strength will appear here.', '0%', '#d38c28'],
+                    ['Weak password', '25%', '#d06646'],
+                    ['Fair password', '50%', '#d5a232'],
+                    ['Good password', '75%', '#397ec9'],
+                    ['Strong password', '100%', '#1d9864']
+                ];
+                meterText.textContent = levels[score][0];
+                meterFill.style.width = levels[score][1];
+                meterFill.style.background = levels[score][2];
+            }
+
+            function updateSummary() {
+                summary.full_name.textContent = [
+                    getValue(document.getElementById('{{ form.first_name.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.middle_name.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.last_name.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.suffix.id_for_label }}'))
+                ].filter(Boolean).join(' ') || '-';
+                summary.identity.textContent = [
+                    getValue(document.getElementById('{{ form.birthdate.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.place_of_birth.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.gender.id_for_label }}'))
+                ].filter(Boolean).join(' • ') || '-';
+                summary.address.textContent = getValue(addressField) || '-';
+                summary.account.textContent = [
+                    getValue(document.getElementById('{{ form.email.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.username.id_for_label }}')),
+                    getValue(document.getElementById('{{ form.contact_number.id_for_label }}'))
+                ].filter(Boolean).join(' • ') || '-';
+            }
+
+            function initialStep() {
+                const index = steps.findIndex((step) => step.querySelector('.field-error') && step.querySelector('.field-error').textContent.trim());
+                return index >= 0 ? index : 0;
+            }
+
+            let currentStep = initialStep();
+
+            function showStep(index) {
+                currentStep = Math.max(0, Math.min(index, steps.length - 1));
+                steps.forEach((step, stepIndex) => step.classList.toggle('is-active', stepIndex === currentStep));
+                stepLabels.forEach((step, stepIndex) => {
+                    step.classList.toggle('is-current', stepIndex === currentStep);
+                    step.classList.toggle('is-complete', stepIndex < currentStep);
+                });
+                progressFill.style.width = (((currentStep + 1) / steps.length) * 100) + '%';
+                progressTitle.textContent = steps[currentStep].dataset.stepTitle;
+                progressCount.textContent = 'Step ' + (currentStep + 1) + ' of ' + steps.length;
+                prevButton.style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+                nextButton.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-flex';
+                submitButton.style.display = currentStep === steps.length - 1 ? 'inline-flex' : 'none';
+                updateSummary();
+            }
+
+            nextButton.addEventListener('click', function () {
+                if (!validateStep(currentStep)) {
+                    const invalid = steps[currentStep].querySelector('.is-invalid input, .is-invalid textarea, .is-invalid select');
+                    if (invalid) invalid.focus();
+                    return;
+                }
+                showStep(currentStep + 1);
+            });
+
+            prevButton.addEventListener('click', function () {
+                showStep(currentStep - 1);
+            });
+
+            form.addEventListener('submit', function (event) {
+                const badStep = stepInputs.findIndex((fields) => !fields.every(validateInput));
+                if (badStep >= 0) {
+                    event.preventDefault();
+                    showStep(badStep);
+                }
+            });
+
+            Object.keys(rules).forEach((id) => {
+                const input = document.getElementById(id);
+                if (!input) return;
+                ['blur', 'change', 'input'].forEach((eventName) => {
+                    input.addEventListener(eventName, function () {
+                        validateInput(input);
+                        updateSummary();
+                    });
+                });
+            });
+
+            passwordInput.addEventListener('input', passwordStrength);
+            passwordConfirmInput.addEventListener('input', function () { validateInput(passwordConfirmInput); });
+
+            document.querySelectorAll('[data-toggle-panel]').forEach((button) => {
+                const panel = document.getElementById(button.dataset.togglePanel);
+                button.addEventListener('click', function () {
+                    const open = button.getAttribute('aria-expanded') === 'true';
+                    button.setAttribute('aria-expanded', String(!open));
+                    panel.classList.toggle('is-open', !open);
+                });
+            });
+
+            passwordStrength();
+            showStep(currentStep);
+        }());
+    </script>
 </body>
 </html>
