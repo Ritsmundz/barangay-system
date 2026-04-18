@@ -65,7 +65,33 @@ else:
 if not ON_RENDER and 'runserver' in sys.argv:
     DEBUG = True
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv('ALLOWED_HOSTS', 'barangay-system-4jua.onrender.com,localhost,127.0.0.1').split(',') if host.strip()]
+
+def _split_csv_env(value):
+    return [item.strip() for item in value.split(',') if item.strip()]
+
+
+def _append_unique(values, candidate):
+    if candidate and candidate not in values:
+        values.append(candidate)
+
+
+ALLOWED_HOSTS = _split_csv_env(os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
+
+for default_host in ('localhost', '127.0.0.1', 'barangay-system-4jua.onrender.com'):
+    _append_unique(ALLOWED_HOSTS, default_host)
+
+render_external_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
+_append_unique(ALLOWED_HOSTS, render_external_hostname)
+
+render_external_url = os.getenv('RENDER_EXTERNAL_URL', '').strip().rstrip('/')
+if render_external_url:
+    try:
+        from urllib.parse import urlparse
+
+        parsed_render_url = urlparse(render_external_url)
+        _append_unique(ALLOWED_HOSTS, parsed_render_url.hostname)
+    except ValueError:
+        pass
 
 
 # Application definition
