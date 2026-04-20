@@ -34,21 +34,39 @@
     .portal-fee-row strong { font-size: 1.45rem; color: #214eb5; }
     .portal-field { display: flex; flex-direction: column; gap: 8px; }
     .portal-field.full { grid-column: 1 / -1; }
-    .portal-field label { color: #203357; font-weight: 700; }
+    .portal-field label { color: #203357; font-weight: 700; display: flex; align-items: center; gap: 10px; }
     .portal-field label span { color: #d43b3b; }
+    .portal-field label input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        margin: 0;
+        accent-color: #214eb5;
+    }
     .portal-field input, .portal-field select {
         width: 100%; height: 48px; border-radius: 14px; border: 1px solid #d8e1f1; background: #fbfdff;
         padding: 0 14px; font: inherit; color: #1d3156; outline: none;
     }
     .portal-field input:focus, .portal-field select:focus { border-color: #3567dd; box-shadow: 0 0 0 4px rgba(53,103,221,.1); }
     .portal-field small { color: #7b8ca6; line-height: 1.5; }
-    .portal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
+    .portal-form-footer { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+    .portal-terms-row {
+        width: 100%; padding-top: 4px; border-top: 1px solid #edf2fa;
+    }
+    .portal-terms-row label {
+        justify-content: flex-start;
+        color: #203357;
+        font-weight: 700;
+    }
+    .portal-actions { display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; width: 100%; }
     .portal-btn {
         height: 48px; padding: 0 18px; border-radius: 14px; font: inherit; font-weight: 700; text-decoration: none;
         display: inline-flex; align-items: center; justify-content: center; border: 1px solid #d8e1f1;
     }
     .portal-btn-light { background: #fff; color: #60708c; }
     .portal-btn-solid { color: #fff; border-color: transparent; }
+    .portal-btn:disabled { opacity: 0.65; cursor: not-allowed; }
     .portal-side-panel { padding: 0; }
     .portal-side-panel + .portal-side-panel { margin-top: 16px; }
     .portal-side-head { padding: 18px 20px 14px; border-bottom: 1px solid #edf2fa; }
@@ -79,7 +97,7 @@
             <p>{{ selected_service_theme.description }}</p>
         </div>
 
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="service_type" value="{{ selected_service.id }}">
 
@@ -116,7 +134,7 @@
                     <div class="portal-fields">
                         {% if selected_service_rules.requires_purpose %}
                         <div class="portal-field full">
-                            <label for="portal_purpose">What is this request for? <span>*</span></label>
+                            <label for="portal_purpose">{% if selected_service.slug == 'certificate-of-indigency' %}Certificate Type{% else %}What is this request for?{% endif %} <span>*</span></label>
                             <select id="portal_purpose" name="portal_purpose" required>
                                 <option value="">Select purpose</option>
                                 {% for purpose in selected_service_purposes %}
@@ -128,6 +146,254 @@
                         <div class="portal-field full" id="purpose-other-wrap" style="display:none;">
                             <label for="purpose_other">Other purpose details <span>*</span></label>
                             <input id="purpose_other" name="purpose_other" type="text" value="{% if posted_data %}{{ posted_data.purpose_other }}{% endif %}" placeholder="State the specific purpose">
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service.slug == 'barangay-id' %}
+                        <div class="portal-field full">
+                            <label for="photo_2x2">Upload 2X2 Picture</label>
+                            <input id="photo_2x2" name="photo_2x2" type="file" accept="image/*">
+                        </div>
+                        <div class="portal-field full">
+                            <label for="resident_id_no">Resident ID No.</label>
+                            <input id="resident_id_no" name="resident_id_no" type="text" value="{{ resident.id }}" readonly>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="full_name">Full Name <span>*</span></label>
+                            <input id="full_name" name="full_name" type="text" value="{{ resident.first_name }}{% if resident.middle_name %} {{ resident.middle_name }}{% endif %} {{ resident.last_name }}" readonly required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="residence_address">Address</label>
+                            <input id="residence_address" name="residence_address" type="text" value="{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% endif %}" readonly>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="birthdate">Birthdate <span>*</span></label>
+                            <input id="birthdate" name="birthdate" type="text" value="{{ resident.birth_date|date:'F j, Y' }}" readonly required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="precinct_no">Precinct No.</label>
+                            <input id="precinct_no" name="precinct_no" type="text" value="{{ resident.precinct|default:'' }}" readonly>
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service.slug == 'certificate-of-indigency' or selected_service.slug == 'first-time-job-seeker' %}
+                        <div class="portal-field full">
+                            <label for="requestor_name">Requestor Name <span>*</span></label>
+                            <input id="requestor_name" name="requestor_name" type="text" value="{% if posted_data %}{{ posted_data.requestor_name }}{% else %}{{ resident.first_name }}{% if resident.middle_name %} {{ resident.middle_name }}{% endif %} {{ resident.last_name }}{% if resident.suffix %} {{ resident.suffix }}{% endif %}{% endif %}" placeholder="Requestor Name" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="requestor_address">Requestor Address <span>*</span></label>
+                            <input id="requestor_address" name="requestor_address" type="text" value="{% if posted_data %}{{ posted_data.requestor_address }}{% else %}{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% if resident.household.purok %}, Purok {{ resident.household.purok.name }}{% endif %}{% endif %}{% endif %}" placeholder="Requestor Address" required>
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service.slug == 'certificate-of-indigency' %}
+                        <div id="deceased-fields" style="display: none;">
+                            <div class="portal-field full">
+                                <label for="deceased_name">Name of Deceased <span>*</span></label>
+                                <input id="deceased_name" name="deceased_name" type="text" value="{% if posted_data %}{{ posted_data.deceased_name }}{% endif %}" placeholder="Full Name" required>
+                            </div>
+                            <div class="portal-field full">
+                                <label for="deceased_relationship">Relationship to Deceased <span>*</span></label>
+                                <input id="deceased_relationship" name="deceased_relationship" type="text" value="{% if posted_data %}{{ posted_data.deceased_relationship }}{% endif %}" placeholder="Ex: son" required>
+                            </div>
+                            <div class="portal-field full">
+                                <label for="date_of_death">Date of Death <span>*</span></label>
+                                <input id="date_of_death" name="date_of_death" type="date" value="{% if posted_data %}{{ posted_data.date_of_death }}{% endif %}" required>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service_rules.requires_business %}
+                        <div class="portal-field full">
+                            <label for="business_name">Business Name <span>*</span></label>
+                            <input id="business_name" name="business_name" type="text" value="{% if posted_data %}{{ posted_data.business_name }}{% endif %}" placeholder="Business Name" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_owner_name">Business Owner / Representative <span>*</span></label>
+                            <input id="business_owner_name" name="business_owner_name" type="text" value="{% if posted_data %}{{ posted_data.business_owner_name }}{% else %}{{ resident.first_name }}{% if resident.middle_name %} {{ resident.middle_name }}{% endif %} {{ resident.last_name }}{% if resident.suffix %} {{ resident.suffix }}{% endif %}{% endif %}" placeholder="Owner or authorized representative" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_address">Business Address <span>*</span></label>
+                            <input id="business_address" name="business_address" type="text" value="{% if posted_data %}{{ posted_data.business_address }}{% else %}{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% if resident.household.purok %}, Purok {{ resident.household.purok.name }}{% endif %}{% endif %}{% endif %}" placeholder="Business Address" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_nature">Nature of Business <span>*</span></label>
+                            <input id="business_nature" name="business_nature" type="text" value="{% if posted_data %}{{ posted_data.business_nature }}{% endif %}" placeholder="Business Nature" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_organization_type">Business Organization Type <span>*</span></label>
+                            <select id="business_organization_type" name="business_organization_type" required>
+                                <option value="">Select type</option>
+                                <option value="sole_proprietorship" {% if posted_data and posted_data.business_organization_type == 'sole_proprietorship' %}selected{% endif %}>Sole Proprietorship</option>
+                                <option value="partnership" {% if posted_data and posted_data.business_organization_type == 'partnership' %}selected{% endif %}>Partnership</option>
+                                <option value="corporation" {% if posted_data and posted_data.business_organization_type == 'corporation' %}selected{% endif %}>Corporation</option>
+                                <option value="cooperative" {% if posted_data and posted_data.business_organization_type == 'cooperative' %}selected{% endif %}>Cooperative</option>
+                            </select>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_registration_number">DTI / SEC / CDA Registration No. <span>*</span></label>
+                            <input id="business_registration_number" name="business_registration_number" type="text" value="{% if posted_data %}{{ posted_data.business_registration_number }}{% endif %}" placeholder="Registration Number" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_tin">TIN <span>*</span></label>
+                            <input id="business_tin" name="business_tin" type="text" value="{% if posted_data %}{{ posted_data.business_tin }}{% endif %}" placeholder="Tax Identification Number" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_trade_name">Trade Name / Franchise</label>
+                            <input id="business_trade_name" name="business_trade_name" type="text" value="{% if posted_data %}{{ posted_data.business_trade_name }}{% endif %}" placeholder="Optional">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_psic_code">PSIC Code <span>*</span></label>
+                            <input id="business_psic_code" name="business_psic_code" type="text" value="{% if posted_data %}{{ posted_data.business_psic_code }}{% endif %}" placeholder="PSIC Code" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_telephone">Telephone / Landline</label>
+                            <input id="business_telephone" name="business_telephone" type="text" value="{% if posted_data %}{{ posted_data.business_telephone }}{% else %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone Number">
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_email">Business Email</label>
+                            <input id="business_email" name="business_email" type="email" value="{% if posted_data %}{{ posted_data.business_email }}{% else %}{{ resident.email|default:'' }}{% endif %}" placeholder="Business Email Address">
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_representative_designation">Designation / Position <span>*</span></label>
+                            <input id="business_representative_designation" name="business_representative_designation" type="text" value="{% if posted_data %}{{ posted_data.business_representative_designation }}{% else %}OWNER / AUTHORIZED REPRESENTATIVE{% endif %}" placeholder="Designation / Position" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_house_number">House / Building No. <span>*</span></label>
+                            <input id="business_house_number" name="business_house_number" type="text" value="{% if posted_data %}{{ posted_data.business_house_number }}{% else %}{% if resident.household %}{{ resident.household.house_number }}{% endif %}{% endif %}" placeholder="House / Building No." required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_building_name">Building Name</label>
+                            <input id="business_building_name" name="business_building_name" type="text" value="{% if posted_data %}{{ posted_data.business_building_name }}{% endif %}" placeholder="Optional">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_street">Street <span>*</span></label>
+                            <input id="business_street" name="business_street" type="text" value="{% if posted_data %}{{ posted_data.business_street }}{% else %}{% if resident.household %}{{ resident.household.street }}{% endif %}{% endif %}" placeholder="Street" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_block_number">Block No.</label>
+                            <input id="business_block_number" name="business_block_number" type="text" value="{% if posted_data %}{{ posted_data.business_block_number }}{% endif %}" placeholder="Optional">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_lot_number">Lot No.</label>
+                            <input id="business_lot_number" name="business_lot_number" type="text" value="{% if posted_data %}{{ posted_data.business_lot_number }}{% endif %}" placeholder="Optional">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_subdivision">Subdivision</label>
+                            <input id="business_subdivision" name="business_subdivision" type="text" value="{% if posted_data %}{{ posted_data.business_subdivision }}{% endif %}" placeholder="Optional">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_zip_code">ZIP Code <span>*</span></label>
+                            <input id="business_zip_code" name="business_zip_code" type="text" value="{% if posted_data %}{{ posted_data.business_zip_code }}{% endif %}" placeholder="ZIP Code" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_president_name">President / Officer-in-Charge</label>
+                            <input id="business_president_name" name="business_president_name" type="text" value="{% if posted_data %}{{ posted_data.business_president_name }}{% endif %}" placeholder="For corporation, cooperative, or partnership">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_corporation_nationality">Corporation Nationality</label>
+                            <select id="business_corporation_nationality" name="business_corporation_nationality">
+                                <option value="">Select nationality</option>
+                                <option value="filipino" {% if posted_data and posted_data.business_corporation_nationality == 'filipino' %}selected{% endif %}>Filipino</option>
+                                <option value="foreign" {% if posted_data and posted_data.business_corporation_nationality == 'foreign' %}selected{% endif %}>Foreign</option>
+                            </select>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_area_sqm">Business Area (sq. m.) <span>*</span></label>
+                            <input id="business_area_sqm" name="business_area_sqm" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_area_sqm }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_operation_time">Time of Operation <span>*</span></label>
+                            <input id="business_operation_time" name="business_operation_time" type="text" value="{% if posted_data %}{{ posted_data.business_operation_time }}{% endif %}" placeholder="Ex: 8:00 AM - 5:00 PM" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_employee_count">Total Employees <span>*</span></label>
+                            <input id="business_employee_count" name="business_employee_count" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_employee_count }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_qc_employee_count">Employees Residing Within QC <span>*</span></label>
+                            <input id="business_qc_employee_count" name="business_qc_employee_count" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_qc_employee_count }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_floor_area_sqm">Total Floor Area (sq. m.) <span>*</span></label>
+                            <input id="business_floor_area_sqm" name="business_floor_area_sqm" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_floor_area_sqm }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_male_employee_count">Male Employees <span>*</span></label>
+                            <input id="business_male_employee_count" name="business_male_employee_count" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_male_employee_count }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_female_employee_count">Female Employees <span>*</span></label>
+                            <input id="business_female_employee_count" name="business_female_employee_count" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_female_employee_count }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_delivery_vans">Delivery Vans / Trucks</label>
+                            <input id="business_delivery_vans" name="business_delivery_vans" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_delivery_vans }}{% endif %}" placeholder="If applicable">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_delivery_motorcycles">Delivery Motorcycles</label>
+                            <input id="business_delivery_motorcycles" name="business_delivery_motorcycles" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_delivery_motorcycles }}{% endif %}" placeholder="If applicable">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_property_status">Property Status <span>*</span></label>
+                            <select id="business_property_status" name="business_property_status" required>
+                                <option value="">Select status</option>
+                                <option value="owned" {% if posted_data and posted_data.business_property_status == 'owned' %}selected{% endif %}>Owned</option>
+                                <option value="leased" {% if posted_data and posted_data.business_property_status == 'leased' %}selected{% endif %}>Leased</option>
+                            </select>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_tax_declaration_number">Tax Declaration No. <span>*</span></label>
+                            <input id="business_tax_declaration_number" name="business_tax_declaration_number" type="text" value="{% if posted_data %}{{ posted_data.business_tax_declaration_number }}{% endif %}" placeholder="Tax Declaration No." required>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_property_identification_number">Property Identification No. <span>*</span></label>
+                            <input id="business_property_identification_number" name="business_property_identification_number" type="text" value="{% if posted_data %}{{ posted_data.business_property_identification_number }}{% endif %}" placeholder="Property Identification No." required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_capital_investment">Total Capital Investment <span>*</span></label>
+                            <input id="business_capital_investment" name="business_capital_investment" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_capital_investment }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_activity_type">Business Activity <span>*</span></label>
+                            <select id="business_activity_type" name="business_activity_type" required>
+                                <option value="">Select activity</option>
+                                <option value="main_office" {% if posted_data and posted_data.business_activity_type == 'main_office' %}selected{% endif %}>Main Office</option>
+                                <option value="branch" {% if posted_data and posted_data.business_activity_type == 'branch' %}selected{% endif %}>Branch</option>
+                                <option value="admin_office_only" {% if posted_data and posted_data.business_activity_type == 'admin_office_only' %}selected{% endif %}>Admin Office Only</option>
+                            </select>
+                        </div>
+                        <div class="portal-field full">
+                            <label for="business_products_services">Products / Services <span>*</span></label>
+                            <input id="business_products_services" name="business_products_services" type="text" value="{% if posted_data %}{{ posted_data.business_products_services }}{% endif %}" placeholder="Products / Services" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_equipment">Equipment</label>
+                            <input id="business_equipment" name="business_equipment" type="text" value="{% if posted_data %}{{ posted_data.business_equipment }}{% endif %}" placeholder="If applicable">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_equipment_units">No. of Units</label>
+                            <input id="business_equipment_units" name="business_equipment_units" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_equipment_units }}{% endif %}" placeholder="If applicable">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_equipment_size">Equipment Size</label>
+                            <input id="business_equipment_size" name="business_equipment_size" type="text" value="{% if posted_data %}{{ posted_data.business_equipment_size }}{% endif %}" placeholder="If applicable">
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_storeys">No. of Storeys <span>*</span></label>
+                            <input id="business_storeys" name="business_storeys" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_storeys }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_occupants">No. of Occupants <span>*</span></label>
+                            <input id="business_occupants" name="business_occupants" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_occupants }}{% endif %}" required>
+                        </div>
+                        <div class="portal-field">
+                            <label for="business_occupancy_type">Type of Occupancy <span>*</span></label>
+                            <input id="business_occupancy_type" name="business_occupancy_type" type="text" value="{% if posted_data %}{{ posted_data.business_occupancy_type }}{% endif %}" placeholder="Type of Occupancy" required>
+                        </div>
+                        <div class="portal-field full">
+                            <label><input id="business_has_tax_incentives" name="business_has_tax_incentives" type="checkbox" {% if posted_data and posted_data.business_has_tax_incentives %}checked{% endif %}> Business has tax incentives from a government entity</label>
                         </div>
                         {% endif %}
 
@@ -157,9 +423,17 @@
                     </div>
                 </section>
 
-                <div class="portal-actions">
-                    <a class="portal-btn portal-btn-light" href="{% url 'portal_create_service_request' %}">Cancel</a>
-                    <button class="portal-btn portal-btn-solid" type="submit" style="background: {{ selected_service_theme.accent_color }};">Submit Request</button>
+                <div class="portal-form-footer">
+                    {% if selected_service %}
+                    <div class="portal-field full portal-terms-row">
+                        <label><input type="checkbox" id="agree_terms" name="agree_terms" required> I agree and accept the Terms and Conditions</label>
+                    </div>
+                    {% endif %}
+
+                    <div class="portal-actions">
+                        <a class="portal-btn portal-btn-light" href="{% url 'portal_create_service_request' %}">Cancel</a>
+                        <button id="portal_submit_button" class="portal-btn portal-btn-solid" type="submit" style="background: {{ selected_service_theme.accent_color }};" disabled>Submit Request</button>
+                    </div>
                 </div>
             </div>
         </form>
@@ -199,25 +473,65 @@
     </aside>
 </div>
 
-{% if selected_service_rules.requires_purpose %}
 <script>
+    {% if selected_service_rules.requires_purpose %}
     (function () {
         const purposeSelect = document.getElementById("portal_purpose");
         const purposeOtherWrap = document.getElementById("purpose-other-wrap");
         const purposeOther = document.getElementById("purpose_other");
-        if (!purposeSelect || !purposeOtherWrap || !purposeOther) return;
+        const deceasedFields = document.getElementById("deceased-fields");
+        if (!purposeSelect) return;
 
         function syncOtherField() {
             const option = purposeSelect.options[purposeSelect.selectedIndex];
             const show = option && option.dataset.requiresOther === "1";
-            purposeOtherWrap.style.display = show ? "flex" : "none";
-            purposeOther.required = !!show;
-            if (!show) purposeOther.value = "";
+            if (purposeOtherWrap) {
+                purposeOtherWrap.style.display = show ? "flex" : "none";
+                if (purposeOther) {
+                    purposeOther.required = !!show;
+                    if (!show) purposeOther.value = "";
+                }
+            }
         }
 
-        purposeSelect.addEventListener("change", syncOtherField);
+        function syncDeceasedFields() {
+            const selectedValue = purposeSelect.value;
+            const isBurial = selectedValue && selectedValue.includes("BURIAL");
+            if (deceasedFields) {
+                deceasedFields.style.display = isBurial ? "block" : "none";
+                // Make deceased fields required only for burial
+                const inputs = deceasedFields.querySelectorAll("input");
+                inputs.forEach(input => {
+                    input.required = isBurial;
+                    if (!isBurial) input.value = "";
+                });
+            }
+        }
+
+        purposeSelect.addEventListener("change", function() {
+            syncOtherField();
+            syncDeceasedFields();
+        });
         syncOtherField();
+        syncDeceasedFields();
     })();
+    {% endif %}
+
+    {% if selected_service %}
+    (function() {
+        const agreeCheckbox = document.getElementById("agree_terms");
+        const submitButton = document.getElementById("portal_submit_button");
+        if (!agreeCheckbox || !submitButton) return;
+
+        function syncSubmitButton() {
+            submitButton.disabled = !agreeCheckbox.checked;
+            submitButton.style.opacity = agreeCheckbox.checked ? "1" : "0.65";
+            submitButton.style.cursor = agreeCheckbox.checked ? "pointer" : "not-allowed";
+        }
+
+        agreeCheckbox.addEventListener("change", syncSubmitButton);
+        syncSubmitButton();
+    })();
+    {% endif %}
 </script>
-{% endif %}
 {% endblock %}

@@ -52,9 +52,74 @@ class RequestPurposeAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
-    list_display = ('resident', 'service_type','fee', 'status', 'request_date')
+    list_display = ('resident', 'service_type', 'business_name', 'document_number', 'fee', 'status', 'request_date')
     list_filter = ('service_type', 'status')
-    search_fields = ('resident__last_name',)
+    search_fields = ('resident__last_name', 'resident__first_name', 'business_name', 'document_number')
+    fieldsets = (
+        (None, {
+            "fields": (
+                "resident",
+                "service_type",
+                "purpose_option",
+                "purpose",
+                "purpose_for",
+                "purpose_other",
+                "status",
+                "fee",
+                "document_number",
+                "clearance_number",
+                "remarks",
+            )
+        }),
+        ("Business Permit Details", {
+            "classes": ("collapse",),
+            "fields": (
+                "business_name",
+                "business_owner_name",
+                "business_representative_designation",
+                "business_nature",
+                "business_products_services",
+                "business_organization_type",
+                "business_registration_number",
+                "business_tin",
+                "business_trade_name",
+                "business_psic_code",
+                "business_address",
+                "business_house_number",
+                "business_street",
+                "business_building_name",
+                "business_block_number",
+                "business_lot_number",
+                "business_subdivision",
+                "business_zip_code",
+                "business_telephone",
+                "business_email",
+                "business_president_name",
+                "business_corporation_nationality",
+                "business_area_sqm",
+                "business_floor_area_sqm",
+                "business_operation_time",
+                "business_employee_count",
+                "business_qc_employee_count",
+                "business_male_employee_count",
+                "business_female_employee_count",
+                "business_delivery_vans",
+                "business_delivery_motorcycles",
+                "business_property_status",
+                "business_tax_declaration_number",
+                "business_property_identification_number",
+                "business_capital_investment",
+                "business_has_tax_incentives",
+                "business_activity_type",
+                "business_equipment",
+                "business_equipment_units",
+                "business_equipment_size",
+                "business_storeys",
+                "business_occupants",
+                "business_occupancy_type",
+            ),
+        }),
+    )
 
 
 @admin.register(Payment)

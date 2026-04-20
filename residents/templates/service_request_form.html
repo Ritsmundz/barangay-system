@@ -461,6 +461,161 @@
                     <div class="field-hint">Select the request purpose. Choose Other to specify custom purpose.</div>
                 </div>
 
+                <!-- Business Permit Details -->
+                <div class="field-group" id="business-section" style="display:none;">
+                    <div class="field-label">Business Permit Information</div>
+                    <input id="business_name" name="business_name" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_name }}{% endif %}"
+                        placeholder="Business Name">
+                    <input id="business_owner_name" name="business_owner_name" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_owner_name }}{% endif %}"
+                        placeholder="Business Owner / Authorized Representative" style="margin-top:8px;">
+                    <input id="business_address" name="business_address" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_address }}{% endif %}"
+                        placeholder="Business Address" style="margin-top:8px;">
+                    <input id="business_nature" name="business_nature" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_nature }}{% endif %}"
+                        placeholder="Nature of Business" style="margin-top:8px;">
+                    <div class="field-hint">Complete these fields once so the secretary can print the permit without re-encoding.</div>
+
+                    <div class="field-label" style="margin-top:16px;">Registration and Contact Details</div>
+                    <select id="business_organization_type" name="business_organization_type" class="bmis-select" style="margin-top:8px;">
+                        <option value="">Business Organization Type</option>
+                        <option value="sole_proprietorship" {% if posted_data and posted_data.business_organization_type == 'sole_proprietorship' %}selected{% endif %}>Sole Proprietorship</option>
+                        <option value="partnership" {% if posted_data and posted_data.business_organization_type == 'partnership' %}selected{% endif %}>Partnership</option>
+                        <option value="corporation" {% if posted_data and posted_data.business_organization_type == 'corporation' %}selected{% endif %}>Corporation</option>
+                        <option value="cooperative" {% if posted_data and posted_data.business_organization_type == 'cooperative' %}selected{% endif %}>Cooperative</option>
+                    </select>
+                    <input id="business_registration_number" name="business_registration_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_registration_number }}{% endif %}"
+                        placeholder="DTI / SEC / CDA Registration Number" style="margin-top:8px;">
+                    <input id="business_tin" name="business_tin" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_tin }}{% endif %}"
+                        placeholder="Tax Identification Number (TIN)" style="margin-top:8px;">
+                    <input id="business_trade_name" name="business_trade_name" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_trade_name }}{% endif %}"
+                        placeholder="Trade Name / Franchise (if applicable)" style="margin-top:8px;">
+                    <input id="business_psic_code" name="business_psic_code" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_psic_code }}{% endif %}"
+                        placeholder="Philippine Standard Industrial Code" style="margin-top:8px;">
+                    <input id="business_telephone" name="business_telephone" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_telephone }}{% else %}{{ resident.contact_number|default:'' }}{% endif %}"
+                        placeholder="Telephone / Landline Number" style="margin-top:8px;">
+                    <input id="business_email" name="business_email" class="bmis-input" type="email"
+                        value="{% if posted_data %}{{ posted_data.business_email }}{% else %}{{ resident.email|default:'' }}{% endif %}"
+                        placeholder="Business Email Address" style="margin-top:8px;">
+                    <input id="business_representative_designation" name="business_representative_designation" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_representative_designation }}{% else %}OWNER / AUTHORIZED REPRESENTATIVE{% endif %}"
+                        placeholder="Designation / Position" style="margin-top:8px;">
+
+                    <div class="field-label" style="margin-top:16px;">Business Address Breakdown</div>
+                    <input id="business_house_number" name="business_house_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_house_number }}{% else %}{% if resident.household %}{{ resident.household.house_number }}{% endif %}{% endif %}"
+                        placeholder="House / Building No." style="margin-top:8px;">
+                    <input id="business_building_name" name="business_building_name" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_building_name }}{% endif %}"
+                        placeholder="Building Name" style="margin-top:8px;">
+                    <input id="business_street" name="business_street" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_street }}{% else %}{% if resident.household %}{{ resident.household.street }}{% endif %}{% endif %}"
+                        placeholder="Street" style="margin-top:8px;">
+                    <input id="business_block_number" name="business_block_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_block_number }}{% endif %}"
+                        placeholder="Block No. (if applicable)" style="margin-top:8px;">
+                    <input id="business_lot_number" name="business_lot_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_lot_number }}{% endif %}"
+                        placeholder="Lot No. (if applicable)" style="margin-top:8px;">
+                    <input id="business_subdivision" name="business_subdivision" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_subdivision }}{% endif %}"
+                        placeholder="Subdivision (if applicable)" style="margin-top:8px;">
+                    <input id="business_zip_code" name="business_zip_code" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_zip_code }}{% endif %}"
+                        placeholder="ZIP Code" style="margin-top:8px;">
+
+                    <div class="field-label" style="margin-top:16px;">Corporation / Partnership Details</div>
+                    <input id="business_president_name" name="business_president_name" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_president_name }}{% endif %}"
+                        placeholder="President / Officer-in-Charge (for corporation, cooperative, or partnership)" style="margin-top:8px;">
+                    <select id="business_corporation_nationality" name="business_corporation_nationality" class="bmis-select" style="margin-top:8px;">
+                        <option value="">Corporation Nationality</option>
+                        <option value="filipino" {% if posted_data and posted_data.business_corporation_nationality == 'filipino' %}selected{% endif %}>Filipino</option>
+                        <option value="foreign" {% if posted_data and posted_data.business_corporation_nationality == 'foreign' %}selected{% endif %}>Foreign</option>
+                    </select>
+
+                    <div class="field-label" style="margin-top:16px;">Business Operation Details</div>
+                    <input id="business_area_sqm" name="business_area_sqm" class="bmis-input" type="number" step="0.01" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_area_sqm }}{% endif %}"
+                        placeholder="Business Area (sq. m.)" style="margin-top:8px;">
+                    <input id="business_operation_time" name="business_operation_time" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_operation_time }}{% endif %}"
+                        placeholder="Time of Operation (ex. 8:00 AM - 5:00 PM)" style="margin-top:8px;">
+                    <input id="business_employee_count" name="business_employee_count" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_employee_count }}{% endif %}"
+                        placeholder="Total Number of Employees" style="margin-top:8px;">
+                    <input id="business_qc_employee_count" name="business_qc_employee_count" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_qc_employee_count }}{% endif %}"
+                        placeholder="Employees Residing Within QC" style="margin-top:8px;">
+                    <input id="business_floor_area_sqm" name="business_floor_area_sqm" class="bmis-input" type="number" step="0.01" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_floor_area_sqm }}{% endif %}"
+                        placeholder="Total Floor Area (sq. m.)" style="margin-top:8px;">
+                    <input id="business_male_employee_count" name="business_male_employee_count" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_male_employee_count }}{% endif %}"
+                        placeholder="Male Employees" style="margin-top:8px;">
+                    <input id="business_female_employee_count" name="business_female_employee_count" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_female_employee_count }}{% endif %}"
+                        placeholder="Female Employees" style="margin-top:8px;">
+                    <input id="business_delivery_vans" name="business_delivery_vans" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_delivery_vans }}{% endif %}"
+                        placeholder="Delivery Vans / Trucks (if applicable)" style="margin-top:8px;">
+                    <input id="business_delivery_motorcycles" name="business_delivery_motorcycles" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_delivery_motorcycles }}{% endif %}"
+                        placeholder="Delivery Motorcycles (if applicable)" style="margin-top:8px;">
+                    <select id="business_property_status" name="business_property_status" class="bmis-select" style="margin-top:8px;">
+                        <option value="">Property Status</option>
+                        <option value="owned" {% if posted_data and posted_data.business_property_status == 'owned' %}selected{% endif %}>Owned</option>
+                        <option value="leased" {% if posted_data and posted_data.business_property_status == 'leased' %}selected{% endif %}>Leased</option>
+                    </select>
+                    <input id="business_tax_declaration_number" name="business_tax_declaration_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_tax_declaration_number }}{% endif %}"
+                        placeholder="Tax Declaration Number" style="margin-top:8px;">
+                    <input id="business_property_identification_number" name="business_property_identification_number" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_property_identification_number }}{% endif %}"
+                        placeholder="Property Identification Number" style="margin-top:8px;">
+                    <input id="business_capital_investment" name="business_capital_investment" class="bmis-input" type="number" step="0.01" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_capital_investment }}{% endif %}"
+                        placeholder="Total Capital Investment" style="margin-top:8px;">
+                    <label style="display:flex; align-items:center; gap:8px; margin-top:10px;">
+                        <input id="business_has_tax_incentives" name="business_has_tax_incentives" type="checkbox" {% if posted_data and posted_data.business_has_tax_incentives %}checked{% endif %}>
+                        Business has tax incentives from a government entity
+                    </label>
+                    <select id="business_activity_type" name="business_activity_type" class="bmis-select" style="margin-top:8px;">
+                        <option value="">Business Activity</option>
+                        <option value="main_office" {% if posted_data and posted_data.business_activity_type == 'main_office' %}selected{% endif %}>Main Office</option>
+                        <option value="branch" {% if posted_data and posted_data.business_activity_type == 'branch' %}selected{% endif %}>Branch</option>
+                        <option value="admin_office_only" {% if posted_data and posted_data.business_activity_type == 'admin_office_only' %}selected{% endif %}>Admin Office Only</option>
+                    </select>
+                    <input id="business_products_services" name="business_products_services" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_products_services }}{% endif %}"
+                        placeholder="Products / Services" style="margin-top:8px;">
+                    <input id="business_equipment" name="business_equipment" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_equipment }}{% endif %}"
+                        placeholder="Equipment (if applicable)" style="margin-top:8px;">
+                    <input id="business_equipment_units" name="business_equipment_units" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_equipment_units }}{% endif %}"
+                        placeholder="No. of Units" style="margin-top:8px;">
+                    <input id="business_equipment_size" name="business_equipment_size" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_equipment_size }}{% endif %}"
+                        placeholder="Equipment Size" style="margin-top:8px;">
+                    <input id="business_storeys" name="business_storeys" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_storeys }}{% endif %}"
+                        placeholder="Number of Storeys" style="margin-top:8px;">
+                    <input id="business_occupants" name="business_occupants" class="bmis-input" type="number" min="0"
+                        value="{% if posted_data %}{{ posted_data.business_occupants }}{% endif %}"
+                        placeholder="Number of Occupants" style="margin-top:8px;">
+                    <input id="business_occupancy_type" name="business_occupancy_type" class="bmis-input" type="text"
+                        value="{% if posted_data %}{{ posted_data.business_occupancy_type }}{% else %}{{ posted_data.business_nature }}{% endif %}"
+                        placeholder="Type of Occupancy" style="margin-top:8px;">
+                </div>
+
                 <!-- Emergency Contact -->
                 <div class="field-group" id="emergency-section">
                     <div class="field-label">Person to Notify in Case of Emergency</div>
@@ -649,12 +804,44 @@
             ].includes(serviceName);
             const showEmergency = serviceName === "barangay id";
             const showResidency = serviceName === "qcid" || serviceName === "qc id";
+            const showBusiness = ["business clearance", "barangay permit", "business permit"].includes(serviceName);
 
             purposeSection.style.display = showPurpose ? "flex" : "none";
+            document.getElementById("business-section").style.display = showBusiness ? "flex" : "none";
             emergencySection.style.display = showEmergency ? "flex" : "none";
             residencySection.style.display = showResidency ? "flex" : "none";
 
             setRequired(purposeSelect, showPurpose);
+            setRequired(document.getElementById("business_name"), showBusiness);
+            setRequired(document.getElementById("business_owner_name"), showBusiness);
+            setRequired(document.getElementById("business_address"), showBusiness);
+            setRequired(document.getElementById("business_nature"), showBusiness);
+            [
+                "business_organization_type",
+                "business_registration_number",
+                "business_tin",
+                "business_house_number",
+                "business_street",
+                "business_zip_code",
+                "business_psic_code",
+                "business_area_sqm",
+                "business_operation_time",
+                "business_employee_count",
+                "business_qc_employee_count",
+                "business_floor_area_sqm",
+                "business_male_employee_count",
+                "business_female_employee_count",
+                "business_property_status",
+                "business_tax_declaration_number",
+                "business_property_identification_number",
+                "business_capital_investment",
+                "business_activity_type",
+                "business_products_services",
+                "business_representative_designation",
+                "business_storeys",
+                "business_occupants",
+                "business_occupancy_type"
+            ].forEach((id) => setRequired(document.getElementById(id), showBusiness));
             if (!showPurpose) {
                 purposeSelect.value = "";
                 purposeOther.value = "";

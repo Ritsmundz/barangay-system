@@ -59,6 +59,13 @@
     .catalog-main { flex: 1 1 auto; display: flex; flex-direction: column; gap: 18px; }
     .catalog-side { width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
     .catalog-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .catalog-section {
+        background: rgba(255,255,255,.78); border: 1px solid #dbe5f4; border-radius: 24px; padding: 22px;
+        box-shadow: 0 18px 36px rgba(16, 33, 67, 0.04);
+    }
+    .catalog-section-header { margin-bottom: 18px; }
+    .catalog-section-header h2 { font-size: 1.35rem; color: #203357; margin-bottom: 6px; }
+    .catalog-section-header p { color: #6d7d92; font-size: .93rem; line-height: 1.6; }
     .catalog-card {
         border-radius: 22px; padding: 20px; min-height: 240px; display: flex; flex-direction: column; justify-content: space-between;
         overflow: hidden;
@@ -168,35 +175,76 @@
 
     <div class="catalog-grid">
         <section class="catalog-main">
-            <div class="catalog-cards" id="service-card-grid">
-                {% for item in service_cards %}
-                <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
-                    <div>
-                        <div class="catalog-card-top">
-                            <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
-                            <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+            <section class="catalog-section" data-section="most-requested">
+                <div class="catalog-section-header">
+                    <h2>Most Requested Services</h2>
+                    <p>Quick access to the resident requests that are most commonly submitted online.</p>
+                </div>
+                <div class="catalog-cards">
+                    {% for item in featured_services %}
+                    <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
+                        <div>
+                            <div class="catalog-card-top">
+                                <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
+                                <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+                            </div>
+                            <h3>{{ item.portal_name }}</h3>
+                            <p>{{ item.description }}</p>
+                            <ul>
+                                <li>{{ item.summary }}</li>
+                                {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
+                                {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
+                                {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
+                            </ul>
                         </div>
-                        <h3>{{ item.name }}</h3>
-                        <p>{{ item.description }}</p>
-                        <ul>
-                            <li>{{ item.summary }}</li>
-                            {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
-                            {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
-                            {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
-                        </ul>
-                    </div>
-                    <div class="catalog-card-footer">
-                        <span class="catalog-card-tag">{{ item.category }}</span>
-                        <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
-                            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-                        </a>
-                    </div>
-                </article>
-                {% empty %}
-                <div class="catalog-empty">No service types are available yet.</div>
-                {% endfor %}
-                <div class="catalog-empty" id="service-empty-state" style="display:none;">No services match your search or selected category.</div>
-            </div>
+                        <div class="catalog-card-footer">
+                            <span class="catalog-card-tag">{{ item.category }}</span>
+                            <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
+                                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                            </a>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="catalog-empty">No featured services are available yet.</div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="catalog-section" data-section="other-services">
+                <div class="catalog-section-header">
+                    <h2>Other Services</h2>
+                    <p>Browse Certificate of Residency, Barangay ID, and all other available resident requests.</p>
+                </div>
+                <div class="catalog-cards" id="service-card-grid">
+                    {% for item in other_services %}
+                    <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
+                        <div>
+                            <div class="catalog-card-top">
+                                <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
+                                <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+                            </div>
+                            <h3>{{ item.portal_name }}</h3>
+                            <p>{{ item.description }}</p>
+                            <ul>
+                                <li>{{ item.summary }}</li>
+                                {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
+                                {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
+                                {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
+                            </ul>
+                        </div>
+                        <div class="catalog-card-footer">
+                            <span class="catalog-card-tag">{{ item.category }}</span>
+                            <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
+                                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                            </a>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="catalog-empty">No service types are available yet.</div>
+                    {% endfor %}
+                    <div class="catalog-empty" id="service-empty-state" style="display:none;">No services match your search or selected category.</div>
+                </div>
+            </section>
         </section>
 
         <aside class="catalog-side">
@@ -235,6 +283,7 @@
         const search = document.getElementById("service-search");
         const cards = document.querySelectorAll(".catalog-card");
         const emptyState = document.getElementById("service-empty-state");
+        const sections = document.querySelectorAll(".catalog-section[data-section]");
         let activeCategory = "all";
 
         function filterCards() {
@@ -249,6 +298,13 @@
                 const show = matchesCategory && matchesSearch;
                 card.style.display = show ? "flex" : "none";
                 if (show) visibleCount += 1;
+            });
+
+            sections.forEach((section) => {
+                const sectionCards = section.querySelectorAll(".catalog-card");
+                const hasVisibleCards = Array.from(sectionCards).some((card) => card.style.display !== "none");
+                const holdsEmptyState = emptyState && section.contains(emptyState);
+                section.style.display = hasVisibleCards || (holdsEmptyState && !visibleCount) ? "block" : "none";
             });
 
             if (emptyState) {

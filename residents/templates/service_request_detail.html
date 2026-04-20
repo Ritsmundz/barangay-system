@@ -92,6 +92,16 @@
     .requirement-box{margin-top:14px;padding:14px;border-radius:16px;background:#fff7e8;border:1px solid #f2dfb8}
     .requirement-box strong{display:block;font-size:12px;color:#9a6615;text-transform:uppercase;letter-spacing:.05em}
     .requirement-box span{display:block;margin-top:6px;font-size:13px;color:#7a5a21;line-height:1.6}
+    .review-box{margin-top:14px;padding:16px;border-radius:16px;border:1px solid #dce6f5;background:#f8fbff}
+    .review-box.complete{background:#eefaf4;border-color:#cfe8dc}
+    .review-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .review-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;font-size:12px;font-weight:700}
+    .review-badge.complete{background:#e7f8ef;color:#187853}
+    .review-badge.incomplete{background:#fff4db;color:#b57518}
+    .review-list{display:grid;gap:8px;margin-top:12px}
+    .review-item{padding:10px 12px;border-radius:12px;background:#fff;border:1px solid #e3ebf8;font-size:13px;color:var(--txt2)}
+    .review-item strong{color:var(--txt)}
+    .review-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .attachment-list{display:grid;gap:10px;margin-top:12px}
     .attachment-item{padding:12px;border:1px solid #e5edf8;border-radius:14px;background:#fcfdff}
     .attachment-item a{font-weight:700}
@@ -199,6 +209,44 @@
                             <span>{{ service_request.requirements_deadline|date:"F j, Y" }}</span>
                         </div>
                         {% endif %}
+                        {% if business_review_summary %}
+                        <div class="review-box {% if business_review_summary.is_complete %}complete{% endif %}">
+                            <div class="review-head">
+                                <div>
+                                    <div class="section-title" style="font-size:16px;">Secretary Review Checklist</div>
+                                    <div class="section-sub">Use this while the request is under review to confirm the permit form is ready for printing.</div>
+                                </div>
+                                <span class="review-badge {% if business_review_summary.is_complete %}complete{% else %}incomplete{% endif %}">
+                                    {% if business_review_summary.is_complete %}Complete{% else %}Needs Review{% endif %}
+                                </span>
+                            </div>
+                            <div class="review-list">
+                                <div class="review-item">
+                                    <strong>Attachments:</strong> {{ business_review_summary.attachment_count }} file{{ business_review_summary.attachment_count|pluralize }}
+                                </div>
+                                {% if business_review_summary.missing_fields %}
+                                <div class="review-item">
+                                    <strong>Missing fields:</strong> {{ business_review_summary.missing_fields|join:", " }}
+                                </div>
+                                {% else %}
+                                <div class="review-item">
+                                    <strong>Missing fields:</strong> None. The resident completed the current business permit checklist.
+                                </div>
+                                {% endif %}
+                                <div class="review-item">
+                                    <strong>Completed fields:</strong> {{ business_review_summary.completed_fields|length }}
+                                </div>
+                            </div>
+                            {% if can_manage %}
+                            <div class="review-actions">
+                                <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Print Preview</a>
+                                {% if not business_review_summary.is_complete and service_request.status == "Under Review" %}
+                                <a href="{% url 'service_request_detail' service_request.id %}#requirements-form" class="btn btn-soft">Request Missing Fields</a>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
                         {% if can_manage and allowed_statuses %}
                         <form method="post" action="{% url 'update_service_request_status' service_request.id %}" class="status-form">
                             {% csrf_token %}
@@ -234,7 +282,7 @@
                         </div>
                         {% endif %}
                         {% if show_requirement_request_form %}
-                        <div class="action-panel">
+                        <div class="action-panel" id="requirements-form">
                             <h4>{% if is_editing_requirement_request %}Edit Missing Requirements{% else %}Request Missing Requirements{% endif %}</h4>
                             <p>
                                 {% if is_editing_requirement_request %}

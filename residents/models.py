@@ -225,6 +225,29 @@ class RequestPurpose(models.Model):
 from datetime import date
 from django.utils import timezone
 class ServiceRequest(models.Model):
+    BUSINESS_ORGANIZATION_TYPE_CHOICES = [
+        ("sole_proprietorship", "Sole Proprietorship"),
+        ("partnership", "Partnership"),
+        ("corporation", "Corporation"),
+        ("cooperative", "Cooperative"),
+    ]
+
+    BUSINESS_CORPORATION_NATIONALITY_CHOICES = [
+        ("filipino", "Filipino"),
+        ("foreign", "Foreign"),
+    ]
+
+    BUSINESS_PROPERTY_STATUS_CHOICES = [
+        ("owned", "Owned"),
+        ("leased", "Leased"),
+    ]
+
+    BUSINESS_ACTIVITY_TYPE_CHOICES = [
+        ("main_office", "Main Office"),
+        ("branch", "Branch"),
+        ("admin_office_only", "Admin Office Only"),
+    ]
+
     PURPOSE_CHOICES = [
         ("Barangay Clearance", "Barangay Clearance"),
         ("Local Employment", "Local Employment"),
@@ -274,6 +297,76 @@ class ServiceRequest(models.Model):
     purpose = models.TextField(blank=True, null=True)
     purpose_for = models.CharField(max_length=100, choices=PURPOSE_CHOICES, blank=True, null=True)
     purpose_other = models.CharField(max_length=255, blank=True, null=True)
+
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+    business_owner_name = models.CharField(max_length=255, blank=True, null=True)
+    business_address = models.CharField(max_length=255, blank=True, null=True)
+    business_nature = models.CharField(max_length=255, blank=True, null=True)
+    business_organization_type = models.CharField(
+        max_length=30,
+        choices=BUSINESS_ORGANIZATION_TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
+    business_registration_number = models.CharField(max_length=100, blank=True, null=True)
+    business_tin = models.CharField(max_length=100, blank=True, null=True)
+    business_trade_name = models.CharField(max_length=255, blank=True, null=True)
+    business_house_number = models.CharField(max_length=100, blank=True, null=True)
+    business_street = models.CharField(max_length=255, blank=True, null=True)
+    business_building_name = models.CharField(max_length=255, blank=True, null=True)
+    business_block_number = models.CharField(max_length=100, blank=True, null=True)
+    business_lot_number = models.CharField(max_length=100, blank=True, null=True)
+    business_zip_code = models.CharField(max_length=20, blank=True, null=True)
+    business_subdivision = models.CharField(max_length=255, blank=True, null=True)
+    business_telephone = models.CharField(max_length=50, blank=True, null=True)
+    business_email = models.EmailField(blank=True, null=True)
+    business_president_name = models.CharField(max_length=255, blank=True, null=True)
+    business_corporation_nationality = models.CharField(
+        max_length=20,
+        choices=BUSINESS_CORPORATION_NATIONALITY_CHOICES,
+        blank=True,
+        null=True,
+    )
+    business_psic_code = models.CharField(max_length=50, blank=True, null=True)
+    business_area_sqm = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    business_operation_time = models.CharField(max_length=100, blank=True, null=True)
+    business_employee_count = models.PositiveIntegerField(blank=True, null=True)
+    business_qc_employee_count = models.PositiveIntegerField(blank=True, null=True)
+    business_floor_area_sqm = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    business_male_employee_count = models.PositiveIntegerField(blank=True, null=True)
+    business_female_employee_count = models.PositiveIntegerField(blank=True, null=True)
+    business_delivery_vans = models.PositiveIntegerField(blank=True, null=True)
+    business_delivery_motorcycles = models.PositiveIntegerField(blank=True, null=True)
+    business_property_status = models.CharField(
+        max_length=20,
+        choices=BUSINESS_PROPERTY_STATUS_CHOICES,
+        blank=True,
+        null=True,
+    )
+    business_tax_declaration_number = models.CharField(max_length=100, blank=True, null=True)
+    business_property_identification_number = models.CharField(max_length=100, blank=True, null=True)
+    business_capital_investment = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    business_has_tax_incentives = models.BooleanField(default=False)
+    business_activity_type = models.CharField(
+        max_length=30,
+        choices=BUSINESS_ACTIVITY_TYPE_CHOICES,
+        blank=True,
+        null=True,
+    )
+    business_products_services = models.CharField(max_length=255, blank=True, null=True)
+    business_equipment = models.CharField(max_length=255, blank=True, null=True)
+    business_equipment_units = models.PositiveIntegerField(blank=True, null=True)
+    business_equipment_size = models.CharField(max_length=100, blank=True, null=True)
+    business_representative_designation = models.CharField(max_length=255, blank=True, null=True)
+    business_storeys = models.PositiveIntegerField(blank=True, null=True)
+    business_occupants = models.PositiveIntegerField(blank=True, null=True)
+    business_occupancy_type = models.CharField(max_length=255, blank=True, null=True)
+
+    requestor_name = models.CharField(max_length=255, blank=True, null=True)
+    requestor_address = models.CharField(max_length=255, blank=True, null=True)
+    deceased_name = models.CharField(max_length=255, blank=True, null=True)
+    deceased_relationship = models.CharField(max_length=150, blank=True, null=True)
+    date_of_death = models.DateField(blank=True, null=True)
 
     emergency_contact_name = models.CharField(max_length=150, blank=True, null=True)
     emergency_contact_address = models.CharField(max_length=255, blank=True, null=True)

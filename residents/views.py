@@ -471,7 +471,7 @@ PORTAL_SERVICE_CATALOG = [
     },
     {
         "slug": "first-time-job-seeker",
-        "name": "First Time Job Seeker",
+        "name": "REQUEST FIRST TIME JOBSEEKER",
         "base_type": "Service Request",
         "category": "employment",
         "badge": "FT",
@@ -479,19 +479,11 @@ PORTAL_SERVICE_CATALOG = [
         "description": "Request a supporting barangay certification for first-time job seeker applications and benefits.",
         "summary": "Employment-related request for first-time applicants.",
         "requirements": [
-            "Choose a job-seeker related purpose.",
+            "Fill out the requestor information fully.",
             "Make sure your profile details are updated.",
             "Wait for review and release notices online.",
         ],
-        "purposes": [
-            "Local Employment",
-            "Pre-Employment Requirement",
-            "Government ID Application",
-            "NBI Clearance Requirement",
-            "Police Clearance Requirement",
-            "Resume or Job Application Support",
-            "Other",
-        ],
+        "purposes": [],
     },
     {
         "slug": "business-clearance",
@@ -590,7 +582,7 @@ PORTAL_SERVICE_CATALOG = [
     },
     {
         "slug": "certificate-of-indigency",
-        "name": "Certificate of Indigency",
+        "name": "CERTIFICATE OF INDIGENCY",
         "base_type": "Indigency",
         "category": "certificates",
         "badge": "CI",
@@ -599,19 +591,15 @@ PORTAL_SERVICE_CATALOG = [
         "summary": "Indigency certification for assistance-related requirements.",
         "requirements": [
             "Choose the exact assistance purpose.",
-            "If you select Other, provide specific details.",
+            "Provide requestor and deceased details clearly.",
             "Review all resident information before submitting.",
         ],
         "purposes": [
-            "Medical Assistance",
-            "Hospital Assistance",
-            "Burial Assistance",
-            "Scholarship Application",
-            "Educational Assistance",
-            "Financial Assistance",
-            "DSWD Requirement",
-            "PhilHealth or Social Support",
-            "Other",
+            "FINANCIAL ASSISTANCE (BURIAL)",
+            "FINANCIAL ASSISTANCE (DSWD)",
+            "FINANCIAL SUBSIDY (SOLO PARENT)",
+            "SOCIAL WELFARE ASSISTANCE (SWA)",
+            "QCYDO SCHOLARSHIP APPLICATION",
         ],
     },
     {
@@ -663,7 +651,7 @@ PORTAL_SERVICE_CATALOG = [
     },
     {
         "slug": "barangay-id",
-        "name": "Barangay ID Issuance",
+        "name": "BRGY ID APPLICATION FORM",
         "base_type": "Barangay ID",
         "category": "identification",
         "badge": "ID",
@@ -753,6 +741,13 @@ PORTAL_SERVICE_CATALOG = [
         ],
     },
 ]
+
+MOST_REQUESTED_SERVICE_CONFIG = {
+    "certificate-of-indigency": "Certificate of Indigency",
+    "barangay-clearance": "Barangay Clearance",
+    "business-clearance": "Business Permit",
+    "barangay-id": "Barangay ID",
+}
 
 COMPLAINT_OPEN_STATUSES = [
     "Submitted",
@@ -1011,7 +1006,7 @@ def get_portal_services():
         if not service_type:
             continue
         service = build_portal_service(entry, service_type)
-        service["rules"] = get_service_request_rules(service_type)
+        service["rules"] = get_service_request_rules(entry)
         services.append(service)
     return services
 
@@ -1024,25 +1019,42 @@ def get_portal_service_by_slug(service_slug):
 
 
 def get_service_request_rules(service_type):
-    normalized_name = normalize_service_name(service_type.name)
-    requires_purpose = normalized_name in {
-        "barangay clearance",
-        "certificate of residency",
-        "indigency",
-        "service request",
-        "first time job seeker",
-        "business clearance",
-        "barangay permit",
-        "solo parent id",
-    }
+    if isinstance(service_type, dict):
+        service_name = service_type.get("name", "")
+    elif isinstance(service_type, str):
+        service_name = service_type
+    else:
+        service_name = getattr(service_type, "name", "")
+
+    normalized_name = normalize_service_name(service_name)
+    requires_purpose = any(
+        keyword in normalized_name
+        for keyword in [
+            "barangay clearance",
+            "certificate",
+            "service request",
+            "business clearance",
+            "barangay permit",
+            "business permit",
+            "solo parent",
+        ]
+    )
     requires_emergency = normalized_name == "barangay id"
     requires_residency = normalized_name in {"qcid", "qc id"}
+    requires_business = normalized_name in {"business clearance", "barangay permit", "business permit"}
+    requires_requestor = normalized_name in {"certificate of indigency", "request first time jobseeker", "first time job seeker"}
+    requires_deceased_info = normalized_name == "certificate of indigency"
+    requires_id_photo = normalized_name == "barangay id"
 
     return {
         "normalized_name": normalized_name,
         "requires_purpose": requires_purpose,
         "requires_emergency": requires_emergency,
         "requires_residency": requires_residency,
+        "requires_business": requires_business,
+        "requires_requestor": requires_requestor,
+        "requires_deceased_info": requires_deceased_info,
+        "requires_id_photo": requires_id_photo,
     }
 
 
@@ -1073,9 +1085,170 @@ def build_service_request_form_context(request, resident, service_types, service
         "posted_data": request.POST if request.method == "POST" else None,
         "selected_service": selected_service,
         "selected_service_theme": selected_service if isinstance(selected_service, dict) else (get_portal_service_theme(selected_service) if selected_service else None),
-        "selected_service_rules": get_service_request_rules(selected_service_type) if selected_service_type else (get_service_request_rules(selected_service) if selected_service else None),
+        "selected_service_rules": selected_service.get("rules") if isinstance(selected_service, dict) else (get_service_request_rules(selected_service_type) if selected_service_type else (get_service_request_rules(selected_service) if selected_service else None)),
         "selected_service_purposes": selected_service.get("purposes", []) if isinstance(selected_service, dict) else [],
         "is_portal_service_page": selected_service is not None,
+    }
+
+
+BUSINESS_PERMIT_REQUIRED_FIELDS = [
+    ("business_name", "Business name"),
+    ("business_owner_name", "Business owner / representative"),
+    ("business_address", "Complete business address"),
+    ("business_nature", "Nature of business"),
+    ("business_organization_type", "Business organization type"),
+    ("business_registration_number", "DTI / SEC / CDA registration number"),
+    ("business_tin", "TIN"),
+    ("business_house_number", "House / Building number"),
+    ("business_street", "Street"),
+    ("business_zip_code", "ZIP code"),
+    ("business_psic_code", "Philippine Standard Industrial Code"),
+    ("business_area_sqm", "Business area"),
+    ("business_operation_time", "Time of operation"),
+    ("business_employee_count", "Total number of employees"),
+    ("business_qc_employee_count", "Employees residing within QC"),
+    ("business_floor_area_sqm", "Total floor area"),
+    ("business_male_employee_count", "Male employees"),
+    ("business_female_employee_count", "Female employees"),
+    ("business_property_status", "Property status"),
+    ("business_tax_declaration_number", "Tax declaration number"),
+    ("business_property_identification_number", "Property identification number"),
+    ("business_capital_investment", "Total capital investment"),
+    ("business_activity_type", "Business activity"),
+    ("business_products_services", "Products / services"),
+    ("business_representative_designation", "Designation / position"),
+    ("business_storeys", "Number of storeys"),
+    ("business_occupants", "Number of occupants"),
+    ("business_occupancy_type", "Type of occupancy"),
+]
+
+
+def collect_business_permit_data(request, resident):
+    business_data = {
+        "business_name": (request.POST.get("business_name") or "").strip() or None,
+        "business_owner_name": (request.POST.get("business_owner_name") or "").strip() or None,
+        "business_address": (request.POST.get("business_address") or "").strip() or None,
+        "business_nature": (request.POST.get("business_nature") or "").strip() or None,
+        "business_organization_type": (request.POST.get("business_organization_type") or "").strip() or None,
+        "business_registration_number": (request.POST.get("business_registration_number") or "").strip() or None,
+        "business_tin": (request.POST.get("business_tin") or "").strip() or None,
+        "business_trade_name": (request.POST.get("business_trade_name") or "").strip() or None,
+        "business_house_number": (request.POST.get("business_house_number") or "").strip() or None,
+        "business_street": (request.POST.get("business_street") or "").strip() or None,
+        "business_building_name": (request.POST.get("business_building_name") or "").strip() or None,
+        "business_block_number": (request.POST.get("business_block_number") or "").strip() or None,
+        "business_lot_number": (request.POST.get("business_lot_number") or "").strip() or None,
+        "business_zip_code": (request.POST.get("business_zip_code") or "").strip() or None,
+        "business_subdivision": (request.POST.get("business_subdivision") or "").strip() or None,
+        "business_telephone": (request.POST.get("business_telephone") or "").strip() or resident.contact_number or None,
+        "business_email": (request.POST.get("business_email") or "").strip() or resident.email or None,
+        "business_president_name": (request.POST.get("business_president_name") or "").strip() or None,
+        "business_corporation_nationality": (request.POST.get("business_corporation_nationality") or "").strip() or None,
+        "business_psic_code": (request.POST.get("business_psic_code") or "").strip() or None,
+        "business_area_sqm": (request.POST.get("business_area_sqm") or "").strip() or None,
+        "business_operation_time": (request.POST.get("business_operation_time") or "").strip() or None,
+        "business_employee_count": (request.POST.get("business_employee_count") or "").strip() or None,
+        "business_qc_employee_count": (request.POST.get("business_qc_employee_count") or "").strip() or None,
+        "business_floor_area_sqm": (request.POST.get("business_floor_area_sqm") or "").strip() or None,
+        "business_male_employee_count": (request.POST.get("business_male_employee_count") or "").strip() or None,
+        "business_female_employee_count": (request.POST.get("business_female_employee_count") or "").strip() or None,
+        "business_delivery_vans": (request.POST.get("business_delivery_vans") or "").strip() or None,
+        "business_delivery_motorcycles": (request.POST.get("business_delivery_motorcycles") or "").strip() or None,
+        "business_property_status": (request.POST.get("business_property_status") or "").strip() or None,
+        "business_tax_declaration_number": (request.POST.get("business_tax_declaration_number") or "").strip() or None,
+        "business_property_identification_number": (request.POST.get("business_property_identification_number") or "").strip() or None,
+        "business_capital_investment": (request.POST.get("business_capital_investment") or "").strip() or None,
+        "business_has_tax_incentives": request.POST.get("business_has_tax_incentives") == "on",
+        "business_activity_type": (request.POST.get("business_activity_type") or "").strip() or None,
+        "business_products_services": (request.POST.get("business_products_services") or "").strip() or None,
+        "business_equipment": (request.POST.get("business_equipment") or "").strip() or None,
+        "business_equipment_units": (request.POST.get("business_equipment_units") or "").strip() or None,
+        "business_equipment_size": (request.POST.get("business_equipment_size") or "").strip() or None,
+        "business_representative_designation": (request.POST.get("business_representative_designation") or "").strip() or "OWNER / AUTHORIZED REPRESENTATIVE",
+        "business_storeys": (request.POST.get("business_storeys") or "").strip() or None,
+        "business_occupants": (request.POST.get("business_occupants") or "").strip() or None,
+        "business_occupancy_type": (request.POST.get("business_occupancy_type") or "").strip() or None,
+    }
+
+    if not business_data["business_address"]:
+        address_parts = [
+            business_data["business_house_number"],
+            business_data["business_street"],
+            business_data["business_subdivision"],
+        ]
+        business_data["business_address"] = ", ".join(part for part in address_parts if part) or None
+
+    return business_data
+
+
+def get_missing_business_permit_fields(business_data):
+    missing = [label for field_name, label in BUSINESS_PERMIT_REQUIRED_FIELDS if not business_data.get(field_name)]
+    if (
+        business_data.get("business_organization_type") == "corporation"
+        and not business_data.get("business_corporation_nationality")
+    ):
+        missing.append("Corporation nationality")
+    return missing
+
+
+BUSINESS_PERMIT_REVIEW_FIELDS = [
+    ("Business name", "business_name"),
+    ("Owner / representative", "business_owner_name"),
+    ("Designation", "business_representative_designation"),
+    ("Business address", "business_address"),
+    ("Nature of business", "business_nature"),
+    ("Organization type", "get_business_organization_type_display"),
+    ("Registration number", "business_registration_number"),
+    ("TIN", "business_tin"),
+    ("PSIC code", "business_psic_code"),
+    ("Products / services", "business_products_services"),
+    ("Business area", "business_area_sqm"),
+    ("Floor area", "business_floor_area_sqm"),
+    ("Operation time", "business_operation_time"),
+    ("Total employees", "business_employee_count"),
+    ("QC employees", "business_qc_employee_count"),
+    ("Property status", "get_business_property_status_display"),
+    ("Capital investment", "business_capital_investment"),
+    ("Business activity", "get_business_activity_type_display"),
+    ("Storeys", "business_storeys"),
+    ("Occupants", "business_occupants"),
+    ("Occupancy type", "business_occupancy_type"),
+]
+
+
+def is_business_permit_request(service_request):
+    rules = get_service_request_rules(service_request.service_type)
+    return rules["requires_business"] or any(
+        [
+            service_request.business_name,
+            service_request.business_owner_name,
+            service_request.business_address,
+            service_request.business_nature,
+        ]
+    )
+
+
+def get_business_permit_review_summary(service_request):
+    if not is_business_permit_request(service_request):
+        return None
+
+    missing_fields = []
+    completed_fields = []
+
+    for label, attr_name in BUSINESS_PERMIT_REVIEW_FIELDS:
+        raw_value = getattr(service_request, attr_name)() if attr_name.startswith("get_") else getattr(service_request, attr_name)
+        display_value = str(raw_value).strip() if raw_value is not None else ""
+        if display_value:
+            completed_fields.append({"label": label, "value": display_value})
+        else:
+            missing_fields.append(label)
+
+    attachment_count = service_request.attachments.count()
+    return {
+        "is_complete": len(missing_fields) == 0,
+        "missing_fields": missing_fields,
+        "completed_fields": completed_fields,
+        "attachment_count": attachment_count,
     }
 
 
@@ -1158,6 +1331,10 @@ def handle_service_request_submission(request, resident, service_types, service_
     emergency_contact_address = (request.POST.get("emergency_contact_address") or "").strip() or None
     emergency_contact_number = (request.POST.get("emergency_contact_number") or "").strip() or None
     residency_since = (request.POST.get("residency_since") or None)
+    business_data = collect_business_permit_data(request, resident)
+
+    selected_name = selected_service["name"].lower() if isinstance(selected_service, dict) else service_type.name.lower()
+    requires_business = selected_name in {"business clearance", "barangay permit", "business permit"}
 
     if rules["requires_emergency"]:
         if not emergency_contact_name or not emergency_contact_address or not emergency_contact_number:
@@ -1170,8 +1347,72 @@ def handle_service_request_submission(request, resident, service_types, service_
                 selected_service=selected_service,
             )
 
+    requestor_name = (request.POST.get("requestor_name") or "").strip() or None
+    requestor_address = (request.POST.get("requestor_address") or "").strip() or None
+    deceased_name = (request.POST.get("deceased_name") or "").strip() or None
+    deceased_relationship = (request.POST.get("deceased_relationship") or "").strip() or None
+    date_of_death = request.POST.get("date_of_death") or None
+    agree_terms = request.POST.get("agree_terms")
+    photo_2x2 = request.FILES.get("photo_2x2")
+
     if rules["requires_residency"] and not residency_since:
         messages.error(request, "Please provide residency date for QCID.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    if requires_business:
+        missing_business_fields = get_missing_business_permit_fields(business_data)
+        if missing_business_fields:
+            messages.error(request, f"Please complete all business permit fields. Missing: {', '.join(missing_business_fields)}.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+
+    if rules["requires_requestor"]:
+        if not requestor_name or not requestor_address:
+            messages.error(request, "Please complete the requestor information.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+
+    # Check if deceased info is required (for indigency burial purposes)
+    requires_deceased = rules["requires_deceased_info"] and purpose_text and "burial" in purpose_text.lower()
+    if requires_deceased:
+        if not deceased_name or not deceased_relationship or not date_of_death:
+            messages.error(request, "Please complete the deceased information for burial assistance.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+
+    if rules["requires_id_photo"] and not photo_2x2:
+        messages.error(request, "Please upload a 2X2 picture for Barangay ID application.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    if selected_service is not None and not agree_terms:
+        messages.error(request, "Please agree to the terms and conditions.")
         return None, build_service_request_form_context(
             request,
             resident,
@@ -1191,6 +1432,54 @@ def handle_service_request_submission(request, resident, service_types, service_
             selected_service["name"] if selected_service is not None else None
         ),
         purpose_other=(purpose_other or None) if purpose_option else None,
+        business_name=business_data["business_name"] if requires_business else None,
+        business_owner_name=business_data["business_owner_name"] if requires_business else None,
+        business_address=business_data["business_address"] if requires_business else None,
+        business_nature=business_data["business_nature"] if requires_business else None,
+        business_organization_type=business_data["business_organization_type"] if requires_business else None,
+        business_registration_number=business_data["business_registration_number"] if requires_business else None,
+        business_tin=business_data["business_tin"] if requires_business else None,
+        business_trade_name=business_data["business_trade_name"] if requires_business else None,
+        business_house_number=business_data["business_house_number"] if requires_business else None,
+        business_street=business_data["business_street"] if requires_business else None,
+        business_building_name=business_data["business_building_name"] if requires_business else None,
+        business_block_number=business_data["business_block_number"] if requires_business else None,
+        business_lot_number=business_data["business_lot_number"] if requires_business else None,
+        business_zip_code=business_data["business_zip_code"] if requires_business else None,
+        business_subdivision=business_data["business_subdivision"] if requires_business else None,
+        business_telephone=business_data["business_telephone"] if requires_business else None,
+        business_email=business_data["business_email"] if requires_business else None,
+        business_president_name=business_data["business_president_name"] if requires_business else None,
+        business_corporation_nationality=business_data["business_corporation_nationality"] if requires_business else None,
+        business_psic_code=business_data["business_psic_code"] if requires_business else None,
+        business_area_sqm=business_data["business_area_sqm"] if requires_business else None,
+        business_operation_time=business_data["business_operation_time"] if requires_business else None,
+        business_employee_count=business_data["business_employee_count"] if requires_business else None,
+        business_qc_employee_count=business_data["business_qc_employee_count"] if requires_business else None,
+        business_floor_area_sqm=business_data["business_floor_area_sqm"] if requires_business else None,
+        business_male_employee_count=business_data["business_male_employee_count"] if requires_business else None,
+        business_female_employee_count=business_data["business_female_employee_count"] if requires_business else None,
+        business_delivery_vans=business_data["business_delivery_vans"] if requires_business else None,
+        business_delivery_motorcycles=business_data["business_delivery_motorcycles"] if requires_business else None,
+        business_property_status=business_data["business_property_status"] if requires_business else None,
+        business_tax_declaration_number=business_data["business_tax_declaration_number"] if requires_business else None,
+        business_property_identification_number=business_data["business_property_identification_number"] if requires_business else None,
+        business_capital_investment=business_data["business_capital_investment"] if requires_business else None,
+        business_has_tax_incentives=business_data["business_has_tax_incentives"] if requires_business else False,
+        business_activity_type=business_data["business_activity_type"] if requires_business else None,
+        business_products_services=business_data["business_products_services"] if requires_business else None,
+        business_equipment=business_data["business_equipment"] if requires_business else None,
+        business_equipment_units=business_data["business_equipment_units"] if requires_business else None,
+        business_equipment_size=business_data["business_equipment_size"] if requires_business else None,
+        business_representative_designation=business_data["business_representative_designation"] if requires_business else None,
+        business_storeys=business_data["business_storeys"] if requires_business else None,
+        business_occupants=business_data["business_occupants"] if requires_business else None,
+        business_occupancy_type=business_data["business_occupancy_type"] if requires_business else None,
+        requestor_name=requestor_name if rules["requires_requestor"] else None,
+        requestor_address=requestor_address if rules["requires_requestor"] else None,
+        deceased_name=deceased_name if requires_deceased else None,
+        deceased_relationship=deceased_relationship if requires_deceased else None,
+        date_of_death=date_of_death if requires_deceased else None,
         emergency_contact_name=emergency_contact_name if rules["requires_emergency"] else None,
         emergency_contact_address=emergency_contact_address if rules["requires_emergency"] else None,
         emergency_contact_number=emergency_contact_number if rules["requires_emergency"] else None,
@@ -1212,6 +1501,15 @@ def handle_service_request_submission(request, resident, service_types, service_
     year = service.request_date.year
     service.clearance_number = f"{year}-{service.id:04d}"
     service.save()
+
+    if photo_2x2 and rules["requires_id_photo"]:
+        ServiceRequestAttachment.objects.create(
+            service_request=service,
+            uploaded_by=request.user,
+            file=photo_2x2,
+            original_name=getattr(photo_2x2, 'name', ''),
+            note='2x2 Picture',
+        )
 
     notify_resident_for_service_request(
         service,
@@ -2768,6 +3066,18 @@ def portal_create_service_request(request):
     service_cards = get_portal_services()
     for service_card in service_cards:
         service_card["fee_value"] = service_card["voter_fee"] if resident.voter_status else service_card["non_voter_fee"]
+        service_card["portal_name"] = MOST_REQUESTED_SERVICE_CONFIG.get(service_card["slug"], service_card["name"])
+
+    featured_order = list(MOST_REQUESTED_SERVICE_CONFIG.keys())
+    featured_services = []
+    other_services = []
+    for service_card in service_cards:
+        if service_card["slug"] in MOST_REQUESTED_SERVICE_CONFIG:
+            featured_services.append(service_card)
+        else:
+            other_services.append(service_card)
+
+    featured_services.sort(key=lambda item: featured_order.index(item["slug"]))
 
     recent_requests = (
         ServiceRequest.objects.filter(resident=resident)
@@ -2778,6 +3088,8 @@ def portal_create_service_request(request):
     return render(request, "portal_service_request_catalog.html", {
         "resident": resident,
         "service_cards": service_cards,
+        "featured_services": featured_services,
+        "other_services": other_services,
         "recent_requests": recent_requests,
         "service_categories": [
             {"key": "all", "label": "All Services"},
@@ -3379,6 +3691,18 @@ def update_service_request_status(request, request_id):
 
         if new_status == "Pending Requirements":
             messages.error(request, "Use the requirements form so the resident can see exactly what to submit.")
+            return redirect(request.META.get("HTTP_REFERER"))
+
+        review_summary = get_business_permit_review_summary(service_request)
+        if (
+            review_summary
+            and not review_summary["is_complete"]
+            and new_status in {"For Validation", "Processing", "Ready for Release", "Released"}
+        ):
+            messages.error(
+                request,
+                "This business permit request is still incomplete. Review the missing fields before moving it forward."
+            )
             return redirect(request.META.get("HTTP_REFERER"))
 
         if new_status in dict(ServiceRequest.STATUS_CHOICES):
@@ -4229,7 +4553,40 @@ def _render_service_request_document(request, service):
 
     # Decide which template to load
     service_name = service.service_type.name.lower()
-    if "clearance" in service_name:
+    purpose_text = (service.purpose_display or "").lower()
+    has_business_details = any(
+        [
+            service.business_name,
+            service.business_owner_name,
+            service.business_address,
+            service.business_nature,
+        ]
+    )
+    is_business_document = (
+        "business clearance" in service_name
+        or "barangay permit" in service_name
+        or "business permit" in service_name
+        or has_business_details
+        or any(
+            keyword in purpose_text
+            for keyword in [
+                "business permit",
+                "permit renewal",
+                "new business registration",
+                "event permit",
+                "assembly permit",
+                "construction",
+                "stall or booth permit",
+                "street or public space use",
+                "sound system",
+            ]
+        )
+    )
+
+    if is_business_document:
+        template = "business_permit_print.html"
+
+    elif "clearance" in service_name:
         template = "clearance_print.html"
 
     elif "residency" in service_name:
@@ -4343,6 +4700,26 @@ def service_request_detail(request, request_id):
 
     can_manage = is_secretary(request.user)
     is_resident_user = is_resident(request.user)
+
+    if can_manage and service_request.status == "Submitted":
+        before_data = snapshot_instance(service_request)
+        service_request.status = "Under Review"
+        service_request.save(update_fields=["status"])
+        log_audit_event(
+            action="UPDATE",
+            model_name="ServiceRequest",
+            description=f"Request {service_request.document_number} automatically moved to Under Review when opened by the Secretary.",
+            user=request.user,
+            target_id=service_request.id,
+            before_data=before_data,
+            after_data=snapshot_instance(service_request),
+            request=request,
+        )
+        notify_resident_for_service_request(
+            service_request,
+            title="Request Under Review",
+            message=f"Your {service_request.service_type.name} request is now under review by the Secretary.",
+        )
 
     requirement_initial = {
         "requirements_note": service_request.requirements_note,
@@ -4469,6 +4846,7 @@ def service_request_detail(request, request_id):
     )
 
     resident = service_request.resident
+    business_review_summary = get_business_permit_review_summary(service_request)
     address_bits = []
     if resident.household:
         if resident.household.house_number:
@@ -4627,6 +5005,7 @@ def service_request_detail(request, request_id):
         "requirement_form": requirement_form,
         "resident_submission_form": resident_submission_form,
         "requirement_attachments": service_request.attachments.all(),
+        "business_review_summary": business_review_summary,
         "can_request_requirements": can_manage and service_request.status in {"Under Review", "Pending Requirements"},
         "has_active_requirement_request": has_active_requirement_request,
         "show_requirement_request_form": can_manage and (

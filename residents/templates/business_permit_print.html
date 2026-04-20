@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Unified Business Permit Application Form</title>
+    {% load static %}
+    <style>
+        @page { size: A4; margin: 5mm; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            background: #f3f4f6;
+            color: #111;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .sheet {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 6mm 6mm 8mm;
+            background: #fff;
+        }
+        .sheet + .sheet {
+            margin-top: 12px;
+        }
+        .page-break {
+            break-before: page;
+            page-break-before: always;
+        }
+        .print-button {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            padding: 12px 22px;
+            border: none;
+            border-radius: 8px;
+            background: #16335f;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .header {
+            text-align: center;
+            position: relative;
+            margin-bottom: 4px;
+            min-height: 62px;
+            padding: 0 60px;
+        }
+        .header-logo {
+            position: absolute;
+            top: 0;
+            width: 52px;
+            height: 52px;
+            object-fit: contain;
+        }
+        .header-logo.left { left: 0; }
+        .header-logo.right { right: 0; }
+        .header small, .header .tel {
+            display: block;
+            font-size: 9px;
+            line-height: 1.05;
+        }
+        .header h1 {
+            margin: 4px 0 0;
+            font-size: 17px;
+            letter-spacing: 0.2px;
+            font-weight: 700;
+        }
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .space-between { justify-content: space-between; }
+        .check-row {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            margin: 5px 0 3px;
+            font-size: 9px;
+            font-weight: 700;
+        }
+        .check-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .box {
+            width: 10px;
+            height: 10px;
+            border: 1px solid #111;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            line-height: 1;
+        }
+        .checked::after { content: "/"; font-weight: 700; }
+        .line-field {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 0;
+            font-size: 9px;
+        }
+        .line-field span:first-child {
+            white-space: nowrap;
+            font-weight: 700;
+        }
+        .line-value {
+            min-width: 70px;
+            border-bottom: 1px solid #111;
+            padding: 0 2px 1px;
+            font-weight: 700;
+            line-height: 1.05;
+            min-height: 12px;
+        }
+        .line-value.wide { min-width: 220px; }
+        .line-value.mid { min-width: 120px; }
+        .line-value.narrow { min-width: 52px; }
+        .note-block {
+            border: 1px solid #111;
+            padding: 4px 6px;
+            font-size: 8px;
+            line-height: 1.2;
+            margin: 4px 0 6px;
+        }
+        .section-title {
+            border: 1px solid #111;
+            border-bottom: none;
+            padding: 3px 5px;
+            font-size: 9px;
+            font-weight: 700;
+            background: #f4f4f4;
+        }
+        table.form-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 8px;
+            margin-bottom: 6px;
+        }
+        .form-table td, .form-table th {
+            border: 1px solid #111;
+            padding: 2px 3px;
+            vertical-align: top;
+            word-wrap: break-word;
+            line-height: 1.1;
+        }
+        .form-table th {
+            background: #f8f8f8;
+            font-weight: 700;
+            text-align: left;
+        }
+        .muted {
+            color: #333;
+            font-weight: 400;
+        }
+        .cell-label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .fill {
+            display: block;
+            min-height: 11px;
+            font-weight: 700;
+        }
+        .fill.upper { text-transform: uppercase; }
+        .inline-checks {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .signature-area {
+            margin-top: 6px;
+            font-size: 8px;
+            line-height: 1.2;
+        }
+        .signature-line {
+            margin: 10px auto 3px;
+            width: 250px;
+            border-top: 1px solid #111;
+        }
+        .signature-block {
+            margin-top: 54px;
+        }
+        .signature-caption {
+            text-align: center;
+            font-weight: 700;
+        }
+        .designation {
+            text-align: center;
+            margin-top: 6px;
+        }
+        .tiny { font-size: 8px; }
+        .page-two-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #d00;
+        }
+        .page-two-title {
+            font-size: 12px;
+            letter-spacing: 0.2px;
+        }
+        .roman-section {
+            margin: 2px 0 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .subhead-line {
+            margin: 0 0 6px 48px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .verify-table th,
+        .verify-table td {
+            font-size: 10px;
+            padding: 5px 6px;
+        }
+        .center-head {
+            text-align: center !important;
+        }
+        .compliance-head {
+            text-align: center !important;
+            padding-bottom: 2px !important;
+        }
+        .check-col {
+            width: 36px;
+            text-align: center;
+        }
+        .remarks-col {
+            width: 29%;
+        }
+        .agency-col {
+            width: 18%;
+        }
+        .evaluated-col {
+            width: 15%;
+        }
+        .verify-note {
+            margin: 0 0 8px 10px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+        .dash-rule {
+            border-top: 2px dashed #444;
+            margin: 8px 0 12px;
+        }
+        .bfp-table td,
+        .bfp-table th {
+            font-size: 10px;
+            padding: 7px 8px;
+        }
+        .bfp-head {
+            font-size: 11px;
+            font-weight: 700;
+            background: #f4f4f4;
+        }
+        .blank-box {
+            min-height: 26px;
+        }
+        @media print {
+            body { background: #fff; }
+            .sheet {
+                width: auto;
+                min-height: auto;
+                margin: 0;
+                padding: 0;
+            }
+            .sheet + .sheet { margin-top: 0; }
+            .print-button { display: none; }
+            .page-break { break-before: page; page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sheet">
+        <div class="header">
+            <img class="header-logo left" src="{% static 'residents/img/QCLogo.png' %}" alt="QC Logo">
+            <img class="header-logo right" src="{% static 'residents/img/GREENLOGO.png' %}" alt="Barangay Logo">
+            <small>REPUBLIC OF THE PHILIPPINES</small>
+            <small>QUEZON CITY</small>
+            <small>BUSINESS PERMITS AND LICENSING DEPARTMENT</small>
+            <span class="tel">Tel. no. 988-4242 (Loc. 8174 / 8282)</span>
+            <h1>UNIFIED BUSINESS PERMIT APPLICATION FORM</h1>
+        </div>
+
+        <div class="row space-between">
+            <div class="check-row">
+                <span class="check-item"><span class="box {% if 'new' in service.purpose_display|lower %}checked{% endif %}"></span>NEW</span>
+                <span class="check-item"><span class="box {% if 'amend' in service.purpose_display|lower %}checked{% endif %}"></span>AMENDMENT</span>
+                <span class="check-item"><span class="box {% if 'renew' in service.purpose_display|lower %}checked{% endif %}"></span>RENEWAL</span>
+                <span class="check-item"><span class="box {% if 'special' in service.purpose_display|lower or 'short term' in service.purpose_display|lower %}checked{% endif %}"></span>SHORT TERM/SPECIAL PERMIT</span>
+            </div>
+            <div class="tiny"><strong>To be filled-up by BPLD</strong></div>
+        </div>
+
+        <div class="row space-between" style="margin-bottom: 8px;">
+            <div class="line-field">
+                <span>CLEARANCE FOR:</span>
+                <span class="line-value wide">{{ service.purpose_display|default:"" }}</span>
+            </div>
+            <div class="line-field">
+                <span>FISCAL YEAR:</span>
+                <span class="line-value narrow">{{ today|date:"Y" }}</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom: 5px; gap: 8px;">
+            <div class="line-field"><span>Date of Receipt:</span><span class="line-value mid">{{ service.request_date|date:"m/d/Y" }}</span></div>
+            <div class="line-field"><span>Tracking Number:</span><span class="line-value mid">{{ service.document_number|default:"" }}</span></div>
+            <div class="line-field"><span>Business ID Number:</span><span class="line-value mid">{{ service.document_number|default:"" }}</span></div>
+            <div class="line-field"><span>Philippine Standard Industrial Code:</span><span class="line-value mid">{{ service.business_psic_code|default:"" }}</span></div>
+        </div>
+
+        <div class="note-block">
+            <strong>GENERAL INSTRUCTIONS:</strong><br>
+            1. Accomplish the application form by ticking the appropriate boxes, typing, and/or printing (UPPER CASE/CAPITAL LETTER). All required data fields/information should be completely and clearly filled-out by the applicant.<br>
+            2. Please ensure that ALL required documents are properly attached and fill out ALL necessary information. Incomplete data on application form and/or requirements will be returned to the applicant / will not be processed.
+        </div>
+
+        <div class="section-title">A. BASIC DOCUMENTARY REQUIREMENTS</div>
+        <table class="form-table">
+            <tr>
+                <td>Proof of Business Registration (DTI for Sole Proprietorship / SEC for Corporations and Partnerships / CDA for Cooperatives)</td>
+            </tr>
+            <tr><td>Locational Clearance (when applicable)</td></tr>
+            <tr><td>Contract of Lease (if leased) or Tax Declaration (if owned)</td></tr>
+            <tr><td>Occupancy Permit (when applicable)</td></tr>
+            <tr><td>Sketch and photos of location of business (when applicable)</td></tr>
+        </table>
+
+        <div class="section-title">B. BUSINESS INFORMATION AND REGISTRATION</div>
+        <table class="form-table">
+            <tr>
+                <td colspan="6">
+                    <span class="cell-label">Please choose one:</span>
+                    <div class="inline-checks">
+                        <span class="check-item"><span class="box {% if service.business_organization_type == 'sole_proprietorship' %}checked{% endif %}"></span>Sole Proprietorship</span>
+                        <span class="check-item"><span class="box {% if service.business_organization_type == 'partnership' %}checked{% endif %}"></span>Partnership</span>
+                        <span class="check-item"><span class="box {% if service.business_organization_type == 'corporation' %}checked{% endif %}"></span>Corporation</span>
+                        <span class="check-item"><span class="box {% if service.business_organization_type == 'cooperative' %}checked{% endif %}"></span>Cooperative</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="3">
+                    <span class="cell-label">DTI / SEC / CDA Registration Number:</span>
+                    <span class="fill upper">{{ service.business_registration_number|default:"" }}</span>
+                </td>
+                <td colspan="3">
+                    <span class="cell-label">Tax Identification Number (TIN):</span>
+                    <span class="fill upper">{{ service.business_tin|default:"" }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <span class="cell-label">Business Name:</span>
+                    <span class="fill upper">{{ service.business_name|default:"" }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="6">
+                    <span class="cell-label">Trade Name / Franchise (If applicable):</span>
+                    <span class="fill upper">{{ service.business_trade_name|default:"" }}</span>
+                </td>
+            </tr>
+            <tr>
+                <td><span class="cell-label">House/Bldg. No.</span><span class="fill upper">{{ service.business_house_number|default:"" }}</span></td>
+                <td colspan="2"><span class="cell-label">Name of Building</span><span class="fill upper">{{ service.business_building_name|default:"" }}</span></td>
+                <td><span class="cell-label">Block No.</span><span class="fill upper">{{ service.business_block_number|default:"" }}</span></td>
+                <td><span class="cell-label">Lot No.</span><span class="fill upper">{{ service.business_lot_number|default:"" }}</span></td>
+                <td><span class="cell-label">ZIP Code</span><span class="fill upper">{{ service.business_zip_code|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">Street</span><span class="fill upper">{{ service.business_street|default:service.business_address|default:"" }}</span></td>
+                <td><span class="cell-label">Barangay</span><span class="fill upper">GULOD</span></td>
+                <td colspan="2"><span class="cell-label">Subdivision</span><span class="fill upper">{{ service.business_subdivision|default:"" }}</span></td>
+                <td><span class="cell-label">Province</span><span class="fill upper">METRO MANILA</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">City/Municipality</span><span class="fill upper">QUEZON CITY</span></td>
+                <td colspan="2"><span class="cell-label">Telephone No.</span><span class="fill upper">{{ service.business_telephone|default:resident.contact_number|default:"" }}</span></td>
+                <td><span class="cell-label">Mobile No.</span><span class="fill upper">{{ resident.contact_number|default:"" }}</span></td>
+                <td><span class="cell-label">Email Address</span><span class="fill">{{ service.business_email|default:resident.email|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <th>Surname</th>
+                <th>Given Name</th>
+                <th>Middle Name</th>
+                <th>Suffix</th>
+                <th colspan="2">(For Sole Proprietorship) Name of Owner</th>
+            </tr>
+            <tr>
+                <td>{{ resident.last_name|upper }}</td>
+                <td>{{ resident.first_name|upper }}</td>
+                <td>{{ resident.middle_name|default:""|upper }}</td>
+                <td>{{ resident.suffix|default:""|upper }}</td>
+                <td colspan="2">{{ service.business_owner_name|default:""|upper }}</td>
+            </tr>
+            <tr>
+                <th>Surname</th>
+                <th>Given Name</th>
+                <th>Middle Name</th>
+                <th>Suffix</th>
+                <th colspan="2">(For Corporations/Cooperatives/Partnerships) Name of President / Officer in Charge</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td colspan="2">{{ service.business_president_name|default:""|upper }}</td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span class="cell-label">Sex</span>
+                    <div class="inline-checks">
+                        <span class="check-item"><span class="box {% if resident.gender == 'Male' %}checked{% endif %}"></span>Male</span>
+                        <span class="check-item"><span class="box {% if resident.gender == 'Female' %}checked{% endif %}"></span>Female</span>
+                    </div>
+                </td>
+                <td colspan="4">
+                    <span class="cell-label">For Corporation</span>
+                    <div class="inline-checks">
+                        <span class="check-item"><span class="box {% if service.business_corporation_nationality == 'filipino' %}checked{% endif %}"></span>Filipino</span>
+                        <span class="check-item"><span class="box {% if service.business_corporation_nationality == 'foreign' %}checked{% endif %}"></span>Foreign</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="section-title">C. BUSINESS OPERATION</div>
+        <table class="form-table">
+            <tr>
+                <td><span class="cell-label">Business Area (in sq. m.)</span><span class="fill">{{ service.business_area_sqm|default:"" }}</span></td>
+                <td><span class="cell-label">Time of Operation</span><span class="fill">{{ service.business_operation_time|default:"" }}</span></td>
+                <td><span class="cell-label">Total No. of Employees in Establishment</span><span class="fill">{{ service.business_employee_count|default:"" }}</span></td>
+                <td><span class="cell-label">Employees Residing within QC</span><span class="fill">{{ service.business_qc_employee_count|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">No. of Delivery Vehicles (if applicable)</span><span class="fill">Van/Truck: {{ service.business_delivery_vans|default:"0" }}   Motorcycle: {{ service.business_delivery_motorcycles|default:"0" }}</span></td>
+                <td colspan="2"><span class="cell-label">Total Floor Area (in sq. m.)</span><span class="fill">{{ service.business_floor_area_sqm|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <td><span class="cell-label">Male</span><span class="fill">{{ service.business_male_employee_count|default:"" }}</span></td>
+                <td><span class="cell-label">Female</span><span class="fill">{{ service.business_female_employee_count|default:"" }}</span></td>
+                <td colspan="2"><span class="cell-label">Business Location Address</span><span class="fill upper">{{ service.business_address|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <td><span class="cell-label">Owned?</span><span class="fill">Owned {% if service.business_property_status == 'owned' %}[X]{% else %}[ ]{% endif %}   Leased {% if service.business_property_status == 'leased' %}[X]{% else %}[ ]{% endif %}</span></td>
+                <td><span class="cell-label">Tax Declaration No.</span><span class="fill">{{ service.business_tax_declaration_number|default:"" }}</span></td>
+                <td colspan="2"><span class="cell-label">Property Identification No.</span><span class="fill">{{ service.business_property_identification_number|default:"" }}</span></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">Total Capital Investment (Paid up Capital + Lease Expenses + Equipments)</span><span class="fill">{{ service.business_capital_investment|default:"" }}</span></td>
+                <td colspan="2">
+                    <span class="cell-label">Do you have tax incentives from any Government Entity?</span>
+                    <span class="fill">Yes (attach certificate) {% if service.business_has_tax_incentives %}[X]{% else %}[ ]{% endif %} &nbsp;&nbsp; No {% if service.business_has_tax_incentives %}[ ]{% else %}[X]{% endif %}</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
+                    <span class="cell-label">Business Activity (Please check one)</span>
+                    <div class="inline-checks">
+                        <span class="check-item"><span class="box {% if service.business_activity_type == 'main_office' %}checked{% endif %}"></span>Main Office</span>
+                        <span class="check-item"><span class="box {% if service.business_activity_type == 'branch' %}checked{% endif %}"></span>Branch</span>
+                        <span class="check-item"><span class="box {% if service.business_activity_type == 'admin_office_only' %}checked{% endif %}"></span>Admin Office Only</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="form-table">
+            <tr>
+                <th style="width: 28%;">Line of Business</th>
+                <th style="width: 42%;">Products / Services</th>
+                <th style="width: 16%;">Equipment (If applicable)</th>
+                <th style="width: 7%;">No. of Units</th>
+                <th style="width: 7%;">Size</th>
+            </tr>
+            <tr>
+                <td>{{ service.business_nature|default:"" }}</td>
+                <td>{{ service.business_products_services|default:service.purpose_display|default:"" }}</td>
+                <td>{{ service.business_equipment|default:"" }}</td>
+                <td>{{ service.business_equipment_units|default:"" }}</td>
+                <td>{{ service.business_equipment_size|default:"" }}</td>
+            </tr>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+        </table>
+
+        <div class="signature-area">
+            I DECLARE UNDER PENALTY OF PERJURY that all information in this application are true and correct based on my personal knowledge and authentic records submitted to the Quezon City Government. Any false or misleading information supplied, or production of fake/falsified documents shall be grounds for appropriate legal action against me and automatically revokes the permit.
+
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <div class="signature-caption">SIGNATURE OF APPLICANT/OWNER OVER PRINTED NAME</div>
+                <div class="designation">
+                    {% if service.business_owner_name %}
+                        {{ service.business_owner_name|upper }}
+                    {% else %}
+                        {{ resident.first_name|upper }} {% if resident.middle_name %}{{ resident.middle_name|upper }} {% endif %}{{ resident.last_name|upper }}
+                    {% endif %}
+                </div>
+                <div class="designation">DESIGNATION / POSITION: {{ service.business_representative_designation|default:"OWNER / AUTHORIZED REPRESENTATIVE"|upper }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sheet page-break">
+        <div class="page-two-head">
+            <div class="page-two-title">UNIFIED BUSINESS PERMIT APPLICATION FORM</div>
+            <div>(PAGE 2 OF 2)</div>
+        </div>
+
+        <div class="roman-section">I.&nbsp;&nbsp;&nbsp;Appropriate Department shall fill-up this section</div>
+        <div class="subhead-line">1.&nbsp;&nbsp;&nbsp;VERIFICATION OF DOCUMENTS</div>
+
+        <table class="form-table verify-table">
+            <tr>
+                <th class="center-head" style="width: 29%;">DESCRIPTION</th>
+                <th class="center-head agency-col">OFFICE/AGENCY</th>
+                <th class="compliance-head check-col" colspan="3">COMPLIANCE</th>
+                <th class="center-head remarks-col">Remarks</th>
+                <th class="center-head evaluated-col">Evaluated by</th>
+            </tr>
+            <tr>
+                <th class="center-head"></th>
+                <th class="center-head"></th>
+                <th class="center-head check-col">Y</th>
+                <th class="center-head check-col">N</th>
+                <th class="center-head check-col">NR</th>
+                <th class="center-head"></th>
+                <th class="center-head"></th>
+            </tr>
+            <tr>
+                <td>
+                    Zoning Clearance
+                    <div style="margin-top:8px;"><span class="box"></span> SUP (When Applicable)</div>
+                </td>
+                <td>CPDO</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <div><span class="box"></span> Occupancy Permit</div>
+                    <div><span class="box"></span> Mechanical</div>
+                    <div><span class="box"></span> Electrical</div>
+                </td>
+                <td>Department of Building Official</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Validation of the Proof of Ownership or Authority to Use</td>
+                <td>City Assessor's Office</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Sanitary Permit/Health Clearance</td>
+                <td>City Health Department</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>City Environmental Certificate</td>
+                <td>EPWMD</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    Market Clearance (For Stall Holders)
+                    <div style="margin-top:4px;"><span class="box"></span> Franchise To Operate</div>
+                    <div class="tiny" style="margin-left:18px;">(When Applicable)</div>
+                </td>
+                <td>MDAD</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Veterinary Clearance</td>
+                <td>City Veterinary Office</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Security Clearance</td>
+                <td>DPOS</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Traffic Clearance</td>
+                <td>TFTM</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Liquor Permit</td>
+                <td>LLRB</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Valid Fire Safety Inspection Certificate</td>
+                <td>Bureau of Fire Protection</td>
+                <td></td><td></td><td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+
+        <div class="verify-note">* NR – Not Required</div>
+        <div class="dash-rule"></div>
+
+        <table class="form-table bfp-table">
+            <tr>
+                <th class="bfp-head" colspan="4">II.&nbsp;&nbsp;&nbsp;BUREAU OF FIRE PROTECTION SECTION (APPLICATION FOR FIRE SAFETY INSPECTION CERTIFICATE)</th>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">TRACKING NO.:</span><div class="blank-box"></div></td>
+                <td colspan="2"><span class="cell-label">DATE:</span><div class="blank-box"></div></td>
+            </tr>
+            <tr>
+                <td colspan="4"><span class="cell-label">NAME OF OWNER / REPRESENTATIVE:</span><div class="blank-box">{% if service.business_owner_name %}{{ service.business_owner_name|upper }}{% else %}{{ resident.first_name|upper }} {{ resident.last_name|upper }}{% endif %}</div></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">BUSINESS NAME:</span><div class="blank-box">{{ service.business_name|default:""|upper }}</div></td>
+                <td colspan="2"><span class="cell-label">CONTACT NO.:</span><div class="blank-box">{{ service.business_telephone|default:resident.contact_number|default:"" }}</div></td>
+            </tr>
+            <tr>
+                <td colspan="4"><span class="cell-label">BUSINESS ADDRESS:</span><div class="blank-box">{{ service.business_address|default:""|upper }}</div></td>
+            </tr>
+            <tr>
+                <td><span class="cell-label">TOTAL FLOOR AREA</span><div class="blank-box">{{ service.business_floor_area_sqm|default:"" }}</div></td>
+                <td><span class="cell-label">NO. OF STOREY</span><div class="blank-box">{{ service.business_storeys|default:"" }}</div></td>
+                <td><span class="cell-label">NO. OF OCCUPANTS</span><div class="blank-box">{{ service.business_occupants|default:"" }}</div></td>
+                <td><span class="cell-label">TYPE OF OCCUPANCY</span><div class="blank-box">{{ service.business_occupancy_type|default:service.business_nature|default:""|upper }}</div></td>
+            </tr>
+            <tr>
+                <td colspan="4"><span class="cell-label">REMARKS / FIRE SAFETY EVALUATION:</span><div style="min-height: 80px;"></div></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">RECEIVED BY:</span><div class="blank-box"></div></td>
+                <td colspan="2"><span class="cell-label">EVALUATED BY:</span><div class="blank-box"></div></td>
+            </tr>
+            <tr>
+                <td colspan="2"><span class="cell-label">APPROVED BY:</span><div class="blank-box"></div></td>
+                <td colspan="2"><span class="cell-label">DATE RELEASED:</span><div class="blank-box"></div></td>
+            </tr>
+        </table>
+    </div>
+
+    <button class="print-button" onclick="window.print()">Print Permit</button>
+</body>
+</html>
