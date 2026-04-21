@@ -76,7 +76,6 @@
                 <div class="hero-copy">The best version of this page is a true household dashboard: address details, head-of-household status, member composition, and quick actions all visible without forcing staff to scan scattered sections.</div>
                 <div class="hero-tags">
                     <span class="hero-tag">{{ household.street }}</span>
-                    <span class="hero-tag">{{ household.purok|default:"No purok assigned" }}</span>
                     <span class="hero-tag">{{ total_members }} member{{ total_members|pluralize }}</span>
                 </div>
             </div>
@@ -116,7 +115,6 @@
                 <div class="info-body">
                     <div class="info-row"><span class="info-label">House Number</span><span class="info-value">{{ household.house_number }}</span></div>
                     <div class="info-row"><span class="info-label">Street</span><span class="info-value">{{ household.street }}</span></div>
-                    <div class="info-row"><span class="info-label">Purok</span><span class="info-value">{{ household.purok|default:"Not assigned" }}</span></div>
                 </div>
             </article>
 

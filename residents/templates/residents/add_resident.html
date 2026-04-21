@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block page_title %}Add New Resident{% endblock %}
 {% block page_subtitle %}Enter resident details to create a new record{% endblock %}
@@ -34,6 +35,8 @@
     .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
     .span-2{grid-column:span 2}
     .field{display:grid;gap:7px}
+    .field-row{display:flex;gap:8px;align-items:center}
+    .field-row > *:first-child{flex:1}
     .field label,.mini-title{font-size:12px;font-weight:700;color:#41526d}
     .req{color:#dc2626}
     .field small{font-size:11px;color:#8b9bb0}
@@ -45,6 +48,8 @@
     .toggles{grid-template-columns:repeat(2,minmax(0,1fr))}
     .toggle-card{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
     .toggle-copy{font-size:12px;color:#7b8ba4;margin-top:4px;line-height:1.5}
+    .check-card{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
+    .check-card input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#2563eb;flex-shrink:0}
     .switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
     .switch input{opacity:0;width:0;height:0}
     .slider{position:absolute;inset:0;background:#dbe5f0;border-radius:999px;transition:.2s}
@@ -68,6 +73,18 @@
     .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
     .scan-status,.field-error{font-size:11px}
     .scan-status{color:#1e40af}.field-error{color:#dc2626}
+    .icon-btn{width:46px;min-width:46px;height:46px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;color:#2563eb;font-size:22px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+    .icon-btn:hover{background:#eff6ff;border-color:#93c5fd}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+    .modal-backdrop.is-open{display:flex}
+    .modal-card{width:min(520px,100%);background:#fff;border-radius:20px;border:1px solid #dbe6f2;box-shadow:0 24px 60px rgba(15,23,42,.2);overflow:hidden}
+    .modal-head{padding:18px 20px;border-bottom:1px solid #e7eef6;background:linear-gradient(180deg,#fff,#f8fbff);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .modal-title{font-size:16px;font-weight:700;color:#16243d}
+    .modal-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .modal-close{border:none;background:transparent;font-size:24px;line-height:1;color:#64748b;cursor:pointer}
+    .modal-body{padding:18px 20px;display:grid;gap:14px}
+    .modal-actions{padding:16px 20px;border-top:1px solid #e7eef6;background:#fbfdff;display:flex;justify-content:flex-end;gap:10px}
+    .modal-msg{font-size:12px;color:#dc2626}
     @media (max-width:1100px){.add-layout{grid-template-columns:1fr}.aside{grid-template-columns:1fr 1fr}}
     @media (max-width:820px){.grid-2,.grid-3,.toggles,.aside,.scan-row{grid-template-columns:1fr}.span-2{grid-column:auto}.avatar-preview{width:72px;height:72px;border-radius:20px;font-size:24px}}
 </style>
@@ -141,18 +158,21 @@
                 </section>
 
                 <section class="ui-panel section">
-                    <div class="section-head"><div><div class="section-title">Address Information</div><div class="section-sub">Address is currently linked through the household record.</div></div></div>
+                    <div class="section-head"><div><div class="section-title">Address Information</div><div class="section-sub">Select whether the resident lives at the default barangay address, then fill the address fields below.</div></div></div>
                     <div class="section-body">
-                        <div class="grid-3">
-                            <div class="field"><label>Barangay</label><div class="readonly">Gulod</div></div>
-                            <div class="field"><label>City</label><div class="readonly">Not configured in resident model</div></div>
-                            <div class="field"><label>Province</label><div class="readonly">Not configured in resident model</div></div>
+                        <div class="grid-2">
+                            <div class="field span-2"><label for="id_permanent_address">Permanent address? <span class="req">*</span></label>{{ form.permanent_address }}{% if form.permanent_address.errors %}<div class="field-error">{{ form.permanent_address.errors.0 }}</div>{% endif %}</div>
                         </div>
-                        <div class="grid-2" style="margin-top:14px;">
+                        <div class="grid-2" id="address-fields" style="display:none; margin-top:14px;">
+                            <div class="field"><label for="id_address_house_number">House number <span class="req">*</span></label>{{ form.address_house_number }}{% if form.address_house_number.errors %}<div class="field-error">{{ form.address_house_number.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_address_street">Street <span class="req">*</span></label>{{ form.address_street }}{% if form.address_street.errors %}<div class="field-error">{{ form.address_street.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_address_barangay">Barangay <span class="req">*</span></label>{{ form.address_barangay }}{% if form.address_barangay.errors %}<div class="field-error">{{ form.address_barangay.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_address_city">Municipality/City <span class="req">*</span></label>{{ form.address_city }}{% if form.address_city.errors %}<div class="field-error">{{ form.address_city.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_address_province">Province <span class="req">*</span></label>{{ form.address_province }}{% if form.address_province.errors %}<div class="field-error">{{ form.address_province.errors.0 }}</div>{% endif %}</div>
                             {% if household %}
-                            <div class="field span-2"><label>Assigned Household</label><div class="readonly">{{ household.house_number }} {{ household.street }}{% if household.purok %}, {{ household.purok }}{% endif %}</div></div>
+                            <div class="field"><label>Assigned Household</label><div class="readonly">{{ household.house_number }} {{ household.street }}</div></div>
                             {% else %}
-                            <div class="field span-2"><label for="id_household">Household</label>{{ form.household }}<small>Select the official household record used as this resident's address.</small>{% if form.household.errors %}<div class="field-error">{{ form.household.errors.0 }}</div>{% endif %}</div>
+                            <div class="field"><label for="id_household">Household</label><div class="field-row">{{ form.household }}<button type="button" class="icon-btn" id="open-household-modal" title="Add household">+</button></div><small>Optional household link for internal records.</small>{% if form.household.errors %}<div class="field-error">{{ form.household.errors.0 }}</div>{% endif %}</div>
                             {% endif %}
                         </div>
                     </div>
@@ -164,7 +184,6 @@
                         <div class="grid-2">
                             <div class="field"><label for="id_occupation">Occupation</label>{{ form.occupation }}</div>
                             <div class="field"><label for="id_educational_attainment">Educational Attainment</label>{{ form.educational_attainment }}</div>
-                            <div class="field"><label for="id_precinct">Precinct Number</label>{{ form.precinct }}</div>
                             <div class="field"><label for="id_status">Resident Status</label>{{ form.status }}</div>
                         </div>
                     </div>
@@ -176,8 +195,11 @@
                         <div class="toggles">
                             <div class="toggle-card"><div><div class="mini-title">PWD</div><div class="toggle-copy">Person with disability marker.</div></div><label class="switch">{{ form.pwd }}<span class="slider"></span></label></div>
                             <div class="toggle-card"><div><div class="mini-title">Solo Parent</div><div class="toggle-copy">Marks resident as a solo parent.</div></div><label class="switch">{{ form.solo_parent }}<span class="slider"></span></label></div>
-                            <div class="toggle-card"><div><div class="mini-title">Registered Voter</div><div class="toggle-copy">Used for voter-based service logic.</div></div><label class="switch">{{ form.voter_status }}<span class="slider"></span></label></div>
+                            <label class="check-card" for="id_voter_status"><input type="checkbox" name="{{ form.voter_status.html_name }}" id="id_voter_status"{% if form.voter_status.value %} checked{% endif %}><div><div class="mini-title">Voter Status</div><div class="toggle-copy">Check this if the resident is a registered voter.</div></div></label>
                             <div class="toggle-card"><div><div class="mini-title">Indigenous Person</div><div class="toggle-copy">Marks membership in an indigenous community.</div></div><label class="switch">{{ form.indigenous }}<span class="slider"></span></label></div>
+                        </div>
+                        <div class="grid-2" id="precinct-field-wrap" style="display:none; margin-top:14px;">
+                            <div class="field"><label for="id_precinct">Precinct No</label>{{ form.precinct }}{% if form.precinct.errors %}<div class="field-error">{{ form.precinct.errors.0 }}</div>{% endif %}</div>
                         </div>
                     </div>
                 </section>
@@ -225,10 +247,34 @@
     </div>
 </div>
 
+<div class="modal-backdrop" id="household-modal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Add Household</div>
+                <div class="modal-sub">Create a household without leaving the resident form.</div>
+            </div>
+            <button type="button" class="modal-close" id="close-household-modal" aria-label="Close">&times;</button>
+        </div>
+        <form id="household-modal-form">
+            <div class="modal-body">
+                <div class="field"><label for="modal_house_number">House Number <span class="req">*</span></label><input type="text" id="modal_house_number" name="house_number" class="bmis-input" placeholder="House number"></div>
+                <div class="field"><label for="modal_street">Street <span class="req">*</span></label><input type="text" id="modal_street" name="street" class="bmis-input" placeholder="Street"></div>
+                <div class="modal-msg" id="household-modal-msg"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-bmis btn-secondary" id="cancel-household-modal">Cancel</button>
+                <button type="submit" class="btn-bmis btn-primary" id="save-household-modal">Save Household</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
 (() => {
     const $ = (id) => document.getElementById(id);
-    const ids = ["first_name","middle_name","last_name","suffix","birth_date","gender","civil_status","religion","occupation","educational_attainment","precinct","household","contact_number"];
+    const ids = ["first_name","middle_name","last_name","suffix","birth_date","gender","civil_status","religion","occupation","educational_attainment","precinct","household","contact_number","permanent_address","address_house_number","address_street","address_barangay","address_city","address_province","voter_status"];
     const inputs = Object.fromEntries(ids.map((k) => [k, $("id_" + k)]));
     const previewAvatar = $("preview-avatar");
     const scanAvatar = $("scan-avatar");
@@ -244,6 +290,16 @@
     const education = $("pv-education");
     const household = $("pv-household");
     const precinct = $("pv-precinct");
+    const addressFields = $("address-fields");
+    const precinctFieldWrap = $("precinct-field-wrap");
+    const householdSelect = $("id_household");
+    const householdLookup = JSON.parse('{{ household_lookup_json|escapejs }}');
+    const householdModal = $("household-modal");
+    const openHouseholdModalBtn = $("open-household-modal");
+    const closeHouseholdModalBtn = $("close-household-modal");
+    const cancelHouseholdModalBtn = $("cancel-household-modal");
+    const householdModalForm = $("household-modal-form");
+    const householdModalMsg = $("household-modal-msg");
     const topSave = $("top-save-btn");
     const stickySave = $("sticky-save-btn");
 
@@ -296,6 +352,46 @@
         household.textContent = inputs.household?.selectedOptions?.[0]?.value ? inputs.household.selectedOptions[0].text : "{% if household %}Preselected household{% else %}Not selected{% endif %}";
         agePill.textContent = group(calcAge(inputs.birth_date?.value));
     }
+    function syncAddressFields() {
+        const choice = inputs.permanent_address?.value;
+        const isShown = choice === "True" || choice === "False";
+        const isPermanent = choice === "True";
+        if (addressFields) addressFields.style.display = isShown ? "grid" : "none";
+        if (inputs.address_barangay) {
+            if (isPermanent) {
+                inputs.address_barangay.value = "Gulod";
+                inputs.address_city.value = "Quezon City";
+                inputs.address_province.value = "Metro Manila";
+            } else if (choice === "False") {
+                ["address_barangay","address_city","address_province"].forEach((key) => {
+                    if (document.activeElement !== inputs[key] && !inputs[key].dataset.userEdited) {
+                        inputs[key].value = "";
+                    }
+                });
+            }
+            ["address_barangay","address_city","address_province"].forEach((key) => {
+                if (inputs[key]) inputs[key].readOnly = isPermanent;
+            });
+        }
+    }
+    function syncPrecinctField() {
+        const isVoter = Boolean(inputs.voter_status?.checked);
+        if (precinctFieldWrap) precinctFieldWrap.style.display = isVoter ? "grid" : "none";
+        if (!isVoter && inputs.precinct) inputs.precinct.value = "";
+    }
+    function applyHouseholdSelection() {
+        if (!householdSelect) return;
+        const picked = householdLookup[householdSelect.value];
+        if (!picked) return;
+        if (inputs.address_house_number) inputs.address_house_number.value = picked.house_number || "";
+        if (inputs.address_street) inputs.address_street.value = picked.street || "";
+        updatePreview();
+    }
+    function closeHouseholdModal() {
+        if (householdModal) householdModal.classList.remove("is-open");
+        if (householdModalForm) householdModalForm.reset();
+        if (householdModalMsg) householdModalMsg.textContent = "";
+    }
     if (inputs.contact_number) {
         inputs.contact_number.addEventListener("input", () => {
             const digits = inputs.contact_number.value.replace(/\D/g, "").slice(0, 11);
@@ -304,8 +400,147 @@
             else inputs.contact_number.value = digits.slice(0,4) + " " + digits.slice(4,7) + " " + digits.slice(7);
         });
     }
+    ["address_house_number","address_street","address_barangay","address_city","address_province"].forEach((key) => {
+        if (inputs[key]) {
+            inputs[key].addEventListener("input", () => {
+                inputs[key].dataset.userEdited = "1";
+            });
+        }
+    });
+    if (inputs.permanent_address) {
+        inputs.permanent_address.addEventListener("change", () => {
+            ["address_barangay","address_city","address_province"].forEach((key) => {
+                if (inputs[key]) delete inputs[key].dataset.userEdited;
+            });
+            syncAddressFields();
+            updatePreview();
+        });
+    }
+    if (inputs.voter_status) {
+        inputs.voter_status.addEventListener("change", () => {
+            syncPrecinctField();
+            updatePreview();
+        });
+    }
+    if (householdSelect) {
+        householdSelect.addEventListener("change", applyHouseholdSelection);
+    }
+    [openHouseholdModalBtn].forEach((btn) => btn && btn.addEventListener("click", () => {
+        if (householdModal) householdModal.classList.add("is-open");
+    }));
+    [closeHouseholdModalBtn, cancelHouseholdModalBtn].forEach((btn) => btn && btn.addEventListener("click", closeHouseholdModal));
+    if (householdModal) {
+        householdModal.addEventListener("click", (event) => {
+            if (event.target === householdModal) closeHouseholdModal();
+        });
+    }
+    if (householdModalForm) {
+        householdModalForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            householdModalMsg.textContent = "";
+            const fd = new FormData(householdModalForm);
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+            try {
+                const resp = await fetch("{% url 'quick_add_household' %}", {
+                    method: "POST",
+                    headers: csrf ? {"X-CSRFToken": csrf} : {},
+                    body: fd,
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.ok) {
+                    householdModalMsg.textContent = data.error || Object.values(data.errors || {}).flat().join(" ");
+                    return;
+                }
+                const item = data.household;
+                householdLookup[String(item.id)] = item;
+                if (householdSelect) {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.text = item.label;
+                    householdSelect.appendChild(option);
+                    householdSelect.value = String(item.id);
+                    householdSelect.dispatchEvent(new Event("change", {bubbles:true}));
+                }
+                if (inputs.address_house_number) inputs.address_house_number.value = item.house_number || "";
+                if (inputs.address_street) inputs.address_street.value = item.street || "";
+                closeHouseholdModal();
+                updatePreview();
+            } catch {
+                householdModalMsg.textContent = "Unable to save household right now.";
+            }
+        });
+    }
     Object.values(inputs).forEach((el) => el && ["input","change"].forEach((evt) => el.addEventListener(evt, updatePreview)));
+    syncAddressFields();
+    syncPrecinctField();
+    applyHouseholdSelection();
     updatePreview();
+
+    BMISFormValidation.init(document.getElementById("resident-form"), {
+        rules: {
+            id_first_name: { required: true, label: "First name" },
+            id_last_name: { required: true, label: "Last name" },
+            id_birth_date: { required: true, date: true, label: "Date of birth" },
+            id_gender: { required: true, label: "Gender" },
+            id_civil_status: { required: true, label: "Civil status" },
+            id_contact_number: {
+                digits: true,
+                label: "Mobile number",
+                custom: () => {
+                    const value = (inputs.contact_number?.value || "").replace(/\s+/g, "");
+                    if (!value) return "";
+                    if (!/^\d+$/.test(value)) return "Mobile number must contain only digits.";
+                    if (value.length < 7 || value.length > 15) return "Mobile number must be 7 to 15 digits.";
+                    return "";
+                }
+            },
+            id_email: { email: true, label: "Email address" },
+            id_permanent_address: { required: true, label: "Permanent address" },
+            id_address_house_number: {
+                label: "House number",
+                custom: () => {
+                    if (inputs.permanent_address?.value === "False" && !(inputs.address_house_number?.value || "").trim()) return "This field is required.";
+                    return "";
+                }
+            },
+            id_address_street: {
+                label: "Street",
+                custom: () => {
+                    if (inputs.permanent_address?.value === "False" && !(inputs.address_street?.value || "").trim()) return "This field is required.";
+                    return "";
+                }
+            },
+            id_address_barangay: {
+                label: "Barangay",
+                custom: () => {
+                    if (inputs.permanent_address?.value === "False" && !(inputs.address_barangay?.value || "").trim()) return "This field is required.";
+                    return "";
+                }
+            },
+            id_address_city: {
+                label: "Municipality/City",
+                custom: () => {
+                    if (inputs.permanent_address?.value === "False" && !(inputs.address_city?.value || "").trim()) return "This field is required.";
+                    return "";
+                }
+            },
+            id_address_province: {
+                label: "Province",
+                custom: () => {
+                    if (inputs.permanent_address?.value === "False" && !(inputs.address_province?.value || "").trim()) return "This field is required.";
+                    return "";
+                }
+            },
+            id_precinct: { maxLength: 50, label: "Precinct number" },
+        },
+    });
+
+    BMISFormValidation.init(document.getElementById("household-modal-form"), {
+        rules: {
+            modal_house_number: { required: true, maxLength: 20, label: "House number" },
+            modal_street: { required: true, maxLength: 100, label: "Street" },
+        },
+    });
 
     [topSave, stickySave].forEach((btn) => btn && btn.addEventListener("click", () => {
         setTimeout(() => {

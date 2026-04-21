@@ -191,11 +191,10 @@
                                 <div>
                                     <div class="name-main">{{ resident.first_name }} {{ resident.last_name }}</div>
                                     <div class="name-sub">
-                                        {% if resident.household %}
-                                            {{ resident.household.house_number }} {{ resident.household.street }}
-                                            {% if resident.household.purok %} · {{ resident.household.purok }}{% endif %}
+                                        {% if resident.formatted_address %}
+                                            {{ resident.formatted_address }}
                                         {% else %}
-                                            No household assigned
+                                            No address assigned
                                         {% endif %}
                                     </div>
                                 </div>

@@ -132,7 +132,7 @@
                 <div>
                     <small>Welcome back</small>
                     <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>
-                    <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}{% if resident.household and resident.household.purok %} | Purok {{ resident.household.purok.name }}{% endif %}</span>
+                    <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}</span>
                 </div>
             </div>
         </div>

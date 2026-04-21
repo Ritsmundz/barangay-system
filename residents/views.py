@@ -27,7 +27,7 @@ from django.contrib.auth.models import Group, User
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.text import slugify
-from .models import Resident, Household, ServiceRequest, ServiceRequestAttachment, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile, Notification
+from .models import Resident, Household, ServiceRequest, ServiceRequestAttachment, Payment, Complaint, ServiceType, AuditLog, RequestPurpose, UserProfile, Notification
 from .forms import (
     ResidentForm,
     HouseholdForm,
@@ -37,10 +37,38 @@ from .forms import (
     ResidentVerificationCreateForm,
     ServiceRequestRequirementsForm,
     ServiceRequestResidentSubmissionForm,
+    EMAIL_MESSAGE,
+    PHONE_MESSAGE,
+    REQUIRED_MESSAGE,
 )
 from .audit import log_audit_event, snapshot_instance
 
 logger = logging.getLogger(__name__)
+
+
+def _is_valid_email(value):
+    if not value:
+        return True
+    return bool(re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", value))
+
+
+def _is_valid_phone(value, *, min_length=7, max_length=15):
+    if not value:
+        return True
+    digits = "".join(ch for ch in value if ch.isdigit())
+    if len(digits) < min_length or len(digits) > max_length:
+        return False
+    allowed = set("0123456789+-() ")
+    return all(ch in allowed for ch in value) and digits == value.replace(" ", "").replace("+", "").replace("-", "").replace("(", "").replace(")", "")
+
+
+def _safe_parse_date(value):
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
 
 
 def get_secretary_email_recipients():
@@ -1002,7 +1030,7 @@ def get_portal_services():
     lookup = get_service_type_lookup()
     services = []
     for entry in PORTAL_SERVICE_CATALOG:
-        service_type = lookup.get(entry["base_type"].lower())
+        service_type = lookup.get(entry["name"].lower()) or lookup.get(entry["base_type"].lower())
         if not service_type:
             continue
         service = build_portal_service(entry, service_type)
@@ -1335,6 +1363,28 @@ def handle_service_request_submission(request, resident, service_types, service_
 
     selected_name = selected_service["name"].lower() if isinstance(selected_service, dict) else service_type.name.lower()
     requires_business = selected_name in {"business clearance", "barangay permit", "business permit"}
+    max_length_rules = {
+        "purpose_other": 255,
+        "requestor_name": 255,
+        "requestor_address": 255,
+        "deceased_name": 255,
+        "deceased_relationship": 150,
+        "emergency_contact_name": 150,
+        "emergency_contact_address": 255,
+        "emergency_contact_number": 30,
+    }
+
+    for field_name, max_length in max_length_rules.items():
+        value = (request.POST.get(field_name) or "").strip()
+        if value and len(value) > max_length:
+            messages.error(request, f"{field_name.replace('_', ' ').title()} must be {max_length} characters or fewer.")
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
 
     if rules["requires_emergency"]:
         if not emergency_contact_name or not emergency_contact_address or not emergency_contact_number:
@@ -1346,6 +1396,16 @@ def handle_service_request_submission(request, resident, service_types, service_
                 service_purposes,
                 selected_service=selected_service,
             )
+        if not _is_valid_phone(emergency_contact_number):
+            messages.error(request, PHONE_MESSAGE)
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+        emergency_contact_number = "".join(ch for ch in emergency_contact_number if ch.isdigit())
 
     requestor_name = (request.POST.get("requestor_name") or "").strip() or None
     requestor_address = (request.POST.get("requestor_address") or "").strip() or None
@@ -1357,6 +1417,24 @@ def handle_service_request_submission(request, resident, service_types, service_
 
     if rules["requires_residency"] and not residency_since:
         messages.error(request, "Please provide residency date for QCID.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+    if residency_since and not _safe_parse_date(residency_since):
+        messages.error(request, "Date must be a valid date in YYYY-MM-DD format.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+    if date_of_death and not _safe_parse_date(date_of_death):
+        messages.error(request, "Date of death must be a valid date in YYYY-MM-DD format.")
         return None, build_service_request_form_context(
             request,
             resident,
@@ -1376,6 +1454,28 @@ def handle_service_request_submission(request, resident, service_types, service_
                 service_purposes,
                 selected_service=selected_service,
             )
+        if business_data["business_email"] and not _is_valid_email(business_data["business_email"]):
+            messages.error(request, EMAIL_MESSAGE)
+            return None, build_service_request_form_context(
+                request,
+                resident,
+                service_types,
+                service_purposes,
+                selected_service=selected_service,
+            )
+        for phone_field in ("business_telephone",):
+            phone_value = business_data[phone_field]
+            if phone_value and not _is_valid_phone(phone_value):
+                messages.error(request, PHONE_MESSAGE)
+                return None, build_service_request_form_context(
+                    request,
+                    resident,
+                    service_types,
+                    service_purposes,
+                    selected_service=selected_service,
+                )
+            if phone_value:
+                business_data[phone_field] = "".join(ch for ch in phone_value if ch.isdigit())
 
     if rules["requires_requestor"]:
         if not requestor_name or not requestor_address:
@@ -1413,6 +1513,16 @@ def handle_service_request_submission(request, resident, service_types, service_
 
     if selected_service is not None and not agree_terms:
         messages.error(request, "Please agree to the terms and conditions.")
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    if purpose_other and not purpose_other.strip():
+        messages.error(request, REQUIRED_MESSAGE)
         return None, build_service_request_form_context(
             request,
             resident,
@@ -2480,7 +2590,7 @@ def dashboard(request):
     previous_month_end = current_month_start - timedelta(days=1)
     previous_month_start = previous_month_end.replace(day=1)
 
-    residents = Resident.objects.select_related("household__purok").all()
+    residents = Resident.objects.select_related("household").all()
     service_requests = ServiceRequest.objects.select_related("resident", "service_type").all()
     complaints = Complaint.objects.select_related("resident").all()
 
@@ -2578,27 +2688,27 @@ def dashboard(request):
         },
     ]
 
-    purok_stats = list(
-        residents.filter(household__purok__isnull=False).values(
-            "household__purok__name"
+    street_stats = list(
+        residents.filter(household__street__isnull=False).exclude(household__street__exact="").values(
+            "household__street"
         ).annotate(
             resident_count=Count("id")
-        ).order_by("-resident_count", "household__purok__name")
+        ).order_by("-resident_count", "household__street")
     )
-    max_purok_count = max((item["resident_count"] for item in purok_stats), default=1)
-    for item in purok_stats:
-        item["pct"] = round((item["resident_count"] / max_purok_count) * 100)
+    max_street_count = max((item["resident_count"] for item in street_stats), default=1)
+    for item in street_stats:
+        item["pct"] = round((item["resident_count"] / max_street_count) * 100)
 
     complaint_hotspots = list(
-        complaints.filter(resident__household__purok__isnull=False).values(
-            "resident__household__purok__name"
-        ).annotate(total=Count("id")).order_by("-total", "resident__household__purok__name")
+        complaints.filter(resident__household__street__isnull=False).exclude(resident__household__street__exact="").values(
+            "resident__household__street"
+        ).annotate(total=Count("id")).order_by("-total", "resident__household__street")
     )
 
     popular_service = service_requests.values("service_type__name").annotate(total=Count("id")).order_by("-total", "service_type__name").first()
     common_complaint = complaints.values("title").annotate(total=Count("id")).order_by("-total", "title").first()
-    top_purok_residents = purok_stats[0] if purok_stats else None
-    top_purok_complaints = complaint_hotspots[0] if complaint_hotspots else None
+    top_street_residents = street_stats[0] if street_stats else None
+    top_street_complaints = complaint_hotspots[0] if complaint_hotspots else None
 
     priority_actions = [
         {
@@ -2695,7 +2805,7 @@ def dashboard(request):
         "rejected_requests": rejected_requests,
         "total_revenue": total_revenue,
         "month_revenue": month_revenue,
-        "purok_stats": purok_stats,
+        "street_stats": street_stats,
         "recent_requests": recent_requests,
         "recent_complaints": recent_complaints,
         "recent_residents": recent_residents,
@@ -2713,8 +2823,8 @@ def dashboard(request):
         "trend_cards": trend_cards,
         "popular_service": popular_service,
         "common_complaint": common_complaint,
-        "top_purok_residents": top_purok_residents,
-        "top_purok_complaints": top_purok_complaints,
+        "top_street_residents": top_street_residents,
+        "top_street_complaints": top_street_complaints,
         "quick_actions": quick_actions,
         "notices": notices,
         "today": today,
@@ -3430,7 +3540,7 @@ def resident_list(request):
     gender = request.GET.get("gender", "").strip()
     status = request.GET.get("status", "").strip()
 
-    all_residents = Resident.objects.select_related("household", "household__purok").all()
+    all_residents = Resident.objects.select_related("household").all()
     residents = all_residents
 
     if query:
@@ -3502,10 +3612,20 @@ def add_resident(request):
     else:
         form = ResidentForm()
 
+    household_lookup = {
+        str(household.id): {
+            "house_number": household.house_number or "",
+            "street": household.street or "",
+            "label": str(household),
+        }
+        for household in Household.objects.order_by("house_number", "street")
+    }
+
     return render(request, 'residents/add_resident.html', {
         'form': form,
         'validation_errors': validation_errors,
         'scan_support': scan_support,
+        'household_lookup_json': json.dumps(household_lookup),
     })
 
 #HOUSEHOLD
@@ -3559,9 +3679,19 @@ def add_resident_to_household(request, household_id):
     else:
         form = ResidentForm()
 
+    household_lookup = {
+        str(item.id): {
+            "house_number": item.house_number or "",
+            "street": item.street or "",
+            "label": str(item),
+        }
+        for item in Household.objects.order_by("house_number", "street")
+    }
+
     return render(request, "residents/add_resident.html", {
         "form": form,
-        "household": household
+        "household": household,
+        "household_lookup_json": json.dumps(household_lookup),
     })
 #REMOVE FROM HOUSEHOLD
 #REMOVE FROM HOUSEHOLD
@@ -3808,10 +3938,51 @@ def edit_resident(request, resident_id):
     else:
         form = ResidentForm(instance=resident)
 
+    household_lookup = {
+        str(household.id): {
+            "house_number": household.house_number or "",
+            "street": household.street or "",
+            "label": str(household),
+        }
+        for household in Household.objects.order_by("house_number", "street")
+    }
+
     return render(request, "edit_resident.html", {  
-    "form": form,
-    "resident": resident
-})
+        "form": form,
+        "resident": resident,
+        "household_lookup_json": json.dumps(household_lookup),
+    })
+
+
+@login_required
+@user_passes_test(is_secretary)
+def quick_add_household(request):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "POST required."}, status=405)
+
+    form = HouseholdForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({"ok": False, "errors": form.errors}, status=400)
+
+    household = form.save()
+    log_audit_event(
+        action="CREATE",
+        model_name="Household",
+        description=f"Added household {household.id} from resident form modal.",
+        user=request.user,
+        target_id=household.id,
+        after_data=snapshot_instance(household),
+        request=request,
+    )
+    return JsonResponse({
+        "ok": True,
+        "household": {
+            "id": household.id,
+            "label": str(household),
+            "house_number": household.house_number or "",
+            "street": household.street or "",
+        }
+    })
 
 #PAYMENT LIST
 #PAYMENT LIST
@@ -3906,14 +4077,10 @@ def add_household(request):
 @group_required(is_staff_user)
 def household_list(request):
 
-    all_households = Household.objects.select_related("head", "purok").prefetch_related("members").all()
-    households = all_households.order_by("purok", "house_number")
+    all_households = Household.objects.select_related("head").prefetch_related("members").all()
+    households = all_households.order_by("street", "house_number")
 
-    purok = (request.GET.get("purok") or "").strip()
     search = (request.GET.get("q") or "").strip()
-
-    if purok:
-        households = households.filter(purok=purok)
 
     if search:
         households = households.filter(
@@ -3925,7 +4092,6 @@ def household_list(request):
         "filtered_total": households.count(),
         "total_households": all_households.count(),
         "total_residents": Resident.objects.filter(household__isnull=False).count(),
-        "puroks": Purok.objects.order_by("name"),
     }
 
     return render(request, "household_list.html", context)
@@ -4048,7 +4214,7 @@ def file_complaint(request):
 @login_required
 def complaint_detail(request, complaint_id):
 
-    complaint = get_object_or_404(Complaint.objects.select_related("resident__household__purok", "filed_by", "scheduled_by"), id=complaint_id)
+    complaint = get_object_or_404(Complaint.objects.select_related("resident__household", "filed_by", "scheduled_by"), id=complaint_id)
     is_resident_viewer = False
     if is_resident(request.user):
         profile = get_user_profile(request.user)
@@ -4108,16 +4274,8 @@ def complaint_detail(request, complaint_id):
             "actor": log.user,
             "tone": COMPLAINT_STATUS_COLORS.get((log.after_data or {}).get("status", ""), "sky"),
         })
-    address_bits = []
     resident = complaint.resident
-    if resident.household:
-        if resident.household.house_number:
-            address_bits.append(resident.household.house_number)
-        if resident.household.street:
-            address_bits.append(resident.household.street)
-        if resident.household.purok:
-            address_bits.append(f"Purok {resident.household.purok.name}")
-    address_display = ", ".join(address_bits) if address_bits else "No household address recorded"
+    address_display = resident.formatted_address or "No address recorded"
     next_statuses = COMPLAINT_STATUS_TRANSITIONS.get(complaint.status, [])
     resident_can_respond_to_schedule = (
         is_resident_viewer
@@ -4343,14 +4501,12 @@ def export_residents_csv(request):
         "Civil Status",
         "Voter Status",
         "Resident Status",
-        "Purok"
+        "Street Address"
     ])
 
     residents = Resident.objects.select_related("household").all()
 
     for resident in residents:
-
-        purok = resident.household.purok if resident.household else "N/A"
 
         writer.writerow([
             resident.first_name,
@@ -4360,7 +4516,7 @@ def export_residents_csv(request):
             resident.civil_status,
             resident.voter_status,
             resident.status,
-            purok
+            resident.formatted_address or "N/A"
         ])
     log_audit_event(
         action="EXPORT",
@@ -4432,7 +4588,7 @@ def export_households_csv(request):
     writer.writerow([
         "Household ID",
         "Household Head",
-        "Purok",
+        "Street Address",
         "Total Members"
     ])
 
@@ -4446,7 +4602,7 @@ def export_households_csv(request):
         writer.writerow([
             household.id,
             head,
-            household.purok,
+            f"{household.house_number} {household.street}".strip(),
             members
         ])
     log_audit_event(
@@ -4547,9 +4703,7 @@ def export_barangay_summary_csv(request):
 
 def _render_service_request_document(request, service):
     resident = service.resident
-    address = "-"
-    if resident.household:
-        address = f"{resident.household.house_number} {resident.household.street}"
+    address = resident.formatted_address or "-"
 
     # Decide which template to load
     service_name = service.service_type.name.lower()
@@ -4680,7 +4834,7 @@ def print_and_release_document(request, request_id):
 def service_request_detail(request, request_id):
     service_request = get_object_or_404(
         ServiceRequest.objects.select_related(
-            "resident__household__purok",
+            "resident__household",
             "service_type",
             "created_by",
             "requirements_requested_by",
@@ -4847,15 +5001,7 @@ def service_request_detail(request, request_id):
 
     resident = service_request.resident
     business_review_summary = get_business_permit_review_summary(service_request)
-    address_bits = []
-    if resident.household:
-        if resident.household.house_number:
-            address_bits.append(resident.household.house_number)
-        if resident.household.street:
-            address_bits.append(resident.household.street)
-        if resident.household.purok:
-            address_bits.append(f"Purok {resident.household.purok.name}")
-    address_display = ", ".join(address_bits) if address_bits else "No household address recorded"
+    address_display = resident.formatted_address or "No address recorded"
 
     timeline_items = []
     timeline_items.append({

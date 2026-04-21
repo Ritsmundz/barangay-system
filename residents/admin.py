@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User
-from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, Purok, AuditLog, RequestPurpose, UserProfile
+from .models import Resident, Household, ServiceRequest, Payment, Complaint, ServiceType, AuditLog, RequestPurpose, UserProfile
 
 
 admin.site.unregister(User)
@@ -19,14 +19,10 @@ class UserAdmin(DjangoUserAdmin):
         ),
     )
 
-@admin.register(Purok)
-class PurokAdmin(admin.ModelAdmin):
-    list_display = ("id", "name")
-    
 @admin.register(Household)
 class HouseholdAdmin(admin.ModelAdmin):
-    list_display = ('house_number', 'street', 'purok', 'head')
-    search_fields = ('house_number', 'street', 'purok')
+    list_display = ('house_number', 'street', 'head')
+    search_fields = ('house_number', 'street')
 
 
 @admin.register(Resident)

@@ -871,7 +871,15 @@
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.place_of_birth.id_for_label }}">Place of birth</label></div>{{ form.place_of_birth }}<div class="field-error">{% for error in form.place_of_birth.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.nationality.id_for_label }}">Nationality</label></div>{{ form.nationality }}<div class="field-error">{% for error in form.nationality.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.religion.id_for_label }}">Religion</label></div>{{ form.religion }}<div class="field-error">{% for error in form.religion.errors %}{{ error }}{% endfor %}</div></div>
-                                <div class="field-wide" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address.id_for_label }}">Complete address<span class="required-mark">*</span></label></div>{{ form.address }}<div class="hint">Include house number, street, purok, subdivision, city, and nearby details if available.</div><div class="field-error">{% for error in form.address.errors %}{{ error }}{% endfor %}</div></div>
+                                {{ form.address }}
+                                <div class="field-wide" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.permanent_address.id_for_label }}">Permanent address?<span class="required-mark">*</span></label></div>{{ form.permanent_address }}<div class="field-error">{% for error in form.permanent_address.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field-grid field-wide" id="registration-address-fields" style="display:none;">
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address_house_number.id_for_label }}">House number<span class="required-mark">*</span></label></div>{{ form.address_house_number }}<div class="field-error">{% for error in form.address_house_number.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address_street.id_for_label }}">Street<span class="required-mark">*</span></label></div>{{ form.address_street }}<div class="field-error">{% for error in form.address_street.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address_barangay.id_for_label }}">Barangay<span class="required-mark">*</span></label></div>{{ form.address_barangay }}<div class="field-error">{% for error in form.address_barangay.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address_city.id_for_label }}">Municipality/City<span class="required-mark">*</span></label></div>{{ form.address_city }}<div class="field-error">{% for error in form.address_city.errors %}{{ error }}{% endfor %}</div></div>
+                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.address_province.id_for_label }}">Province<span class="required-mark">*</span></label></div>{{ form.address_province }}<div class="field-error">{% for error in form.address_province.errors %}{{ error }}{% endfor %}</div></div>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -891,16 +899,17 @@
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.contact_number.id_for_label }}">Contact number</label></div>{{ form.contact_number }}<div class="field-error">{% for error in form.contact_number.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.occupation.id_for_label }}">Occupation</label></div>{{ form.occupation }}<div class="field-error">{% for error in form.occupation.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.educational_attainment.id_for_label }}">Educational attainment</label></div>{{ form.educational_attainment }}<div class="field-error">{% for error in form.educational_attainment.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.voter_status.id_for_label }}">Voter status</label></div><label class="check-item">{{ form.voter_status }} Registered voter</label><div class="field-error">{% for error in form.voter_status.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field id="registration-precinct-field" style="display:none;"><div class="field-label-row"><label for="{{ form.precinct.id_for_label }}">Precinct No</label></div>{{ form.precinct }}<div class="field-error">{% for error in form.precinct.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field-wide" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.valid_id_image.id_for_label }}">Upload valid ID<span class="required-mark">*</span></label></div>{{ form.valid_id_image }}<div class="hint">Make sure the ID photo and text are readable before uploading.</div><div class="field-error">{% for error in form.valid_id_image.errors %}{{ error }}{% endfor %}</div></div>
                             </div>
                         </div>
                         <div class="section-card">
-                            <button type="button" class="toggle-extra" data-toggle-panel="more-details" aria-expanded="{% if form.precinct.value or form.status.value or form.pwd.value or form.solo_parent.value or form.voter_status.value or form.indigenous.value %}true{% else %}false{% endif %}">+ Add optional information</button>
-                            <div class="extra-panel {% if form.precinct.value or form.status.value or form.pwd.value or form.solo_parent.value or form.voter_status.value or form.indigenous.value %}is-open{% endif %}" id="more-details">
+                            <button type="button" class="toggle-extra" data-toggle-panel="more-details" aria-expanded="{% if form.status.value or form.pwd.value or form.solo_parent.value or form.indigenous.value %}true{% else %}false{% endif %}">+ Add optional information</button>
+                            <div class="extra-panel {% if form.status.value or form.pwd.value or form.solo_parent.value or form.indigenous.value %}is-open{% endif %}" id="more-details">
                                 <div class="field-grid">
-                                    <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.precinct.id_for_label }}">Precinct number</label></div>{{ form.precinct }}<div class="field-error">{% for error in form.precinct.errors %}{{ error }}{% endfor %}</div></div>
                                     <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.status.id_for_label }}">Resident status</label></div>{{ form.status }}<div class="field-error">{% for error in form.status.errors %}{{ error }}{% endfor %}</div></div>
-                                    <div class="field-wide"><div class="field-label-row"><label>Special tags</label></div><div class="check-grid"><label class="check-item">{{ form.pwd }} PWD</label><label class="check-item">{{ form.solo_parent }} Solo parent</label><label class="check-item">{{ form.voter_status }} Registered voter</label><label class="check-item">{{ form.indigenous }} Indigenous person</label></div></div>
+                                    <div class="field-wide"><div class="field-label-row"><label>Special tags</label></div><div class="check-grid"><label class="check-item">{{ form.pwd }} PWD</label><label class="check-item">{{ form.solo_parent }} Solo parent</label><label class="check-item">{{ form.indigenous }} Indigenous person</label></div></div>
                                 </div>
                             </div>
                         </div>
@@ -939,6 +948,7 @@
             </div>
         </section>
     </main>
+    <script src="{% static 'residents/js/form_validation.js' %}"></script>
     <script>
         (function () {
             const form = document.getElementById('resident-registration-form');
@@ -955,6 +965,16 @@
             const meterFill = document.getElementById('password-meter-fill');
             const meterText = document.getElementById('password-meter-text');
             const addressField = document.getElementById('{{ form.address.id_for_label }}');
+            const permanentAddressField = document.getElementById('{{ form.permanent_address.id_for_label }}');
+            const addressHouseNumberField = document.getElementById('{{ form.address_house_number.id_for_label }}');
+            const addressStreetField = document.getElementById('{{ form.address_street.id_for_label }}');
+            const addressBarangayField = document.getElementById('{{ form.address_barangay.id_for_label }}');
+            const addressCityField = document.getElementById('{{ form.address_city.id_for_label }}');
+            const addressProvinceField = document.getElementById('{{ form.address_province.id_for_label }}');
+            const voterStatusField = document.getElementById('{{ form.voter_status.id_for_label }}');
+            const precinctField = document.getElementById('{{ form.precinct.id_for_label }}');
+            const registrationAddressFields = document.getElementById('registration-address-fields');
+            const registrationPrecinctField = document.getElementById('registration-precinct-field');
             const summary = {
                 full_name: document.querySelector('[data-confirm="full_name"]'),
                 identity: document.querySelector('[data-confirm="identity"]'),
@@ -972,9 +992,69 @@
                 '{{ form.gender.id_for_label }}': { required: true, message: 'Select your gender.' },
                 '{{ form.civil_status.id_for_label }}': { required: true, message: 'Select your civil status.' },
                 '{{ form.contact_number.id_for_label }}': { pattern: /^(09\d{9}|\+639\d{9}|0\d{10,14}|\d{7,15})$/, message: 'Enter a valid contact number.' },
-                '{{ form.address.id_for_label }}': { required: true, message: 'Enter your complete address.' },
+                '{{ form.permanent_address.id_for_label }}': { required: true, message: 'Select Yes or No.' },
                 '{{ form.valid_id_image.id_for_label }}': { required: true, message: 'Upload a valid ID image.' }
             };
+            BMISFormValidation.init(form, {
+                rules: {
+                    '{{ form.first_name.id_for_label }}': { required: true, maxLength: 100, label: 'First name' },
+                    '{{ form.last_name.id_for_label }}': { required: true, maxLength: 100, label: 'Last name' },
+                    '{{ form.email.id_for_label }}': { required: true, email: true, label: 'Email address' },
+                    '{{ form.username.id_for_label }}': { required: true, minLength: 3, maxLength: 150, label: 'Username' },
+                    '{{ form.password1.id_for_label }}': {
+                        required: true,
+                        label: 'Password',
+                        custom: function (input, value) {
+                            if (!value) return 'This field is required.';
+                            if (value.length < 8 || !/[a-z]/.test(value) || !/[A-Z]/.test(value) || !/\d/.test(value) || !/[^A-Za-z0-9]/.test(value)) {
+                                return 'Password must be at least 8 characters and include uppercase, lowercase, a number, and a symbol.';
+                            }
+                            return '';
+                        }
+                    },
+                    '{{ form.password2.id_for_label }}': { required: true, matches: '{{ form.password1.id_for_label }}', message: 'Passwords do not match yet.', label: 'Confirm password' },
+                    '{{ form.birthdate.id_for_label }}': { required: true, date: true, label: 'Birthdate' },
+                    '{{ form.gender.id_for_label }}': { required: true, label: 'Gender' },
+                    '{{ form.civil_status.id_for_label }}': { required: true, label: 'Civil status' },
+                    '{{ form.contact_number.id_for_label }}': {
+                        label: 'Mobile number',
+                        custom: function (input, value) {
+                            const digits = value.replace(/\s+/g, '');
+                            if (!digits) return '';
+                            if (!/^\d+$/.test(digits)) return 'Mobile number must contain only digits.';
+                            if (digits.length < 7 || digits.length > 15) return 'Mobile number must be 7 to 15 digits.';
+                            return '';
+                        }
+                    },
+                    '{{ form.permanent_address.id_for_label }}': { required: true, label: 'Permanent address' },
+                    '{{ form.address_house_number.id_for_label }}': {
+                        custom: function () {
+                            return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressHouseNumberField) ? 'This field is required.' : '';
+                        }
+                    },
+                    '{{ form.address_street.id_for_label }}': {
+                        custom: function () {
+                            return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressStreetField) ? 'This field is required.' : '';
+                        }
+                    },
+                    '{{ form.address_barangay.id_for_label }}': {
+                        custom: function () {
+                            return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressBarangayField) ? 'This field is required.' : '';
+                        }
+                    },
+                    '{{ form.address_city.id_for_label }}': {
+                        custom: function () {
+                            return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressCityField) ? 'This field is required.' : '';
+                        }
+                    },
+                    '{{ form.address_province.id_for_label }}': {
+                        custom: function () {
+                            return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressProvinceField) ? 'This field is required.' : '';
+                        }
+                    },
+                    '{{ form.valid_id_image.id_for_label }}': { required: true, label: 'Valid ID image' }
+                }
+            });
             const stepInputs = steps.map((step) => Array.from(step.querySelectorAll('[data-step-field] input, [data-step-field] select, [data-step-field] textarea')));
 
             function getValue(input) {
@@ -1047,6 +1127,16 @@
             }
 
             function updateSummary() {
+                const addressParts = [
+                    getValue(addressHouseNumberField),
+                    getValue(addressStreetField),
+                    getValue(addressBarangayField),
+                    getValue(addressCityField),
+                    getValue(addressProvinceField)
+                ].filter(Boolean);
+                if (addressField) {
+                    addressField.value = addressParts.join(', ');
+                }
                 summary.full_name.textContent = [
                     getValue(document.getElementById('{{ form.first_name.id_for_label }}')),
                     getValue(document.getElementById('{{ form.middle_name.id_for_label }}')),
@@ -1058,12 +1148,47 @@
                     getValue(document.getElementById('{{ form.place_of_birth.id_for_label }}')),
                     getValue(document.getElementById('{{ form.gender.id_for_label }}'))
                 ].filter(Boolean).join(' • ') || '-';
-                summary.address.textContent = getValue(addressField) || '-';
+                summary.address.textContent = addressParts.join(' • ') || '-';
                 summary.account.textContent = [
                     getValue(document.getElementById('{{ form.email.id_for_label }}')),
                     getValue(document.getElementById('{{ form.username.id_for_label }}')),
                     getValue(document.getElementById('{{ form.contact_number.id_for_label }}'))
                 ].filter(Boolean).join(' • ') || '-';
+            }
+
+            function syncAddressFields() {
+                const choice = getValue(permanentAddressField);
+                const isShown = choice === 'True' || choice === 'False';
+                const isPermanent = choice === 'True';
+                if (registrationAddressFields) {
+                    registrationAddressFields.style.display = isShown ? 'grid' : 'none';
+                }
+                if (isPermanent) {
+                    if (addressBarangayField) addressBarangayField.value = 'Gulod';
+                    if (addressCityField) addressCityField.value = 'Quezon City';
+                    if (addressProvinceField) addressProvinceField.value = 'Metro Manila';
+                } else if (choice === 'False') {
+                    [addressBarangayField, addressCityField, addressProvinceField].forEach((field) => {
+                        if (field && document.activeElement !== field && !field.dataset.userEdited) {
+                            field.value = '';
+                        }
+                    });
+                }
+                [addressBarangayField, addressCityField, addressProvinceField].forEach((field) => {
+                    if (field) field.readOnly = isPermanent;
+                });
+                updateSummary();
+            }
+
+            function syncPrecinctField() {
+                const isVoter = Boolean(voterStatusField && voterStatusField.checked);
+                if (registrationPrecinctField) {
+                    registrationPrecinctField.style.display = isVoter ? 'grid' : 'none';
+                }
+                if (!isVoter && precinctField) {
+                    precinctField.value = '';
+                }
+                updateSummary();
             }
 
             function initialStep() {
@@ -1124,6 +1249,27 @@
             passwordInput.addEventListener('input', passwordStrength);
             passwordConfirmInput.addEventListener('input', function () { validateInput(passwordConfirmInput); });
 
+            [addressHouseNumberField, addressStreetField, addressBarangayField, addressCityField, addressProvinceField].forEach((field) => {
+                if (!field) return;
+                field.addEventListener('input', function () {
+                    field.dataset.userEdited = '1';
+                    updateSummary();
+                });
+            });
+
+            if (permanentAddressField) {
+                permanentAddressField.addEventListener('change', function () {
+                    [addressBarangayField, addressCityField, addressProvinceField].forEach((field) => {
+                        if (field) delete field.dataset.userEdited;
+                    });
+                    syncAddressFields();
+                });
+            }
+
+            if (voterStatusField) {
+                voterStatusField.addEventListener('change', syncPrecinctField);
+            }
+
             document.querySelectorAll('[data-toggle-panel]').forEach((button) => {
                 const panel = document.getElementById(button.dataset.togglePanel);
                 button.addEventListener('click', function () {
@@ -1134,6 +1280,8 @@
             });
 
             passwordStrength();
+            syncAddressFields();
+            syncPrecinctField();
             showStep(currentStep);
         }());
     </script>

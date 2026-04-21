@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block page_title %}Submit Online Complaint{% endblock %}
 {% block page_subtitle %}Report a concern online first, then wait for secretary review, verification, and hearing schedule updates through the resident portal.{% endblock %}
@@ -189,6 +190,7 @@
     </div>
 </div>
 
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
 (() => {
     const resident = document.getElementById("id_resident");
@@ -229,6 +231,22 @@
     }));
 
     updatePreview();
+
+    BMISFormValidation.init(document.getElementById("complaint-form"), {
+        rules: {
+            id_resident: { required: true, label: "Complainant" },
+            id_title: { required: true, minLength: 5, maxLength: 200, label: "Complaint title" },
+            id_description: {
+                required: true,
+                label: "Description",
+                custom: (input, value) => {
+                    if (!value) return "This field is required.";
+                    if (value.length < 20) return "Description must be at least 20 characters.";
+                    return "";
+                }
+            },
+        },
+    });
 })();
 </script>
 {% endblock %}

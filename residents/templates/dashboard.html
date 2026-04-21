@@ -75,12 +75,12 @@
     .status-card strong{display:block;font-size:30px;color:var(--txt)}
     .status-card span{font-size:13px;color:var(--txt2)}
     .lower{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .purok-list{display:flex;flex-direction:column;gap:10px}
-    .purok-item{display:flex;align-items:center;gap:12px}
-    .purok-name{width:120px;font-size:13px;color:var(--txt2);font-weight:600}
-    .purok-track{flex:1;height:10px;background:#edf2f8;border-radius:999px;overflow:hidden}
-    .purok-fill{height:100%;background:linear-gradient(90deg,#4c83ea,#7eaaff)}
-    .purok-count{width:28px;text-align:right;font-size:13px;font-weight:700;color:var(--txt)}
+    .street-list{display:flex;flex-direction:column;gap:10px}
+    .street-item{display:flex;align-items:center;gap:12px}
+    .street-name{width:120px;font-size:13px;color:var(--txt2);font-weight:600}
+    .street-track{flex:1;height:10px;background:#edf2f8;border-radius:999px;overflow:hidden}
+    .street-fill{height:100%;background:linear-gradient(90deg,#4c83ea,#7eaaff)}
+    .street-count{width:28px;text-align:right;font-size:13px;font-weight:700;color:var(--txt)}
     .insight-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .insight-card{padding:16px;border-radius:18px;background:#fff;border:1px solid var(--brd);box-shadow:var(--shadow-md)}
     .insight-kicker{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3)}
@@ -282,19 +282,19 @@
         <div class="panel">
             <div class="section-head">
                 <div>
-                    <h3 class="section-title">Residents per Purok</h3>
-                    <div class="section-sub">Quick area-level view for planning and reporting.</div>
+                    <h3 class="section-title">Residents per Street</h3>
+                    <div class="section-sub">Quick street-level view for planning and reporting.</div>
                 </div>
             </div>
-            <div class="purok-list">
-                {% for purok in purok_stats %}
-                <div class="purok-item">
-                    <div class="purok-name">{{ purok.household__purok__name }}</div>
-                    <div class="purok-track"><div class="purok-fill" style="width:{{ purok.pct }}%"></div></div>
-                    <div class="purok-count">{{ purok.resident_count }}</div>
+            <div class="street-list">
+                {% for street in street_stats %}
+                <div class="street-item">
+                    <div class="street-name">{{ street.household__street }}</div>
+                    <div class="street-track"><div class="street-fill" style="width:{{ street.pct }}%"></div></div>
+                    <div class="street-count">{{ street.resident_count }}</div>
                 </div>
                 {% empty %}
-                <div class="section-sub">No purok data available yet.</div>
+                <div class="section-sub">No street data available yet.</div>
                 {% endfor %}
             </div>
         </div>
@@ -318,14 +318,14 @@
                     <div class="insight-sub">{% if common_complaint %}{{ common_complaint.total }} complaint(s) filed{% else %}No complaints yet{% endif %}</div>
                 </article>
                 <article class="insight-card">
-                    <div class="insight-kicker">Highest Resident Purok</div>
-                    <div class="insight-main">{% if top_purok_residents %}{{ top_purok_residents.household__purok__name }}{% else %}No data{% endif %}</div>
-                    <div class="insight-sub">{% if top_purok_residents %}{{ top_purok_residents.resident_count }} resident(s){% else %}Assign residents to households first{% endif %}</div>
+                    <div class="insight-kicker">Highest Resident Street</div>
+                    <div class="insight-main">{% if top_street_residents %}{{ top_street_residents.household__street }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if top_street_residents %}{{ top_street_residents.resident_count }} resident(s){% else %}Assign residents to households first{% endif %}</div>
                 </article>
                 <article class="insight-card">
-                    <div class="insight-kicker">Highest Complaint Purok</div>
-                    <div class="insight-main">{% if top_purok_complaints %}{{ top_purok_complaints.resident__household__purok__name }}{% else %}No data{% endif %}</div>
-                    <div class="insight-sub">{% if top_purok_complaints %}{{ top_purok_complaints.total }} complaint(s){% else %}No complaint hotspot yet{% endif %}</div>
+                    <div class="insight-kicker">Highest Complaint Street</div>
+                    <div class="insight-main">{% if top_street_complaints %}{{ top_street_complaints.resident__household__street }}{% else %}No data{% endif %}</div>
+                    <div class="insight-sub">{% if top_street_complaints %}{{ top_street_complaints.total }} complaint(s){% else %}No complaint hotspot yet{% endif %}</div>
                 </article>
             </div>
         </div>

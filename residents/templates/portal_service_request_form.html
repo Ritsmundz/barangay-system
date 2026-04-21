@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block page_title %}{{ selected_service.name }} Request{% endblock %}
 {% block page_subtitle %}Fill out the required details for this specific service.{% endblock %}
@@ -116,7 +117,7 @@
                     <div class="portal-info-grid">
                         <div class="portal-info-item"><small>Full Name</small><strong>{{ resident.first_name }} {{ resident.middle_name|default:"" }} {{ resident.last_name }}</strong></div>
                         <div class="portal-info-item"><small>Birthdate</small><strong>{{ resident.birth_date|date:"F j, Y" }}</strong></div>
-                        <div class="portal-info-item"><small>Address</small><strong>{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% else %}No household address on file{% endif %}</strong></div>
+                        <div class="portal-info-item"><small>Address</small><strong>{{ resident.formatted_address|default:"No address on file" }}</strong></div>
                         <div class="portal-info-item"><small>Contact Number</small><strong>{{ resident.contact_number|default:"No contact number on file" }}</strong></div>
                     </div>
                 </section>
@@ -164,7 +165,7 @@
                         </div>
                         <div class="portal-field full">
                             <label for="residence_address">Address</label>
-                            <input id="residence_address" name="residence_address" type="text" value="{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% endif %}" readonly>
+                            <input id="residence_address" name="residence_address" type="text" value="{{ resident.formatted_address|default:'' }}" readonly>
                         </div>
                         <div class="portal-field full">
                             <label for="birthdate">Birthdate <span>*</span></label>
@@ -183,7 +184,7 @@
                         </div>
                         <div class="portal-field full">
                             <label for="requestor_address">Requestor Address <span>*</span></label>
-                            <input id="requestor_address" name="requestor_address" type="text" value="{% if posted_data %}{{ posted_data.requestor_address }}{% else %}{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% if resident.household.purok %}, Purok {{ resident.household.purok.name }}{% endif %}{% endif %}{% endif %}" placeholder="Requestor Address" required>
+                            <input id="requestor_address" name="requestor_address" type="text" value="{% if posted_data %}{{ posted_data.requestor_address }}{% else %}{{ resident.formatted_address }}{% endif %}" placeholder="Requestor Address" required>
                         </div>
                         {% endif %}
 
@@ -215,7 +216,7 @@
                         </div>
                         <div class="portal-field full">
                             <label for="business_address">Business Address <span>*</span></label>
-                            <input id="business_address" name="business_address" type="text" value="{% if posted_data %}{{ posted_data.business_address }}{% else %}{% if resident.household %}{{ resident.household.house_number }} {{ resident.household.street }}{% if resident.household.purok %}, Purok {{ resident.household.purok.name }}{% endif %}{% endif %}{% endif %}" placeholder="Business Address" required>
+                            <input id="business_address" name="business_address" type="text" value="{% if posted_data %}{{ posted_data.business_address }}{% else %}{{ resident.formatted_address }}{% endif %}" placeholder="Business Address" required>
                         </div>
                         <div class="portal-field full">
                             <label for="business_nature">Nature of Business <span>*</span></label>
@@ -261,7 +262,7 @@
                         </div>
                         <div class="portal-field">
                             <label for="business_house_number">House / Building No. <span>*</span></label>
-                            <input id="business_house_number" name="business_house_number" type="text" value="{% if posted_data %}{{ posted_data.business_house_number }}{% else %}{% if resident.household %}{{ resident.household.house_number }}{% endif %}{% endif %}" placeholder="House / Building No." required>
+                            <input id="business_house_number" name="business_house_number" type="text" value="{% if posted_data %}{{ posted_data.business_house_number }}{% else %}{{ resident.address_house_number|default:'' }}{% endif %}" placeholder="House / Building No." required>
                         </div>
                         <div class="portal-field">
                             <label for="business_building_name">Building Name</label>
@@ -269,7 +270,7 @@
                         </div>
                         <div class="portal-field">
                             <label for="business_street">Street <span>*</span></label>
-                            <input id="business_street" name="business_street" type="text" value="{% if posted_data %}{{ posted_data.business_street }}{% else %}{% if resident.household %}{{ resident.household.street }}{% endif %}{% endif %}" placeholder="Street" required>
+                            <input id="business_street" name="business_street" type="text" value="{% if posted_data %}{{ posted_data.business_street }}{% else %}{{ resident.address_street|default:'' }}{% endif %}" placeholder="Street" required>
                         </div>
                         <div class="portal-field">
                             <label for="business_block_number">Block No.</label>
@@ -447,7 +448,7 @@
                     <div class="portal-resident-badge">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
                     <div>
                         <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>
-                        <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}{% if resident.household and resident.household.purok %} · Purok {{ resident.household.purok.name }}{% endif %}</span>
+                        <span>{% if resident.voter_status %}Registered voter{% else %}Non-voter{% endif %}</span>
                     </div>
                 </div>
             </div>
@@ -473,6 +474,7 @@
     </aside>
 </div>
 
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
     {% if selected_service_rules.requires_purpose %}
     (function () {
@@ -521,6 +523,7 @@
     (function() {
         const agreeCheckbox = document.getElementById("agree_terms");
         const submitButton = document.getElementById("portal_submit_button");
+        const form = document.querySelector(".portal-form-card form");
         if (!agreeCheckbox || !submitButton) return;
 
         function syncSubmitButton() {
@@ -531,6 +534,23 @@
 
         agreeCheckbox.addEventListener("change", syncSubmitButton);
         syncSubmitButton();
+
+        BMISFormValidation.init(form, {
+            rules: {
+                portal_purpose: { label: "Purpose", custom: () => document.getElementById("portal_purpose") && document.getElementById("portal_purpose").required && !document.getElementById("portal_purpose").value ? "This field is required." : "" },
+                purpose_other: { label: "Other purpose details", custom: () => document.getElementById("purpose_other") && document.getElementById("purpose_other").required && !document.getElementById("purpose_other").value.trim() ? "This field is required." : "" },
+                business_email: { email: true, label: "Business email" },
+                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input && input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                residency_since: { label: "Residency since", custom: (input, value) => input && input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
+                date_of_death: { label: "Date of death", custom: (input, value) => input && input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
+                requestor_name: { label: "Requestor name", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },
+                requestor_address: { label: "Requestor address", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },
+                business_name: { label: "Business name", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },
+                business_owner_name: { label: "Business owner / representative", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },
+                business_address: { label: "Business address", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },
+            },
+        });
     })();
     {% endif %}
 </script>

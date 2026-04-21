@@ -124,6 +124,7 @@ urlpatterns = [
         views.remove_from_household,
         name="remove_from_household"),
     path("household/add/", views.add_household, name="add_household"),
+    path("household/quick-add/", views.quick_add_household, name="quick_add_household"),
     path("households/", views.household_list, name="household_list"),
 
     path("complaints/", views.complaint_list, name="complaint_list"),

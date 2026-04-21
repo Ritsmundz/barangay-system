@@ -1,319 +1,337 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Edit Resident{% endblock %}
+{% block page_subtitle %}Update the resident record in the same guided layout used across the system{% endblock %}
 
 {% block content %}
-
 <style>
-    /* ── Page header ── */
-    .page-header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        margin-bottom: 22px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .page-title   { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
-
-    /* ── Breadcrumb ── */
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 12px;
-        color: #94A3B8;
-        margin-bottom: 16px;
-    }
-    .breadcrumb a { color: #64748B; text-decoration: none; }
-    .breadcrumb a:hover { color: #2563EB; }
-    .breadcrumb svg { width: 12px; height: 12px; }
-    .breadcrumb .cur { color: #1E293B; font-weight: 500; }
-
-    /* ── Form card ── */
-    .form-card {
-        background: #fff;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        overflow: hidden;
-        max-width: 780px;
-    }
-    .form-card-hdr {
-        background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
-        padding: 18px 24px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-    .form-card-hdr-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.2);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
-    .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
-    .form-card-hdr-sub   { font-size: 11.5px; color: rgba(255,255,255,.7); margin-top: 1px; }
-    .form-card-body { padding: 24px; }
-
-    /* ── Section dividers inside the form ── */
-    .form-section { margin-bottom: 24px; }
-    .form-section-title {
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748B;
-        text-transform: uppercase;
-        letter-spacing: .07em;
-        margin-bottom: 14px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #F1F5F9;
-        display: flex;
-        align-items: center;
-        gap: 7px;
-    }
-    .form-section-title svg { width: 13px; height: 13px; color: #94A3B8; }
-
-    /* ── Grid layouts ── */
-    .form-grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-    }
-    .form-grid-3 {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 14px;
-    }
-    .form-col-full { grid-column: 1 / -1; }
-    @media (max-width: 620px) {
-        .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
-        .form-col-full { grid-column: 1; }
-    }
-
-    /* ── Field wrapper ── */
-    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
-    .field-label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #374151;
-    }
-    .field-required { color: #DC2626; margin-left: 2px; }
-
-    /* ── Override Django's {{ form.as_p }} default styles ── */
-    .form-card-body p {
-        margin: 0 0 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    .form-card-body label {
-        font-size: 12px;
-        font-weight: 500;
-        color: #374151;
-        line-height: 1.4;
-    }
-    .form-card-body input[type="text"],
-    .form-card-body input[type="email"],
-    .form-card-body input[type="number"],
-    .form-card-body input[type="date"],
-    .form-card-body input[type="tel"],
-    .form-card-body select,
-    .form-card-body textarea {
-        width: 100%;
-        height: 38px;
-        padding: 0 12px;
-        border: 1px solid #E2E8F0;
-        border-radius: 8px;
-        font-size: 13px;
-        font-family: inherit;
-        color: #1E293B;
-        background: #F8FAFC;
-        outline: none;
-        transition: border-color .15s, background .15s;
-        -webkit-appearance: none;
-        appearance: none;
-    }
-    .form-card-body textarea {
-        height: auto;
-        min-height: 80px;
-        padding: 10px 12px;
-        resize: vertical;
-        line-height: 1.5;
-    }
-    .form-card-body input:focus,
-    .form-card-body select:focus,
-    .form-card-body textarea:focus {
-        border-color: #2563EB;
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
-    }
-    .form-card-body input:hover,
-    .form-card-body select:hover,
-    .form-card-body textarea:hover {
-        border-color: #CBD5E1;
-    }
-    /* Checkbox / radio — keep inline */
-    .form-card-body input[type="checkbox"],
-    .form-card-body input[type="radio"] {
-        width: 16px;
-        height: 16px;
-        border: 1px solid #CBD5E1;
-        border-radius: 4px;
-        background: #F8FAFC;
-        cursor: pointer;
-        accent-color: #2563EB;
-        flex-shrink: 0;
-        display: inline-block;
-    }
-    /* Error messages from Django form validation */
-    .form-card-body ul.errorlist {
-        list-style: none;
-        padding: 0;
-        margin: 3px 0 0;
-    }
-    .form-card-body ul.errorlist li {
-        font-size: 11.5px;
-        color: #DC2626;
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-    .form-card-body ul.errorlist li::before {
-        content: '!';
-        display: inline-flex;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #FEF2F2;
-        color: #DC2626;
-        font-size: 10px;
-        font-weight: 700;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    /* Help text */
-    .form-card-body .helptext,
-    .form-card-body span.helptext {
-        font-size: 11px;
-        color: #94A3B8;
-        line-height: 1.4;
-    }
-
-    /* ── Form footer ── */
-    .form-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 24px;
-        border-top: 1px solid #E2E8F0;
-        background: #FAFAFA;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .footer-note {
-        font-size: 11.5px;
-        color: #94A3B8;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    .footer-note svg { width: 13px; height: 13px; }
-    .footer-actions { display: flex; align-items: center; gap: 8px; }
-
-    /* ── Buttons ── */
-    .btn-bmis {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 500;
-        font-family: inherit;
-        cursor: pointer;
-        text-decoration: none;
-        transition: all .15s;
-        line-height: 1;
-        white-space: nowrap;
-    }
-    .btn-bmis svg { width: 14px; height: 14px; flex-shrink: 0; }
-    .btn-primary  { background: #2563EB; color: #fff; border: none; }
-    .btn-primary:hover  { background: #1D4ED8; color: #fff; text-decoration: none; }
-    .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
-    .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
+    .edit-page{display:grid;gap:20px;max-width:1100px;margin:0 auto}
+    .crumbs{display:flex;gap:8px;flex-wrap:wrap;font-size:12px;color:#7b8ba4}
+    .crumbs a{color:#5d6e85;text-decoration:none}.crumbs a:hover{color:#2563eb}
+    .panel{background:linear-gradient(180deg,#fff,#fbfdff);border:1px solid #dbe6f2;border-radius:20px;box-shadow:0 18px 40px rgba(17,37,77,.08)}
+    .hero{padding:22px 24px;background:radial-gradient(circle at top right, rgba(147,197,253,.22), transparent 32%),linear-gradient(180deg,#fff,#f7fbff)}
+    .hero h1{font-size:28px;line-height:1.1;margin:0;color:#16243d}
+    .hero p{margin:8px 0 0;color:#66768d;font-size:14px}
+    .hint{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border:1px solid #dbe7f7;border-radius:16px;background:#f8fbff;font-size:13px;color:#46607e}
+    .hint strong{color:#1d2d47}
+    .section{overflow:hidden}
+    .section-head{padding:18px 20px;border-bottom:1px solid #e7eef6;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+    .section-title{font-size:15px;font-weight:700;color:#1c2d47}
+    .section-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .section-body{padding:18px 20px}
+    .grid-2,.toggles{display:grid;gap:14px}
+    .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .span-2{grid-column:span 2}
+    .field{display:grid;gap:7px}
+    .field-row{display:flex;gap:8px;align-items:center}
+    .field-row > *:first-child{flex:1}
+    .field label,.mini-title{font-size:12px;font-weight:700;color:#41526d}
+    .req{color:#dc2626}
+    .field small{font-size:11px;color:#8b9bb0}
+    .bmis-input,.bmis-select{width:100%;min-height:46px;padding:0 14px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;font:inherit;color:#1e293b;outline:none;transition:.15s}
+    .bmis-input:focus,.bmis-select:focus{border-color:#93c5fd;box-shadow:0 0 0 4px rgba(37,99,235,.10)}
+    .field-error{font-size:11px;color:#dc2626}
+    .toggles{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .toggle-card{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
+    .toggle-copy{font-size:12px;color:#7b8ba4;margin-top:4px;line-height:1.5}
+    .check-card{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
+    .check-card input[type="checkbox"]{width:18px;height:18px;margin-top:2px;accent-color:#2563eb;flex-shrink:0}
+    .switch{position:relative;display:inline-block;width:48px;height:28px;flex-shrink:0}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;inset:0;background:#dbe5f0;border-radius:999px;transition:.2s}
+    .slider:before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 4px 10px rgba(15,23,42,.16)}
+    .switch input:checked + .slider{background:#2563eb}.switch input:checked + .slider:before{transform:translateX(20px)}
+    .footer{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:18px 20px;border-top:1px solid #e7eef6;background:#fbfdff}
+    .footer-note{font-size:12px;color:#6b7a90}
+    .footer-note strong{color:#1d2d47}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .icon-btn{width:46px;min-width:46px;height:46px;border-radius:14px;border:1px solid #d9e4f0;background:#fff;color:#2563eb;font-size:22px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+    .icon-btn:hover{background:#eff6ff;border-color:#93c5fd}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:1000}
+    .modal-backdrop.is-open{display:flex}
+    .modal-card{width:min(520px,100%);background:#fff;border-radius:20px;border:1px solid #dbe6f2;box-shadow:0 24px 60px rgba(15,23,42,.2);overflow:hidden}
+    .modal-head{padding:18px 20px;border-bottom:1px solid #e7eef6;background:linear-gradient(180deg,#fff,#f8fbff);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .modal-title{font-size:16px;font-weight:700;color:#16243d}
+    .modal-sub{font-size:12px;color:#7b8ba4;margin-top:4px}
+    .modal-close{border:none;background:transparent;font-size:24px;line-height:1;color:#64748b;cursor:pointer}
+    .modal-body{padding:18px 20px;display:grid;gap:14px}
+    .modal-actions{padding:16px 20px;border-top:1px solid #e7eef6;background:#fbfdff;display:flex;justify-content:flex-end;gap:10px}
+    .modal-msg{font-size:12px;color:#dc2626}
+    @media (max-width:760px){.grid-2,.toggles{grid-template-columns:1fr}.span-2{grid-column:auto}}
 </style>
 
-<!-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="{% url 'resident_list' %}">Residents</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <a href="{% url 'resident_profile' resident.id %}">{{ resident.first_name }} {{ resident.last_name }}</a>
-    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-    <span class="cur">Edit</span>
-</div>
-
-<!-- ═══════════════ PAGE HEADER ═══════════════ -->
-<div class="page-header">
-    <div>
-        <div class="page-title">Edit Resident</div>
-        <div class="page-subtitle">Update the information for {{ resident.first_name }} {{ resident.last_name }}</div>
-    </div>
-</div>
-
-<!-- ═══════════════ FORM CARD ═══════════════ -->
-<div class="form-card">
-
-    <!-- Card header -->
-    <div class="form-card-hdr">
-        <div class="form-card-hdr-icon">
-            <svg viewBox="0 0 20 20" fill="currentColor">
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
-            </svg>
-        </div>
-        <div>
-            <div class="form-card-hdr-title">Resident Information</div>
-            <div class="form-card-hdr-sub">All fields marked with * are required</div>
-        </div>
+<div class="edit-page">
+    <div class="crumbs">
+        <a href="{% url 'resident_list' %}">Residents</a><span>&gt;</span>
+        <a href="{% url 'resident_profile' resident.id %}">{{ resident.first_name }} {{ resident.last_name }}</a><span>&gt;</span>
+        <span>Edit Profile</span>
     </div>
 
-    <!-- ═══ FORM — method POST + csrf_token preserved ═══ -->
-    <form method="POST">
+    <section class="panel hero">
+        <h1>Edit Resident</h1>
+        <p>Update the resident information in a centered, cleaner workspace that matches the rest of the resident management pages.</p>
+        <div class="hint" style="margin-top:18px;">
+            <div><strong>Reminder</strong><br>Changes here update the live resident record immediately after saving.</div>
+        </div>
+    </section>
+
+    <form method="POST" class="panel">
         {% csrf_token %}
 
-        <div class="form-card-body">
-            {{ form.as_p }}
-        </div>
-
-        <!-- Footer with Save + Cancel -->
-        <div class="form-footer">
-            <div class="footer-note">
-                <svg viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                </svg>
-                Changes will be saved to the barangay record immediately.
+        <section class="section">
+            <div class="section-head"><div><div class="section-title">Personal Information</div><div class="section-sub">Core identity and demographic details.</div></div></div>
+            <div class="section-body">
+                <div class="grid-2">
+                    <div class="field"><label for="id_first_name">First Name <span class="req">*</span></label>{{ form.first_name }}{% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_middle_name">Middle Name</label>{{ form.middle_name }}{% if form.middle_name.errors %}<div class="field-error">{{ form.middle_name.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_last_name">Last Name <span class="req">*</span></label>{{ form.last_name }}{% if form.last_name.errors %}<div class="field-error">{{ form.last_name.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_suffix">Suffix</label>{{ form.suffix }}{% if form.suffix.errors %}<div class="field-error">{{ form.suffix.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_birth_date">Date of Birth <span class="req">*</span></label>{{ form.birth_date }}{% if form.birth_date.errors %}<div class="field-error">{{ form.birth_date.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_place_of_birth">Place of Birth</label>{{ form.place_of_birth }}{% if form.place_of_birth.errors %}<div class="field-error">{{ form.place_of_birth.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_gender">Gender <span class="req">*</span></label>{{ form.gender }}{% if form.gender.errors %}<div class="field-error">{{ form.gender.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_civil_status">Civil Status <span class="req">*</span></label>{{ form.civil_status }}{% if form.civil_status.errors %}<div class="field-error">{{ form.civil_status.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_nationality">Nationality</label>{{ form.nationality }}{% if form.nationality.errors %}<div class="field-error">{{ form.nationality.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_religion">Religion</label>{{ form.religion }}{% if form.religion.errors %}<div class="field-error">{{ form.religion.errors.0 }}</div>{% endif %}</div>
+                </div>
             </div>
-            <div class="footer-actions">
-                <a href="{% url 'resident_profile' resident.id %}" class="btn-bmis btn-ghost">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
-                    </svg>
-                    Cancel
-                </a>
-                <button type="submit" class="btn-bmis btn-primary">
-                    <svg viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                    </svg>
-                    Save Changes
-                </button>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><div class="section-title">Contact Information</div><div class="section-sub">Contact details for resident communication.</div></div></div>
+            <div class="section-body">
+                <div class="grid-2">
+                    <div class="field"><label for="id_contact_number">Contact Number</label>{{ form.contact_number }}{% if form.contact_number.errors %}<div class="field-error">{{ form.contact_number.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_email">Email Address</label>{{ form.email }}{% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><div class="section-title">Address Information</div><div class="section-sub">Set whether the resident uses the default barangay address or a custom one.</div></div></div>
+            <div class="section-body">
+                <div class="grid-2">
+                    <div class="field span-2"><label for="id_permanent_address">Permanent address? <span class="req">*</span></label>{{ form.permanent_address }}{% if form.permanent_address.errors %}<div class="field-error">{{ form.permanent_address.errors.0 }}</div>{% endif %}</div>
+                </div>
+                <div class="grid-2" id="address-fields" style="display:none; margin-top:14px;">
+                    <div class="field"><label for="id_address_house_number">House number <span class="req">*</span></label>{{ form.address_house_number }}{% if form.address_house_number.errors %}<div class="field-error">{{ form.address_house_number.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_address_street">Street <span class="req">*</span></label>{{ form.address_street }}{% if form.address_street.errors %}<div class="field-error">{{ form.address_street.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_address_barangay">Barangay <span class="req">*</span></label>{{ form.address_barangay }}{% if form.address_barangay.errors %}<div class="field-error">{{ form.address_barangay.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_address_city">Municipality/City <span class="req">*</span></label>{{ form.address_city }}{% if form.address_city.errors %}<div class="field-error">{{ form.address_city.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_address_province">Province <span class="req">*</span></label>{{ form.address_province }}{% if form.address_province.errors %}<div class="field-error">{{ form.address_province.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_household">Household</label><div class="field-row">{{ form.household }}<button type="button" class="icon-btn" id="open-household-modal" title="Add household">+</button></div><small>Optional internal household link.</small>{% if form.household.errors %}<div class="field-error">{{ form.household.errors.0 }}</div>{% endif %}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><div class="section-title">Additional Information</div><div class="section-sub">Administrative and resident record details.</div></div></div>
+            <div class="section-body">
+                <div class="grid-2">
+                    <div class="field"><label for="id_occupation">Occupation</label>{{ form.occupation }}{% if form.occupation.errors %}<div class="field-error">{{ form.occupation.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_educational_attainment">Educational Attainment</label>{{ form.educational_attainment }}{% if form.educational_attainment.errors %}<div class="field-error">{{ form.educational_attainment.errors.0 }}</div>{% endif %}</div>
+                    <div class="field"><label for="id_status">Resident Status</label>{{ form.status }}{% if form.status.errors %}<div class="field-error">{{ form.status.errors.0 }}</div>{% endif %}</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-head"><div><div class="section-title">Special Tags / Status</div><div class="section-sub">Resident classifications and voter information.</div></div></div>
+            <div class="section-body">
+                <div class="toggles">
+                    <div class="toggle-card"><div><div class="mini-title">PWD</div><div class="toggle-copy">Person with disability marker.</div></div><label class="switch">{{ form.pwd }}<span class="slider"></span></label></div>
+                    <div class="toggle-card"><div><div class="mini-title">Solo Parent</div><div class="toggle-copy">Marks resident as a solo parent.</div></div><label class="switch">{{ form.solo_parent }}<span class="slider"></span></label></div>
+                    <label class="check-card" for="id_voter_status"><input type="checkbox" name="{{ form.voter_status.html_name }}" id="id_voter_status"{% if form.voter_status.value %} checked{% endif %}><div><div class="mini-title">Voter Status</div><div class="toggle-copy">Check this if the resident is a registered voter.</div></div></label>
+                    <div class="toggle-card"><div><div class="mini-title">Indigenous Person</div><div class="toggle-copy">Marks membership in an indigenous community.</div></div><label class="switch">{{ form.indigenous }}<span class="slider"></span></label></div>
+                </div>
+                <div class="grid-2" id="precinct-field-wrap" style="display:none; margin-top:14px;">
+                    <div class="field"><label for="id_precinct">Precinct No</label>{{ form.precinct }}{% if form.precinct.errors %}<div class="field-error">{{ form.precinct.errors.0 }}</div>{% endif %}</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="footer">
+            <div class="footer-note"><strong>Save carefully:</strong> changes update the active barangay resident record right away.</div>
+            <div class="actions">
+                <a href="{% url 'resident_profile' resident.id %}" class="btn-bmis btn-secondary">Cancel</a>
+                <button type="submit" class="btn-bmis btn-primary">Save Changes</button>
             </div>
         </div>
-
     </form>
-
 </div>
 
+<div class="modal-backdrop" id="household-modal">
+    <div class="modal-card">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Add Household</div>
+                <div class="modal-sub">Create a household without leaving the resident form.</div>
+            </div>
+            <button type="button" class="modal-close" id="close-household-modal" aria-label="Close">&times;</button>
+        </div>
+        <form id="household-modal-form">
+            <div class="modal-body">
+                <div class="field"><label for="modal_house_number">House Number <span class="req">*</span></label><input type="text" id="modal_house_number" name="house_number" class="bmis-input" placeholder="House number"></div>
+                <div class="field"><label for="modal_street">Street <span class="req">*</span></label><input type="text" id="modal_street" name="street" class="bmis-input" placeholder="Street"></div>
+                <div class="modal-msg" id="household-modal-msg"></div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-bmis btn-secondary" id="cancel-household-modal">Cancel</button>
+                <button type="submit" class="btn-bmis btn-primary" id="save-household-modal">Save Household</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
+<script>
+(() => {
+    const $ = (id) => document.getElementById(id);
+    const permanentAddress = $("id_permanent_address");
+    const voterStatus = $("id_voter_status");
+    const precinct = $("id_precinct");
+    const householdSelect = $("id_household");
+    const addressFields = $("address-fields");
+    const precinctFieldWrap = $("precinct-field-wrap");
+    const householdLookup = JSON.parse('{{ household_lookup_json|escapejs }}');
+    const householdModal = $("household-modal");
+    const openHouseholdModalBtn = $("open-household-modal");
+    const closeHouseholdModalBtn = $("close-household-modal");
+    const cancelHouseholdModalBtn = $("cancel-household-modal");
+    const householdModalForm = $("household-modal-form");
+    const householdModalMsg = $("household-modal-msg");
+    const addressBarangay = $("id_address_barangay");
+    const addressCity = $("id_address_city");
+    const addressProvince = $("id_address_province");
+
+    function syncAddressFields() {
+        const choice = permanentAddress?.value;
+        const isShown = choice === "True" || choice === "False";
+        const isPermanent = choice === "True";
+        if (addressFields) addressFields.style.display = isShown ? "grid" : "none";
+        if (isPermanent) {
+            if (addressBarangay) addressBarangay.value = "Gulod";
+            if (addressCity) addressCity.value = "Quezon City";
+            if (addressProvince) addressProvince.value = "Metro Manila";
+        }
+        [addressBarangay, addressCity, addressProvince].forEach((field) => {
+            if (field) field.readOnly = isPermanent;
+        });
+    }
+
+    function syncPrecinctField() {
+        const isVoter = Boolean(voterStatus?.checked);
+        if (precinctFieldWrap) precinctFieldWrap.style.display = isVoter ? "grid" : "none";
+        if (!isVoter && precinct) precinct.value = "";
+    }
+    function applyHouseholdSelection() {
+        if (!householdSelect) return;
+        const picked = householdLookup[householdSelect.value];
+        if (!picked) return;
+        const houseField = $("id_address_house_number");
+        const streetField = $("id_address_street");
+        if (houseField) houseField.value = picked.house_number || "";
+        if (streetField) streetField.value = picked.street || "";
+    }
+    function closeHouseholdModal() {
+        if (householdModal) householdModal.classList.remove("is-open");
+        if (householdModalForm) householdModalForm.reset();
+        if (householdModalMsg) householdModalMsg.textContent = "";
+    }
+
+    if (permanentAddress) permanentAddress.addEventListener("change", syncAddressFields);
+    if (voterStatus) voterStatus.addEventListener("change", syncPrecinctField);
+    if (householdSelect) householdSelect.addEventListener("change", applyHouseholdSelection);
+    [openHouseholdModalBtn].forEach((btn) => btn && btn.addEventListener("click", () => {
+        if (householdModal) householdModal.classList.add("is-open");
+    }));
+    [closeHouseholdModalBtn, cancelHouseholdModalBtn].forEach((btn) => btn && btn.addEventListener("click", closeHouseholdModal));
+    if (householdModal) {
+        householdModal.addEventListener("click", (event) => {
+            if (event.target === householdModal) closeHouseholdModal();
+        });
+    }
+    if (householdModalForm) {
+        householdModalForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+            householdModalMsg.textContent = "";
+            const fd = new FormData(householdModalForm);
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]')?.value;
+            try {
+                const resp = await fetch("{% url 'quick_add_household' %}", {
+                    method: "POST",
+                    headers: csrf ? {"X-CSRFToken": csrf} : {},
+                    body: fd,
+                });
+                const data = await resp.json();
+                if (!resp.ok || !data.ok) {
+                    householdModalMsg.textContent = data.error || Object.values(data.errors || {}).flat().join(" ");
+                    return;
+                }
+                const item = data.household;
+                householdLookup[String(item.id)] = item;
+                if (householdSelect) {
+                    const option = document.createElement("option");
+                    option.value = item.id;
+                    option.text = item.label;
+                    householdSelect.appendChild(option);
+                    householdSelect.value = String(item.id);
+                    householdSelect.dispatchEvent(new Event("change", {bubbles:true}));
+                }
+                closeHouseholdModal();
+            } catch {
+                householdModalMsg.textContent = "Unable to save household right now.";
+            }
+        });
+    }
+
+    syncAddressFields();
+    syncPrecinctField();
+    applyHouseholdSelection();
+
+    BMISFormValidation.init(document.querySelector("form.panel"), {
+        rules: {
+            id_first_name: { required: true, label: "First name" },
+            id_last_name: { required: true, label: "Last name" },
+            id_birth_date: { required: true, date: true, label: "Date of birth" },
+            id_gender: { required: true, label: "Gender" },
+            id_civil_status: { required: true, label: "Civil status" },
+            id_contact_number: {
+                label: "Mobile number",
+                custom: (input, value) => {
+                    const digits = value.replace(/\s+/g, "");
+                    if (!digits) return "";
+                    if (!/^\d+$/.test(digits)) return "Mobile number must contain only digits.";
+                    if (digits.length < 7 || digits.length > 15) return "Mobile number must be 7 to 15 digits.";
+                    return "";
+                }
+            },
+            id_email: { email: true, label: "Email address" },
+            id_permanent_address: { required: true, label: "Permanent address" },
+            id_address_house_number: {
+                custom: () => permanentAddress?.value === "False" && !document.getElementById("id_address_house_number")?.value.trim() ? "This field is required." : ""
+            },
+            id_address_street: {
+                custom: () => permanentAddress?.value === "False" && !document.getElementById("id_address_street")?.value.trim() ? "This field is required." : ""
+            },
+            id_address_barangay: {
+                custom: () => permanentAddress?.value === "False" && !addressBarangay?.value.trim() ? "This field is required." : ""
+            },
+            id_address_city: {
+                custom: () => permanentAddress?.value === "False" && !addressCity?.value.trim() ? "This field is required." : ""
+            },
+            id_address_province: {
+                custom: () => permanentAddress?.value === "False" && !addressProvince?.value.trim() ? "This field is required." : ""
+            },
+        },
+    });
+
+    BMISFormValidation.init(document.getElementById("household-modal-form"), {
+        rules: {
+            modal_house_number: { required: true, maxLength: 20, label: "House number" },
+            modal_street: { required: true, maxLength: 100, label: "Street" },
+        },
+    });
+})();
+</script>
 {% endblock %}

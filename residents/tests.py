@@ -9,8 +9,10 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
+from .forms import ComplaintForm, HouseholdForm, ResidentPortalRegistrationForm
 from .models import Complaint, Notification, Resident, ServiceRequest, ServiceType, UserProfile
 from .views import (
+    get_portal_services,
     notify_resident_for_service_request,
     notify_secretaries_of_complaint,
     notify_secretaries_of_service_request,
@@ -53,13 +55,18 @@ class ResidentPortalRegistrationTests(TestCase):
                 "educational_attainment": "College",
                 "contact_number": "09123456789",
                 "email": "juanresident@example.com",
+                "permanent_address": "True",
+                "address_house_number": "123",
+                "address_street": "Sampaguita St.",
+                "address_barangay": "",
+                "address_city": "",
+                "address_province": "",
                 "precinct": "101A",
                 "pwd": "",
                 "indigenous": "",
                 "solo_parent": "",
                 "voter_status": "on",
                 "status": "Alive",
-                "address": "123 Sampaguita St., Purok 1",
                 "password1": "StrongPass123!",
                 "password2": "StrongPass123!",
                 "valid_id_image": SimpleUploadedFile(
@@ -72,7 +79,7 @@ class ResidentPortalRegistrationTests(TestCase):
 
         self.assertRedirects(response, reverse("portal_pending_verification"))
         profile = UserProfile.objects.get(user__username="juanresident")
-        self.assertEqual(profile.address, "123 Sampaguita St., Purok 1")
+        self.assertEqual(profile.address, "123, Sampaguita St., Gulod, Quezon City, Metro Manila")
         self.assertEqual(profile.middle_name, "Santos")
         self.assertEqual(profile.gender, "Male")
         self.assertTrue(bool(profile.valid_id_image))
@@ -131,13 +138,18 @@ class ResidentPortalRegistrationTests(TestCase):
                 "educational_attainment": "College",
                 "contact_number": "09123456789",
                 "email": "idalive@example.com",
+                "permanent_address": "False",
+                "address_house_number": "45",
+                "address_street": "Mabini Street",
+                "address_barangay": "Bagbag",
+                "address_city": "Quezon City",
+                "address_province": "Metro Manila",
                 "precinct": "202B",
                 "pwd": "",
                 "indigenous": "",
                 "solo_parent": "",
                 "voter_status": "",
                 "status": "Alive",
-                "address": "Purok 2, Gulod",
                 "password1": "StrongPass123!",
                 "password2": "StrongPass123!",
                 "valid_id_image": SimpleUploadedFile(
@@ -152,6 +164,35 @@ class ResidentPortalRegistrationTests(TestCase):
         response = self.client.get(reverse("portal_pending_verification"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "/media/valid_ids/")
+
+    def test_registration_rejects_invalid_email_phone_and_weak_password(self):
+        form = ResidentPortalRegistrationForm(
+            data={
+                "username": "weakresident",
+                "first_name": "Juan",
+                "last_name": "Dela Cruz",
+                "birthdate": "2000-01-15",
+                "gender": "Male",
+                "civil_status": "Single",
+                "contact_number": "09AB3456789",
+                "email": "invalid-email",
+                "permanent_address": "True",
+                "password1": "weakpass",
+                "password2": "weakpass",
+            },
+            files={
+                "valid_id_image": SimpleUploadedFile(
+                    "valid-id.gif",
+                    TEST_GIF,
+                    content_type="image/gif",
+                ),
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("email", form.errors)
+        self.assertIn("contact_number", form.errors)
+        self.assertIn("password1", form.errors)
 
     @override_settings(
         EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
@@ -200,13 +241,18 @@ class ResidentPortalRegistrationTests(TestCase):
                     "educational_attainment": "College",
                     "contact_number": "09123456789",
                     "email": "juanresidentmail@example.com",
+                    "permanent_address": "True",
+                    "address_house_number": "123",
+                    "address_street": "Sampaguita St.",
+                    "address_barangay": "",
+                    "address_city": "",
+                    "address_province": "",
                     "precinct": "101A",
                     "pwd": "",
                     "indigenous": "",
                     "solo_parent": "",
                     "voter_status": "on",
                     "status": "Alive",
-                    "address": "123 Sampaguita St., Purok 1",
                     "password1": "StrongPass123!",
                     "password2": "StrongPass123!",
                     "valid_id_image": SimpleUploadedFile(
@@ -398,6 +444,28 @@ class ComplaintWorkflowTests(TestCase):
         self.assertRedirects(response, reverse("complaint_detail", args=[complaint.id]))
         complaint.refresh_from_db()
         self.assertEqual(complaint.status, "Under Review")
+
+    def test_complaint_form_rejects_whitespace_title_and_short_description(self):
+        form = ComplaintForm(
+            data={
+                "resident": self.resident.id,
+                "title": "   ",
+                "description": "Too short",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertIn("description", form.errors)
+
+
+class HouseholdValidationTests(TestCase):
+    def test_household_form_rejects_whitespace_required_fields(self):
+        form = HouseholdForm(data={"house_number": "   ", "street": "   "})
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("house_number", form.errors)
+        self.assertIn("street", form.errors)
 
 
 class AdminLogoutTests(TestCase):
@@ -688,6 +756,28 @@ class ServiceRequestNotificationTests(TestCase):
             ).exists()
         )
         self.assertEqual(len(mail.outbox), 0)
+
+
+class PortalServiceTypeSyncTests(TestCase):
+    def test_portal_uses_named_service_types_when_available(self):
+        named = ServiceType.objects.create(
+            name="Barangay Clearance",
+            fee=100,
+            voter_fee=55,
+            non_voter_fee=80,
+        )
+        ServiceType.objects.create(
+            name="Service Request",
+            fee=50,
+            voter_fee=25,
+            non_voter_fee=40,
+        )
+
+        services = get_portal_services()
+        clearance = next(service for service in services if service["slug"] == "barangay-clearance")
+
+        self.assertEqual(clearance["service_type"].id, named.id)
+        self.assertEqual(clearance["voter_fee"], named.voter_fee)
 
 
 @override_settings(

@@ -5,22 +5,12 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-#PUROK
-#PUROK
-#PUROK
-class Purok(models.Model):
-    name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
-    
 #HOUSEHOLD
 #HOUSEHOLD
 #HOUSEHOLD
 class Household(models.Model):
     house_number = models.CharField(max_length=20)
     street = models.CharField(max_length=100)
-    purok = models.ForeignKey(Purok, on_delete=models.SET_NULL, null=True, blank=True, related_name="households"    )
 
     head = models.ForeignKey(
         'Resident',
@@ -31,7 +21,7 @@ class Household(models.Model):
     )
 
     def __str__(self):
-        return f"{self.house_number} {self.street} - {self.purok}"
+        return f"{self.house_number} {self.street}"
 
 #RESIDENTS
 #RESIDENTS
@@ -96,6 +86,12 @@ class Resident(models.Model):
     contact_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     precinct = models.CharField(max_length=50, blank=True, null=True)
+    permanent_address = models.BooleanField(default=True)
+    address_house_number = models.CharField(max_length=50, blank=True, null=True)
+    address_street = models.CharField(max_length=150, blank=True, null=True)
+    address_barangay = models.CharField(max_length=100, blank=True, null=True)
+    address_city = models.CharField(max_length=100, blank=True, null=True)
+    address_province = models.CharField(max_length=100, blank=True, null=True)
 
     voter_status = models.BooleanField(default=False)
 
@@ -137,6 +133,36 @@ class Resident(models.Model):
 
     def __str__(self):
         return f"{self.last_name}, {self.first_name}"
+
+    @property
+    def has_structured_address(self):
+        return any(
+            [
+                self.address_house_number,
+                self.address_street,
+                self.address_barangay,
+                self.address_city,
+                self.address_province,
+            ]
+        )
+
+    @property
+    def formatted_address(self):
+        if self.has_structured_address:
+            parts = [
+                self.address_house_number,
+                self.address_street,
+                self.address_barangay,
+                self.address_city,
+                self.address_province,
+            ]
+            return ", ".join(part for part in parts if part)
+
+        if self.household:
+            parts = [self.household.house_number, self.household.street]
+            return ", ".join(part for part in parts if part)
+
+        return ""
 
 
 class UserProfile(models.Model):

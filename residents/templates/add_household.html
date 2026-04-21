@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block page_title %}Add New Household{% endblock %}
 {% block page_subtitle %}Enter household details to create a new address record{% endblock %}
@@ -102,10 +103,6 @@
                                 {% if form.street.errors %}<div class="field-error">{{ form.street.errors.0 }}</div>{% endif %}
                             </div>
                             <div class="field span-2">
-                                <label for="id_purok">Purok / Zone <span class="req">*</span></label>
-                                {{ form.purok }}
-                                <small>Select the purok to help categorize household records and reporting.</small>
-                                {% if form.purok.errors %}<div class="field-error">{{ form.purok.errors.0 }}</div>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -159,7 +156,6 @@
                 <div class="preview-list">
                     <div class="preview-item"><div class="label">House Number</div><div class="value" id="pv-house-number">Not yet provided</div></div>
                     <div class="preview-item"><div class="label">Street</div><div class="value" id="pv-street">Not yet provided</div></div>
-                    <div class="preview-item"><div class="label">Purok</div><div class="value" id="pv-purok">Not selected</div></div>
                     <div class="preview-item"><div class="label">Household Head</div><div class="value" id="pv-head">Not assigned</div></div>
                     <div class="preview-item"><div class="label">Address Label</div><div class="value" id="pv-address">Incomplete address</div></div>
                 </div>
@@ -179,20 +175,20 @@
                 <div class="guide-list">
                     <div class="guide-item"><strong>Keep house numbers consistent</strong>Use the same identifier format across records to avoid duplicates.</div>
                     <div class="guide-item"><strong>Assign the head when ready</strong>If you do not know the head yet, save the household first and assign one later.</div>
-                    <div class="guide-item"><strong>Use purok for reporting</strong>Purok assignment helps household listing, filtering, and demographic summaries.</div>
+                    <div class="guide-item"><strong>Keep street names consistent</strong>Standard street naming makes searching, exports, and resident linking much easier.</div>
                 </div>
             </section>
         </div>
     </div>
 </div>
 
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
 (() => {
     const searchInput = document.getElementById("head-search");
     const headSelect = document.getElementById("id_head");
     const houseNumber = document.getElementById("id_house_number");
     const street = document.getElementById("id_street");
-    const purok = document.getElementById("id_purok");
     const topSave = document.getElementById("top-save-household");
     const stickySave = document.getElementById("sticky-save-household");
     if (!headSelect) return;
@@ -228,24 +224,22 @@
     function updatePreview() {
         const house = (houseNumber?.value || "").trim();
         const streetVal = (street?.value || "").trim();
-        const purokLabel = purok?.selectedOptions?.[0]?.value ? purok.selectedOptions[0].text : "Not selected";
         const headLabel = headSelect?.selectedOptions?.[0]?.value ? headSelect.selectedOptions[0].text : "Not assigned";
-        const addressComplete = house && streetVal && purok?.value;
+        const addressComplete = house && streetVal;
 
         document.getElementById("household-avatar").textContent = initials();
         document.getElementById("preview-title").textContent = house ? "Household " + house : "New Household";
         document.getElementById("pv-house-number").textContent = house || "Not yet provided";
         document.getElementById("pv-street").textContent = streetVal || "Not yet provided";
-        document.getElementById("pv-purok").textContent = purokLabel;
         document.getElementById("pv-head").textContent = headLabel;
-        document.getElementById("pv-address").textContent = addressComplete ? (house + " " + streetVal + ", " + purokLabel) : "Incomplete address";
+        document.getElementById("pv-address").textContent = addressComplete ? (house + " " + streetVal) : "Incomplete address";
         document.getElementById("pv-validation").textContent = addressComplete ? "Required fields complete" : "Waiting for required fields";
         document.getElementById("address-pill").textContent = addressComplete ? "Address complete" : "Address incomplete";
         document.getElementById("head-pill").textContent = headSelect?.value ? "Head selected" : "Optional";
     }
 
     if (searchInput) searchInput.addEventListener("input", (e) => rebuildOptions(e.target.value));
-    [houseNumber, street, purok, headSelect].forEach((el) => {
+    [houseNumber, street, headSelect].forEach((el) => {
         if (!el) return;
         ["input", "change"].forEach((evt) => el.addEventListener(evt, updatePreview));
     });
@@ -262,6 +256,13 @@
     }));
 
     updatePreview();
+
+    BMISFormValidation.init(document.getElementById("household-form"), {
+        rules: {
+            id_house_number: { required: true, maxLength: 20, label: "House number" },
+            id_street: { required: true, maxLength: 100, label: "Street" },
+        },
+    });
 })();
 </script>
 

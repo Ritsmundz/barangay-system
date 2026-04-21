@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
@@ -686,16 +687,6 @@
                     <span class="res-info-val">{{ resident.age }} yrs</span>
                 </div>
                 <div class="res-info-row">
-                    <span class="res-info-key">Purok</span>
-                    <span class="res-info-val">
-                        {% if resident.household %}
-                            Purok {{ resident.household.purok }}
-                        {% else %}
-                            —
-                        {% endif %}
-                    </span>
-                </div>
-                <div class="res-info-row">
                     <span class="res-info-key">Voter</span>
                     <span class="res-info-val">
                         {% if resident.voter_status %}Yes{% else %}No{% endif %}
@@ -720,11 +711,7 @@
                 <div class="res-info-row">
                     <span class="res-info-key">Address</span>
                     <span class="res-info-val">
-                        {% if resident.household %}
-                            {{ resident.household.house_number }} {{ resident.household.street }}
-                        {% else %}
-                            -
-                        {% endif %}
+                        {{ resident.formatted_address|default:"-" }}
                     </span>
                 </div>
             </div>
@@ -746,6 +733,7 @@
 
 </div><!-- /request-layout -->
 
+<script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
     (function () {
         const purposeSelect = document.getElementById("purpose_for");
@@ -885,6 +873,22 @@
         purposeSelect.addEventListener("change", toggleOtherInput);
         toggleSectionsByService();
         toggleOtherInput();
+
+        BMISFormValidation.init(document.querySelector(".form-card form"), {
+            rules: {
+                purpose_for: { label: "Purpose", custom: () => purposeSection.style.display !== "none" && !purposeSelect.value ? "This field is required." : "" },
+                purpose_other: { label: "Other purpose", custom: () => purposeOther.required && !purposeOther.value.trim() ? "This field is required." : "" },
+                emergency_contact_name: { label: "Emergency contact name", custom: (input, value) => input.required && !value ? "This field is required." : "" },
+                emergency_contact_address: { label: "Emergency contact address", custom: (input, value) => input.required && !value ? "This field is required." : "" },
+                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                residency_since: { label: "Residency since", custom: (input, value) => input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
+                business_email: { email: true, label: "Business email" },
+                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                business_name: { label: "Business name", custom: (input, value) => input.required && !value ? "This field is required." : "" },
+                business_owner_name: { label: "Business owner", custom: (input, value) => input.required && !value ? "This field is required." : "" },
+                business_address: { label: "Business address", custom: (input, value) => input.required && !value ? "This field is required." : "" },
+            },
+        });
     })();
 </script>
 
