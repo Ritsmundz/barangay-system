@@ -1,6 +1,6 @@
 Project barangay_project {
   database_type: "PostgreSQL"
-  Note: "DBML schema generated from the current Django models in residents/models.py. Django computed properties like Resident.age and Resident.age_group are not stored columns."
+  Note: "DBML schema synchronized with the current Django models in residents/models.py. Computed properties and generated values such as Resident.age, Resident.formatted_address, and auto-generated document/receipt numbers are not separate schema columns."
 }
 
 Table auth_user {
@@ -19,20 +19,13 @@ Table auth_user {
   Note: "Simplified Django auth user table used by the barangay app."
 }
 
-Table purok {
-  id int [pk, increment]
-  name varchar(50) [not null]
-}
-
 Table household {
   id int [pk, increment]
   house_number varchar(20) [not null]
   street varchar(100) [not null]
-  purok_id int
   head_id int
 
   indexes {
-    purok_id
     head_id
   }
 }
@@ -51,7 +44,7 @@ Table resident {
   nationality varchar(100)
   religion varchar(100)
   occupation varchar(120)
-  educational_attainment varchar(50) [not null, default: "", note: "Choices include No Formal Education, Elementary, High School, Vocational, College, Postgraduate"]
+  educational_attainment varchar(50) [not null, default: "", note: "Choices include blank, No Formal Education, Elementary, High School, Vocational, College, Postgraduate"]
   pwd boolean [not null, default: false]
   indigenous boolean [not null, default: false]
   solo_parent boolean [not null, default: false]
@@ -59,6 +52,12 @@ Table resident {
   contact_number varchar(15)
   email varchar(254)
   precinct varchar(50)
+  permanent_address boolean [not null, default: true]
+  address_house_number varchar(50)
+  address_street varchar(150)
+  address_barangay varchar(100)
+  address_city varchar(100)
+  address_province varchar(100)
   voter_status boolean [not null, default: false]
   created_at datetime [not null]
 
@@ -74,12 +73,34 @@ Table user_profile {
   user_id int [not null, unique]
   resident_id int [unique]
   first_name varchar(100) [not null]
+  middle_name varchar(100)
   last_name varchar(100) [not null]
+  suffix varchar(20)
   birth_date date [not null]
+  place_of_birth varchar(150)
+  gender varchar(10) [not null, default: "", note: "Choices: blank, Male, Female"]
+  civil_status varchar(20) [not null, default: ""]
+  nationality varchar(100)
+  religion varchar(100)
+  occupation varchar(120)
+  educational_attainment varchar(50) [not null, default: "", note: "Choices include blank, No Formal Education, Elementary, High School, Vocational, College, Postgraduate"]
+  pwd boolean [not null, default: false]
+  indigenous boolean [not null, default: false]
+  solo_parent boolean [not null, default: false]
+  voter_status boolean [not null, default: false]
+  status varchar(20) [not null, default: "Alive", note: "Choices: Alive, Deceased, Moved"]
+  contact_number varchar(15)
+  precinct varchar(50)
+  address varchar(255) [not null, default: ""]
+  valid_id_image varchar(100)
   is_verified boolean [not null, default: false]
   is_auto_matched boolean [not null, default: false]
   created_at datetime [not null]
   updated_at datetime [not null]
+
+  indexes {
+    created_at
+  }
 }
 
 Table service_type {
@@ -99,6 +120,7 @@ Table request_purpose {
 
   indexes {
     sort_order
+    name
   }
 }
 
@@ -110,17 +132,76 @@ Table service_request {
   purpose text
   purpose_for varchar(100) [note: "Legacy choices include Barangay Clearance, Local Employment, Bank Requirement, Postal ID, Police Clearance, NBI Clearance, Senior Citizen ID, PSA, First Time Job Seeker, Other"]
   purpose_other varchar(255)
+
+  business_name varchar(255)
+  business_owner_name varchar(255)
+  business_address varchar(255)
+  business_nature varchar(255)
+  business_organization_type varchar(30) [note: "Choices: sole_proprietorship, partnership, corporation, cooperative"]
+  business_registration_number varchar(100)
+  business_tin varchar(100)
+  business_trade_name varchar(255)
+  business_house_number varchar(100)
+  business_street varchar(255)
+  business_building_name varchar(255)
+  business_block_number varchar(100)
+  business_lot_number varchar(100)
+  business_zip_code varchar(20)
+  business_subdivision varchar(255)
+  business_telephone varchar(50)
+  business_email varchar(254)
+  business_president_name varchar(255)
+  business_corporation_nationality varchar(20) [note: "Choices: filipino, foreign"]
+  business_psic_code varchar(50)
+  business_area_sqm decimal(10,2)
+  business_operation_time varchar(100)
+  business_employee_count int
+  business_qc_employee_count int
+  business_floor_area_sqm decimal(10,2)
+  business_male_employee_count int
+  business_female_employee_count int
+  business_delivery_vans int
+  business_delivery_motorcycles int
+  business_property_status varchar(20) [note: "Choices: owned, leased"]
+  business_tax_declaration_number varchar(100)
+  business_property_identification_number varchar(100)
+  business_capital_investment decimal(12,2)
+  business_has_tax_incentives boolean [not null, default: false]
+  business_activity_type varchar(30) [note: "Choices: main_office, branch, admin_office_only"]
+  business_products_services varchar(255)
+  business_equipment varchar(255)
+  business_equipment_units int
+  business_equipment_size varchar(100)
+  business_representative_designation varchar(255)
+  business_storeys int
+  business_occupants int
+  business_occupancy_type varchar(255)
+
+  requestor_name varchar(255)
+  requestor_address varchar(255)
+  deceased_name varchar(255)
+  deceased_relationship varchar(150)
+  date_of_death date
+
   emergency_contact_name varchar(150)
   emergency_contact_address varchar(255)
   emergency_contact_number varchar(30)
   residency_since date
+
   fee decimal(6,2) [not null, default: 0]
-  status varchar(20) [not null, default: "Pending", note: "Choices: Pending, Processing, Approved, Released, Rejected"]
+  status varchar(20) [not null, default: "Submitted", note: "Choices: Submitted, Under Review, For Validation, Processing, Ready for Release, Released, Pending Requirements, On Hold, Rejected, Cancelled"]
   document_number varchar(50) [unique]
   request_date datetime [not null]
   processed_date datetime
   created_by_id int
   remarks text
+  requirements_note text
+  requirements_submission_instructions text
+  requirements_deadline date
+  requirements_requested_at datetime
+  requirements_requested_by_id int
+  resident_response_note text
+  resident_responded_at datetime
   clearance_number varchar(20)
 
   indexes {
@@ -128,16 +209,34 @@ Table service_request {
     service_type_id
     purpose_option_id
     created_by_id
+    requirements_requested_by_id
     document_number
     status
     request_date
   }
 }
 
+Table service_request_attachment {
+  id int [pk, increment]
+  service_request_id int [not null]
+  uploaded_by_id int
+  file varchar(100) [not null]
+  original_name varchar(255) [not null, default: ""]
+  note varchar(255) [not null, default: ""]
+  created_at datetime [not null]
+
+  indexes {
+    service_request_id
+    uploaded_by_id
+    created_at
+  }
+}
+
 Table payment {
   id int [pk, increment]
   service_request_id int [not null, unique]
-  receipt_number varchar(50) [not null, unique]
+  receipt_number varchar(50) [not null, unique, default: ""]
+  received_by_id int
   amount decimal(10,2) [not null]
   payment_date datetime [not null]
   collected_by_id int
@@ -145,6 +244,7 @@ Table payment {
   Note: "The resident tied to a payment is derived through service_request_id -> service_request.resident_id, which supports both walk-in residents and portal users."
 
   indexes {
+    received_by_id
     collected_by_id
     payment_date
   }
@@ -155,14 +255,23 @@ Table complaint {
   resident_id int [not null]
   title varchar(200) [not null]
   description text [not null]
-  status varchar(20) [not null, default: "Pending", note: "Choices: Pending, Under Investigation, For Mediation, Resolved, Dismissed"]
+  status varchar(40) [not null, default: "Submitted", note: "Choices: Submitted, Under Review, For Scheduling, Scheduled for Hearing, Ongoing Mediation, Resolved / Settled, Unresolved, Referred, Withdrawn"]
   filed_by_id int
+  meeting_datetime datetime
+  meeting_location varchar(255) [not null, default: ""]
+  meeting_purpose varchar(255) [not null, default: ""]
+  secretary_notes text [not null, default: ""]
+  resident_schedule_response varchar(30) [not null, default: "Pending Response", note: "Choices: Pending Response, Acknowledged, Needs Reschedule, Cannot Attend"]
+  resident_schedule_responded_at datetime
+  resident_schedule_response_note text [not null, default: ""]
+  scheduled_by_id int
   date_filed datetime [not null]
   updated_at datetime [not null]
 
   indexes {
     resident_id
     filed_by_id
+    scheduled_by_id
     status
     date_filed
   }
@@ -178,8 +287,8 @@ Table audit_log {
   before_data json
   after_data json
   ip_address varchar(45)
-  user_agent varchar(255)
-  request_path varchar(255)
+  user_agent varchar(255) [not null, default: ""]
+  request_path varchar(255) [not null, default: ""]
   timestamp datetime [not null]
 
   indexes {
@@ -190,7 +299,23 @@ Table audit_log {
   }
 }
 
-Ref: household.purok_id > purok.id [delete: set null]
+Table notification {
+  id int [pk, increment]
+  user_id int [not null]
+  title varchar(120) [not null]
+  message text [not null]
+  category varchar(30) [not null, default: "general", note: "Choices: service_request, account, complaint, payment, general"]
+  target_url varchar(255) [not null, default: ""]
+  is_read boolean [not null, default: false]
+  created_at datetime [not null]
+
+  indexes {
+    user_id
+    is_read
+    created_at
+  }
+}
+
 Ref: household.head_id > resident.id [delete: set null]
 
 Ref: resident.household_id > household.id [delete: set null]
@@ -202,11 +327,19 @@ Ref: service_request.resident_id > resident.id [delete: cascade]
 Ref: service_request.service_type_id > service_type.id [delete: cascade]
 Ref: service_request.purpose_option_id > request_purpose.id [delete: set null]
 Ref: service_request.created_by_id > auth_user.id [delete: set null]
+Ref: service_request.requirements_requested_by_id > auth_user.id [delete: set null]
+
+Ref: service_request_attachment.service_request_id > service_request.id [delete: cascade]
+Ref: service_request_attachment.uploaded_by_id > auth_user.id [delete: set null]
 
 Ref: payment.service_request_id - service_request.id [delete: cascade]
+Ref: payment.received_by_id > auth_user.id [delete: set null]
 Ref: payment.collected_by_id > auth_user.id [delete: set null]
 
 Ref: complaint.resident_id > resident.id [delete: cascade]
 Ref: complaint.filed_by_id > auth_user.id [delete: set null]
+Ref: complaint.scheduled_by_id > auth_user.id [delete: set null]
 
 Ref: audit_log.user_id > auth_user.id [delete: set null]
+
+Ref: notification.user_id > auth_user.id [delete: cascade]
