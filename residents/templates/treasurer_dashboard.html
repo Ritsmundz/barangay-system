@@ -174,6 +174,55 @@
     }
     .payments-table tr:last-child td { border-bottom: none; }
     .payments-table tbody tr:hover { background: #F8FAFC; }
+    .queue-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .queue-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 18px;
+    }
+    .queue-card h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+        color: #1E293B;
+    }
+    .queue-card p {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: #64748B;
+    }
+    .queue-count {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2563EB;
+    }
+    .queue-link {
+        display: inline-block;
+        margin-top: 10px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #2563EB;
+        text-decoration: none;
+    }
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .action-btn.pay { background: #2563EB; color: #fff; }
+    .action-btn.release { background: #059669; color: #fff; }
+    .inline-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
     /* ── Empty state ── */
     .empty-state {
@@ -222,12 +271,126 @@
     <span class="cur">Treasurer Dashboard</span>
 </div>
 
+<div class="queue-grid">
+    <div class="queue-card">
+        <h3>For Payment</h3>
+        <p>Requests approved by Admin and waiting for Treasurer action.</p>
+        <div class="queue-count">{{ for_payment_count }}</div>
+        <a href="{% url 'payment_list' %}#for-payment" class="queue-link">Open payment queue</a>
+    </div>
+    <div class="queue-card">
+        <h3>Ready For Release / For Pickup</h3>
+        <p>Requests already paid or exempt and ready to be claimed.</p>
+        <div class="queue-count">{{ ready_for_release_count }}</div>
+        <a href="{% url 'payment_list' %}#for-pickup" class="queue-link">Open pickup queue</a>
+    </div>
+    <div class="queue-card">
+        <h3>Released</h3>
+        <p>Requests already completed by the Treasurer workflow.</p>
+        <div class="queue-count">{{ released_count }}</div>
+        <a href="{% url 'payment_list' %}#released" class="queue-link">Open completed queue</a>
+    </div>
+</div>
+
 <!-- Page header -->
 <div class="page-header">
     <div>
         <div class="page-title">Treasurer Dashboard</div>
         <div class="page-subtitle">Financial overview and revenue tracking</div>
     </div>
+</div>
+
+<div class="table-card" id="for-payment" style="margin-bottom:24px;">
+    <div class="table-card-header">
+        <div class="table-card-title">For Payment</div>
+    </div>
+    {% if for_payment_requests %}
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Doc No.</th>
+                <th>Resident</th>
+                <th>Service</th>
+                <th>Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sr in for_payment_requests %}
+            <tr>
+                <td><a href="{% url 'service_request_detail' sr.id %}"><strong>{{ sr.document_number }}</strong></a></td>
+                <td>{{ sr.resident }}</td>
+                <td>{{ sr.service_type }}</td>
+                <td><strong style="color:#2563EB;">₱{{ sr.fee|floatformat:2 }}</strong></td>
+                <td>
+                    <div class="inline-actions">
+                        <form method="post" action="{% url 'treasurer_update_request_status' sr.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_paid">
+                            <button type="submit" class="action-btn pay">Mark Paid</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-title">No requests waiting for payment</div>
+        <div class="empty-state-text">New admin-approved requests will appear here.</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="table-card" id="for-pickup" style="margin-bottom:24px;">
+    <div class="table-card-header">
+        <div class="table-card-title">Ready For Release / For Pickup</div>
+    </div>
+    {% if ready_for_release_requests %}
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Doc No.</th>
+                <th>Resident</th>
+                <th>Service</th>
+                <th>Payment</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sr in ready_for_release_requests %}
+            <tr>
+                <td><a href="{% url 'service_request_detail' sr.id %}"><strong>{{ sr.document_number }}</strong></a></td>
+                <td>{{ sr.resident }}</td>
+                <td>{{ sr.service_type }}</td>
+                <td>{{ sr.get_payment_status_display }}</td>
+                <td>
+                    <div class="inline-actions">
+                        {% if sr.payment_required == "YES" and sr.payment_status == "PAID" %}
+                        <form method="post" action="{% url 'treasurer_update_request_status' sr.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_unpaid">
+                            <button type="submit" class="action-btn">Mark Unpaid</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="{% url 'treasurer_update_request_status' sr.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="mark_released">
+                            <button type="submit" class="action-btn release">Mark Released</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-title">No requests ready for pickup</div>
+        <div class="empty-state-text">Paid or exempt requests will appear here once they are ready for release.</div>
+    </div>
+    {% endif %}
 </div>
 
 <!-- Revenue Cards -->

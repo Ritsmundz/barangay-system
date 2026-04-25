@@ -34,7 +34,7 @@ class ResidentAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceType)
 class ServiceTypeAdmin(admin.ModelAdmin):
-    list_display = ('name', 'voter_fee', 'non_voter_fee')
+    list_display = ('name', 'free_limit', 'voter_fee', 'non_voter_fee')
     search_fields = ('name',)
 
 
@@ -48,9 +48,10 @@ class RequestPurposeAdmin(admin.ModelAdmin):
 
 @admin.register(ServiceRequest)
 class ServiceRequestAdmin(admin.ModelAdmin):
-    list_display = ('resident', 'service_type', 'business_name', 'document_number', 'fee', 'status', 'request_date')
-    list_filter = ('service_type', 'status')
+    list_display = ('resident', 'service_type', 'business_name', 'document_number', 'fee', 'payment_required', 'payment_status', 'status', 'request_date')
+    list_filter = ('service_type', 'status', 'payment_required', 'payment_status')
     search_fields = ('resident__last_name', 'resident__first_name', 'business_name', 'document_number')
+    readonly_fields = ("payment_required", "payment_status")
     fieldsets = (
         (None, {
             "fields": (
@@ -62,6 +63,8 @@ class ServiceRequestAdmin(admin.ModelAdmin):
                 "purpose_other",
                 "status",
                 "fee",
+                "payment_required",
+                "payment_status",
                 "document_number",
                 "clearance_number",
                 "remarks",
@@ -120,7 +123,7 @@ class ServiceRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('receipt_number', 'service_request', 'amount', 'payment_date')
+    list_display = ('receipt_number', 'service_request', 'amount', 'payment_date', 'collected_by')
     search_fields = ('receipt_number',)
 
 

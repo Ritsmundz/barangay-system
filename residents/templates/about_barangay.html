@@ -325,7 +325,6 @@
 
         .overview-grid {
             display: grid;
-            grid-template-columns: minmax(340px, 1.15fr) minmax(0, 0.85fr);
             gap: 24px;
             align-items: start;
         }
@@ -333,7 +332,8 @@
         .photo-frame,
         .official-photo,
         .school-photo,
-        .activity-photo {
+        .activity-photo,
+        .event-card-photo {
             overflow: hidden;
             border-radius: 20px;
             border: 1px solid var(--line);
@@ -346,22 +346,35 @@
         }
 
         .official-photo {
-            aspect-ratio: 1 / 1.04;
+            min-height: 460px;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+            background: linear-gradient(180deg, #eef5ff 0%, #dbe9ff 100%);
+            box-shadow: 0 18px 42px rgba(17, 37, 77, 0.12);
         }
 
         .school-photo,
-        .activity-photo {
+        .activity-photo,
+        .event-card-photo {
             aspect-ratio: 1.45 / 1;
         }
 
         .photo-frame img,
         .official-photo img,
         .school-photo img,
-        .activity-photo img {
+        .activity-photo img,
+        .event-card-photo img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
+        }
+
+        .official-photo img {
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
         }
 
         .photo-fallback {
@@ -390,11 +403,53 @@
             margin-top: 16px;
         }
 
+        .overview-content {
+            display: grid;
+            gap: 20px;
+        }
+
+        .overview-copy-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .overview-copy-stack {
+            display: grid;
+        }
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 14px;
-            margin-top: 22px;
+            margin-top: 0;
+        }
+
+        .overview-strip {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .overview-pill {
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: linear-gradient(180deg, #f8fbff, #eef5ff);
+            border: 1px solid #e3edf7;
+        }
+
+        .overview-pill h3 {
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--primary-deep);
+        }
+
+        .overview-pill p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--muted);
         }
 
         .info-box {
@@ -419,9 +474,19 @@
         .official-layout,
         .school-layout {
             display: grid;
-            grid-template-columns: minmax(240px, 0.72fr) minmax(0, 1.28fr);
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 24px;
             align-items: start;
+        }
+
+        .official-layout {
+            row-gap: 18px;
+            grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr);
+            align-items: stretch;
+        }
+
+        .official-details {
+            max-width: 62ch;
         }
 
         .official-name {
@@ -430,7 +495,7 @@
             letter-spacing: -0.04em;
             font-weight: 700;
             color: var(--text);
-            max-width: 12ch;
+            max-width: 10ch;
         }
 
         .official-role {
@@ -455,7 +520,8 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 16px;
-            margin-top: 24px;
+            grid-column: 1 / -1;
+            margin-top: 6px;
         }
 
         .mini-card {
@@ -504,6 +570,90 @@
             background: var(--surface-strong);
         }
 
+        .school-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .school-intro {
+            display: grid;
+            gap: 10px;
+            max-width: 76ch;
+        }
+
+        .school-intro p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
+        .school-card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .school-card {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            border-radius: 22px;
+            overflow: hidden;
+            border: 1px solid #e3edf7;
+            background: var(--surface-strong);
+            box-shadow: 0 16px 38px rgba(17, 37, 77, 0.08);
+        }
+
+        .school-card-logo {
+            min-height: 220px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: linear-gradient(180deg, #f8fbff 0%, #e9f2ff 100%);
+            border-bottom: 1px solid #e3edf7;
+        }
+
+        .school-card-logo img {
+            max-width: 100%;
+            max-height: 160px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .school-card-body {
+            display: grid;
+            gap: 12px;
+            padding: 22px;
+        }
+
+        .school-meta {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--soft-text);
+        }
+
+        .school-card-name {
+            font-size: 22px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .school-card-address {
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--muted);
+        }
+
+        .school-card-description {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #314968;
+        }
+
         .school-head,
         .school-row {
             display: grid;
@@ -550,6 +700,45 @@
             align-items: start;
         }
 
+        .activity-stack {
+            display: grid;
+            gap: 16px;
+        }
+
+        .event-card {
+            display: grid;
+            grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+            gap: 18px;
+            align-items: center;
+            padding: 16px;
+            border-radius: 20px;
+            background: var(--surface-soft);
+            border: 1px solid #e3edf7;
+        }
+
+        .event-kicker {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--soft-text);
+        }
+
+        .event-title {
+            margin-top: 6px;
+            font-size: 21px;
+            line-height: 1.2;
+            font-weight: 700;
+            color: var(--primary-deep);
+        }
+
+        .event-copy {
+            margin-top: 10px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--muted);
+        }
+
         .activity-note {
             padding: 20px;
             border-radius: 20px;
@@ -572,6 +761,24 @@
         .sidebar-stack {
             display: grid;
             gap: 14px;
+        }
+
+        .sidebar-column .event-card {
+            grid-template-columns: 1fr;
+            align-items: start;
+        }
+
+        .sidebar-column .event-card-photo {
+            aspect-ratio: 1.5 / 1;
+        }
+
+        .sidebar-column .event-title {
+            font-size: 18px;
+        }
+
+        .sidebar-column .event-copy {
+            font-size: 14px;
+            line-height: 1.7;
         }
 
         .contact-card {
@@ -766,26 +973,15 @@
             text-decoration: none;
         }
 
-        .section-note {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            border-radius: 999px;
-            background: var(--primary-soft);
-            border: 1px solid #d8e6fb;
-            color: var(--primary);
-            font-size: 12px;
-            font-weight: 700;
-        }
-
         @media (max-width: 1180px) {
             .hero-inner,
             .layout,
             .overview-grid,
+            .overview-copy-grid,
             .official-layout,
             .school-layout,
-            .activity-grid {
+            .activity-grid,
+            .event-card {
                 grid-template-columns: 1fr;
             }
 
@@ -826,6 +1022,8 @@
 
             .stats-grid,
             .info-grid,
+            .overview-strip,
+            .school-card-grid,
             .council-grid,
             .emergency-quick,
             .school-head,
@@ -898,25 +1096,43 @@
                                 <p>Main profile, location context, and quick institutional information.</p>
                             </div>
                         </div>
-                        <div class="section-note">Main profile section</div>
                     </div>
                     <div class="panel-body">
                         <div class="overview-grid">
                             <div class="photo-frame">
                                 <img src="{{ barangay_hall_data_uri }}" alt="Barangay Gulod Hall">
                             </div>
-                            <div>
-                                <p class="lead-copy">Barangay Gulod serves a large and growing residential community in Novaliches. This page brings together the barangay hall profile, leadership, schools, and public service contact points in a format that is easier to read and scan.</p>
-                                <p class="lead-copy">Residents can quickly review core barangay details, connect with the office, and understand the local public-service ecosystem without having to search through cramped cards or dense sections.</p>
-
-                                <div class="info-grid">
-                                    <div class="info-box">
-                                        <h3>Coverage</h3>
-                                        <p>Residential neighborhoods, local governance coordination, resident support, and digital service handling.</p>
+                            <div class="overview-content">
+                                <div class="overview-copy-grid">
+                                    <div class="overview-copy-stack">
+                                        <p class="lead-copy">Barangay Gulod serves a large and growing residential community in Novaliches. This page brings together the barangay hall profile, leadership, schools, and public service contact points in a format that is easier to read and scan.</p>
+                                        <p class="lead-copy">Residents can quickly review core barangay details, connect with the office, and understand the local public-service ecosystem without having to search through cramped cards or dense sections.</p>
                                     </div>
-                                    <div class="info-box">
-                                        <h3>Office Access</h3>
-                                        <p>Barangay hall services, resident assistance, coordination with local institutions, and service request support.</p>
+
+                                    <div class="info-grid">
+                                        <div class="info-box">
+                                            <h3>Coverage</h3>
+                                            <p>Residential neighborhoods, local governance coordination, resident support, and digital service handling.</p>
+                                        </div>
+                                        <div class="info-box">
+                                            <h3>Office Access</h3>
+                                            <p>Barangay hall services, resident assistance, coordination with local institutions, and service request support.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="overview-strip">
+                                    <div class="overview-pill">
+                                        <h3>Community Role</h3>
+                                        <p>Supports resident concerns, local coordination, and daily barangay transactions.</p>
+                                    </div>
+                                    <div class="overview-pill">
+                                        <h3>Service Access</h3>
+                                        <p>Helps residents find office services, leadership contacts, and support channels faster.</p>
+                                    </div>
+                                    <div class="overview-pill">
+                                        <h3>Local Context</h3>
+                                        <p>Connects the barangay hall, nearby institutions, and public information in one view.</p>
                                     </div>
                                 </div>
                             </div>
@@ -943,29 +1159,30 @@
                                 <div class="photo-fallback">Add `rey-aldrin-s-tolentino.png` to `residents/static/residents/img/`</div>
                                 {% endif %}
                             </div>
-                            <div>
+                            <div class="official-details">
                                 <div class="official-name">{{ official_name }}</div>
                                 <div class="official-role">{{ official_title }}</div>
+                                <p class="official-copy">{{ official_description }}</p>
                                 <p class="official-copy">{{ coverage_summary }}</p>
                                 <p class="official-copy">{{ system_summary }}</p>
+                            </div>
 
-                                <div class="council-grid">
-                                    <div class="mini-card">
-                                        <div class="mini-title">Barangay Councilors</div>
-                                        <ul class="bullet-list">
-                                            {% for councilor in councilors_left %}
-                                            <li>{{ councilor }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    <div class="mini-card">
-                                        <div class="mini-title">Barangay Councilors</div>
-                                        <ul class="bullet-list">
-                                            {% for councilor in councilors_right %}
-                                            <li>{{ councilor }}</li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
+                            <div class="council-grid">
+                                <div class="mini-card">
+                                    <div class="mini-title">Barangay Councilors</div>
+                                    <ul class="bullet-list">
+                                        {% for councilor in councilors_left %}
+                                        <li>{{ councilor }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="mini-card">
+                                    <div class="mini-title">Barangay Councilors</div>
+                                    <ul class="bullet-list">
+                                        {% for councilor in councilors_right %}
+                                        <li>{{ councilor }}</li>
+                                        {% endfor %}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -984,56 +1201,36 @@
                     </div>
                     <div class="panel-body">
                         <div class="school-layout">
-                            <div class="school-photo">
-                                {% if barangay_school_data_uri %}
-                                <img src="{{ barangay_school_data_uri }}" alt="School within Barangay Gulod">
-                                {% else %}
-                                <div class="photo-fallback">Add `rosa-l-susano-elementary-school.png` to `residents/static/residents/img/`</div>
-                                {% endif %}
+                            <div class="school-intro">
+                                <p>Schools within Barangay Gulod give residents access to nearby learning institutions for both elementary and senior high school education.</p>
+                                <p>This section keeps each school’s logo, location, and summary aligned in a cleaner layout so the information is easier to compare at a glance.</p>
                             </div>
-                            <div class="school-table">
-                                <div class="school-head">
-                                    <div>School Name</div>
-                                    <div>Address</div>
-                                </div>
+
+                            <div class="school-card-grid">
                                 {% for school in schools %}
-                                <div class="school-row">
-                                    <div class="school-name">{{ school.name }}</div>
-                                    <div class="address-text">{{ school.address }}</div>
-                                </div>
+                                <article class="school-card">
+                                    <div class="school-card-logo">
+                                        {% if school.logo_key == "rosa" and rosa_school_data_uri %}
+                                        <img src="{{ rosa_school_data_uri }}" alt="{{ school.name }} logo">
+                                        {% elif school.logo_key == "jose" and jose_school_data_uri %}
+                                        <img src="{{ jose_school_data_uri }}" alt="{{ school.name }} logo">
+                                        {% else %}
+                                        <div class="photo-fallback">Add the logo image for {{ school.name }} to `residents/static/residents/img/`</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="school-card-body">
+                                        <div class="school-meta">{{ school.level }}</div>
+                                        <div class="school-card-name">{{ school.name }}</div>
+                                        <div class="school-card-address">{{ school.address }}</div>
+                                        <p class="school-card-description">{{ school.description }}</p>
+                                    </div>
+                                </article>
                                 {% endfor %}
-                            </div>
+                                </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="panel">
-                    <div class="panel-head">
-                        <div class="panel-head-main">
-                            <div class="icon">&#127881;</div>
-                            <div>
-                                <h2>Events and Activities</h2>
-                                <p>Community participation, outreach, clean-up drives, and assemblies.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        <div class="activity-grid">
-                            <div class="activity-photo">
-                                {% if barangay_activities_data_uri %}
-                                <img src="{{ barangay_activities_data_uri }}" alt="Barangay Gulod events and activities">
-                                {% else %}
-                                <div class="photo-fallback">Add `barangay-activities.jpg` to `residents/static/residents/img/`</div>
-                                {% endif %}
-                            </div>
-                            <div class="activity-note">
-                                <h3>Community Milestones</h3>
-                                <p>Highlight successful barangay events, public assemblies, volunteer programs, and neighborhood initiatives that show how residents participate in local development.</p>
-                                <p style="margin-top: 12px;">This section now gives the image more room while keeping the supporting description short and easy to scan.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
             </main>
 
             <aside class="sidebar-column">
@@ -1148,6 +1345,66 @@
 
                                 <a class="site-link" href="https://www.quezoncity.gov.ph/" target="_blank" rel="noopener noreferrer">www.quezoncity.gov.ph</a>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-head-main">
+                            <div class="icon">&#127881;</div>
+                            <div>
+                                <h2>Events and Activities</h2>
+                                <p>Community participation, outreach, clean-up drives, and assemblies.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="activity-stack">
+                            <article class="event-card">
+                                <div class="event-card-photo">
+                                    {% if barangay_event1_data_uri %}
+                                    <img src="{{ barangay_event1_data_uri }}" alt="Registration for PhilHealth Yakap Provider: 1Life and Medical Check-Up">
+                                    {% else %}
+                                    <div class="photo-fallback">Add `event1.jpg` to `residents/static/residents/img/`</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="event-kicker">Recent Event</div>
+                                    <div class="event-title">Registration for PhilHealth Yakap Provider: 1Life and Medical Check-Up</div>
+                                    <p class="event-copy">Scheduled on April 27, 2026 from 7:00 AM to 3:00 PM at the 3rd Floor, Barangay Gulod Hall, this activity offers PhilHealth registration, free laboratory services, and medical check-up support for residents.</p>
+                                </div>
+                            </article>
+
+                            <article class="event-card">
+                                <div class="event-card-photo">
+                                    {% if barangay_event2_data_uri %}
+                                    <img src="{{ barangay_event2_data_uri }}" alt="Tough Guys Train with the Best Free Karate Training">
+                                    {% else %}
+                                    <div class="photo-fallback">Add `event2.jpg` to `residents/static/residents/img/`</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="event-kicker">Recent Event</div>
+                                    <div class="event-title">Tough Guys Train with the Best Free Karate Training</div>
+                                    <p class="event-copy">Held every Saturday starting April 25, 2026 from 9:00 AM to 11:00 AM at #013 Hilltop Compound, London Drive, Brgy. Gulod, Novaliches, Quezon City, this program gives residents access to free karate training.</p>
+                                </div>
+                            </article>
+
+                            <article class="event-card">
+                                <div class="event-card-photo">
+                                    {% if barangay_event3_data_uri %}
+                                    <img src="{{ barangay_event3_data_uri }}" alt="Castration and Anti-Rabies Vaccination">
+                                    {% else %}
+                                    <div class="photo-fallback">Add `event3.jpg` to `residents/static/residents/img/`</div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="event-kicker">Recent Event</div>
+                                    <div class="event-title">Castration &amp; Anti-Rabies Vaccination</div>
+                                    <p class="event-copy">Set on April 21, 2026 at JOMAPA, this barangay activity provides free castration and anti-rabies vaccination for dogs and cats to support responsible pet ownership and community safety.</p>
+                                </div>
+                            </article>
                         </div>
                     </div>
                 </section>

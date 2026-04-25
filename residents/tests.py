@@ -12,7 +12,12 @@ from django.urls import reverse
 from .forms import ComplaintForm, HouseholdForm, ResidentPortalRegistrationForm
 from .models import Complaint, Notification, Resident, ServiceRequest, ServiceType, UserProfile
 from .views import (
+    apply_treasurer_request_action,
+    get_service_request_fee_details,
     get_portal_services,
+    has_released_first_time_job_seeker_request,
+    is_first_time_job_seeker_request,
+    is_first_time_job_seeker_service,
     notify_resident_for_service_request,
     notify_secretaries_of_complaint,
     notify_secretaries_of_service_request,
@@ -778,6 +783,280 @@ class PortalServiceTypeSyncTests(TestCase):
 
         self.assertEqual(clearance["service_type"].id, named.id)
         self.assertEqual(clearance["voter_fee"], named.voter_fee)
+
+
+class ServiceRequestFeeRuleTests(TestCase):
+    def setUp(self):
+        self.resident = Resident.objects.create(
+            first_name="Liza",
+            last_name="Fernandez",
+            birth_date="1994-09-03",
+            gender="Female",
+            civil_status="Single",
+            voter_status=False,
+        )
+        self.clearance = ServiceType.objects.create(
+            name="Barangay Clearance",
+            fee=50,
+            voter_fee=25,
+            non_voter_fee=50,
+            free_limit=1,
+        )
+        self.residency = ServiceType.objects.create(
+            name="Certificate of Residency",
+            fee=30,
+            voter_fee=20,
+            non_voter_fee=30,
+            free_limit=1,
+        )
+
+    def test_first_request_for_same_service_is_exempt(self):
+        fee_details = get_service_request_fee_details(self.resident, self.clearance)
+
+        self.assertTrue(fee_details["is_exempt"])
+        self.assertEqual(fee_details["amount"], 0)
+        self.assertEqual(fee_details["previous_released_count"], 0)
+
+    def test_repeat_request_for_same_service_requires_payment(self):
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.clearance,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        fee_details = get_service_request_fee_details(self.resident, self.clearance)
+
+        self.assertFalse(fee_details["is_exempt"])
+        self.assertEqual(fee_details["amount"], self.clearance.non_voter_fee)
+        self.assertEqual(fee_details["previous_released_count"], 1)
+
+    def test_released_requests_for_other_service_do_not_affect_current_service(self):
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.residency,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        fee_details = get_service_request_fee_details(self.resident, self.clearance)
+
+        self.assertTrue(fee_details["is_exempt"])
+        self.assertEqual(fee_details["previous_released_count"], 0)
+
+    def test_pending_rejected_and_cancelled_requests_are_not_counted(self):
+        for status in ["PENDING", "REJECTED", "WAITING_PAYMENT"]:
+            ServiceRequest.objects.create(
+                resident=self.resident,
+                service_type=self.clearance,
+                fee=0,
+                payment_required="NO",
+                payment_status="EXEMPT",
+                status=status,
+            )
+
+        fee_details = get_service_request_fee_details(self.resident, self.clearance)
+
+        self.assertTrue(fee_details["is_exempt"])
+        self.assertEqual(fee_details["previous_released_count"], 0)
+
+    def test_service_free_limit_controls_how_many_released_requests_are_exempt(self):
+        self.clearance.free_limit = 2
+        self.clearance.save(update_fields=["free_limit"])
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.clearance,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        fee_details = get_service_request_fee_details(self.resident, self.clearance)
+        self.assertTrue(fee_details["is_exempt"])
+        self.assertEqual(fee_details["free_limit"], 2)
+
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.clearance,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        repeat_fee_details = get_service_request_fee_details(self.resident, self.clearance)
+        self.assertFalse(repeat_fee_details["is_exempt"])
+        self.assertEqual(repeat_fee_details["previous_released_count"], 2)
+
+
+class ServiceRequestWorkflowTests(TestCase):
+    def setUp(self):
+        self.secretary_group, _ = Group.objects.get_or_create(name="Secretary")
+        self.treasurer_group, _ = Group.objects.get_or_create(name="Treasurer")
+        self.secretary = User.objects.create_user("secretary_workflow", password="StrongPass123!")
+        self.secretary.groups.add(self.secretary_group)
+        self.treasurer = User.objects.create_user("treasurer_workflow", password="StrongPass123!")
+        self.treasurer.groups.add(self.treasurer_group)
+        self.resident = Resident.objects.create(
+            first_name="Marco",
+            last_name="Santos",
+            birth_date="1996-02-14",
+            gender="Male",
+            civil_status="Single",
+        )
+        self.service_type = ServiceType.objects.create(
+            name="Barangay Clearance",
+            fee=50,
+            voter_fee=25,
+            non_voter_fee=50,
+        )
+
+    def make_request(self, *, payment_required, payment_status):
+        return ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.service_type,
+            fee=50 if payment_required == "YES" else 0,
+            payment_required=payment_required,
+            payment_status=payment_status,
+            status="PENDING",
+        )
+
+    def test_secretary_approval_routes_paid_request_to_treasurer(self):
+        service_request = self.make_request(payment_required="YES", payment_status="PENDING")
+        self.client.force_login(self.secretary)
+
+        response = self.client.post(
+            reverse("update_service_request_status", args=[service_request.id]),
+            {"status": "APPROVED"},
+            HTTP_REFERER=reverse("service_request_detail", args=[service_request.id]),
+        )
+
+        self.assertEqual(response.status_code, 302)
+        service_request.refresh_from_db()
+        self.assertEqual(service_request.status, "WAITING_PAYMENT")
+        self.assertEqual(service_request.payment_status, "PENDING")
+
+    def test_secretary_approval_routes_exempt_request_to_release_queue(self):
+        service_request = self.make_request(payment_required="NO", payment_status="EXEMPT")
+        self.client.force_login(self.secretary)
+
+        self.client.post(
+            reverse("update_service_request_status", args=[service_request.id]),
+            {"status": "APPROVED"},
+            HTTP_REFERER=reverse("service_request_detail", args=[service_request.id]),
+        )
+
+        service_request.refresh_from_db()
+        self.assertEqual(service_request.status, "READY_FOR_RELEASE")
+        self.assertEqual(service_request.payment_status, "EXEMPT")
+
+    def test_treasurer_payment_confirmation_moves_request_to_release_queue(self):
+        service_request = self.make_request(payment_required="YES", payment_status="PENDING")
+        service_request.status = "WAITING_PAYMENT"
+        service_request.save()
+
+        success, message = apply_treasurer_request_action(
+            service_request,
+            action="mark_paid",
+            user=self.treasurer,
+            request_obj=None,
+        )
+
+        self.assertTrue(success, message)
+        service_request.refresh_from_db()
+        self.assertEqual(service_request.status, "READY_FOR_RELEASE")
+        self.assertEqual(service_request.payment_status, "PAID")
+
+
+class FirstTimeJobSeekerLimitTests(TestCase):
+    def setUp(self):
+        self.resident = Resident.objects.create(
+            first_name="Ana",
+            last_name="Reyes",
+            birth_date="2001-06-20",
+            gender="Female",
+            civil_status="Single",
+        )
+        self.service_type = ServiceType.objects.create(
+            name="First Time Job Seeker",
+            fee=0,
+            voter_fee=0,
+            non_voter_fee=0,
+        )
+        self.treasurer = User.objects.create_user("ftjs_treasurer", password="StrongPass123!")
+
+    def test_identifies_first_time_job_seeker_service_names(self):
+        self.assertTrue(is_first_time_job_seeker_service("First Time Job Seeker"))
+        self.assertTrue(is_first_time_job_seeker_service("Request First Time Jobseeker"))
+        self.assertFalse(is_first_time_job_seeker_service("Barangay Clearance"))
+
+    def test_released_first_time_job_seeker_request_blocks_future_availment(self):
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.service_type,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        self.assertTrue(has_released_first_time_job_seeker_request(self.resident))
+
+    def test_first_time_job_seeker_can_be_detected_from_generic_service_request_purpose(self):
+        generic_service = ServiceType.objects.create(
+            name="Service Request",
+            fee=0,
+            voter_fee=0,
+            non_voter_fee=0,
+        )
+        service_request = ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=generic_service,
+            purpose="REQUEST FIRST TIME JOBSEEKER",
+            purpose_for="First Time Job Seeker",
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+
+        self.assertTrue(is_first_time_job_seeker_request(service_request))
+        self.assertTrue(has_released_first_time_job_seeker_request(self.resident))
+
+    def test_second_first_time_job_seeker_release_is_blocked(self):
+        ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.service_type,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="RELEASED",
+        )
+        second_request = ServiceRequest.objects.create(
+            resident=self.resident,
+            service_type=self.service_type,
+            fee=0,
+            payment_required="NO",
+            payment_status="EXEMPT",
+            status="READY_FOR_RELEASE",
+        )
+
+        success, message = apply_treasurer_request_action(
+            second_request,
+            action="mark_released",
+            user=self.treasurer,
+            request_obj=None,
+        )
+
+        self.assertFalse(success)
+        self.assertIn("already has a released First Time Job Seeker request", message)
+        second_request.refresh_from_db()
+        self.assertEqual(second_request.status, "READY_FOR_RELEASE")
 
 
 @override_settings(

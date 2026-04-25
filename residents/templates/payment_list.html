@@ -232,7 +232,7 @@
 <div class="page-header">
     <div>
         <div class="page-title">Payment Management</div>
-        <div class="page-subtitle">Process payments and release documents</div>
+        <div class="page-subtitle">Record resident payments before documents are released.</div>
     </div>
 </div>
 
@@ -245,7 +245,7 @@
             </svg>
         </div>
         <div class="stat-content">
-            <div class="stat-label">Pending Payment</div>
+            <div class="stat-label">Awaiting Payment</div>
             <div class="stat-value">{{ approved_requests|length }}</div>
         </div>
     </div>
@@ -269,20 +269,20 @@
             </svg>
         </div>
         <div class="stat-content">
-            <div class="stat-label">Ready for Release</div>
-            <div class="stat-value">0</div>
+            <div class="stat-label">Released After Payment</div>
+            <div class="stat-value">{{ payments|length }}</div>
         </div>
     </div>
 </div>
 
 <!-- Pending Payments Table -->
-<div class="table-card">
+<div class="table-card" id="for-payment">
     <div class="table-card-header">
         <div class="table-card-title">
             <svg viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
             </svg>
-            Pending Payments
+            For Payment
         </div>
     </div>
 
@@ -311,7 +311,7 @@
                             <svg viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
                             </svg>
-                            Receive Payment & Release
+                            Receive Payment
                         </button>
                     </form>
                 </td>
@@ -327,13 +327,67 @@
             </svg>
         </div>
         <div class="empty-state-title">No pending payments</div>
-        <div class="empty-state-text">All approved service requests have been paid.</div>
+        <div class="empty-state-text">All requests waiting for Treasurer payment have already been processed.</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="table-card" id="for-pickup" style="margin-top:24px;">
+    <div class="table-card-header">
+        <div class="table-card-title">
+            <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v3a1 1 0 102 0V4h8v3a1 1 0 102 0V4a2 2 0 00-2-2H6zm-2 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4z" clip-rule="evenodd"/>
+            </svg>
+            Ready For Release / For Pickup
+        </div>
+    </div>
+
+    {% if ready_for_release_requests %}
+    <table class="payments-table">
+        <thead>
+            <tr>
+                <th>Doc No.</th>
+                <th>Resident</th>
+                <th>Service Type</th>
+                <th>Payment Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sr in ready_for_release_requests %}
+            <tr>
+                <td><strong>{{ sr.document_number }}</strong></td>
+                <td>{{ sr.resident }}</td>
+                <td>{{ sr.service_type }}</td>
+                <td>{{ sr.get_payment_status_display }}</td>
+                <td>
+                    {% if sr.payment_required == "YES" and sr.payment_status == "PAID" %}
+                    <form method="POST" action="{% url 'treasurer_update_request_status' sr.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_unpaid">
+                        <button type="submit" class="btn-bmis btn-record">Mark Unpaid</button>
+                    </form>
+                    {% endif %}
+                    <form method="POST" action="{% url 'treasurer_update_request_status' sr.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="mark_released">
+                        <button type="submit" class="btn-bmis btn-record">Mark Released</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-title">No requests ready for pickup</div>
+        <div class="empty-state-text">Paid or exempt requests will appear here.</div>
     </div>
     {% endif %}
 </div>
 
 <!-- Payment Records Table -->
-<div class="table-card">
+<div class="table-card" id="released" style="margin-top:24px;">
     <div class="table-card-header">
         <div class="table-card-title">
             <svg viewBox="0 0 20 20" fill="currentColor">
@@ -370,14 +424,14 @@
                 <td>{{ payment.payment_date|date:"M d, Y - h:i A" }}</td>
                 <td>{{ payment.collected_by }}</td>
                 <td>
-                    {% if payment.service_request.status == "Ready for Release" %}
+                    {% if payment.service_request.status == "READY_FOR_RELEASE" %}
                     <span class="status-badge status-approved">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
                         </svg>
                         Ready for Release
                     </span>
-                    {% elif payment.service_request.status == "Released" %}
+                    {% elif payment.service_request.status == "RELEASED" %}
                     <span class="status-badge status-released">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
@@ -386,19 +440,19 @@
                     </span>
                     {% else %}
                     <span class="status-badge status-approved">
-                        {{ payment.service_request.status }}
+                        {{ payment.service_request.get_status_display }}
                     </span>
                     {% endif %}
                 </td>
                 <td>
-                    {% if payment.service_request.status == "Ready for Release" %}
+                    {% if payment.service_request.status == "READY_FOR_RELEASE" %}
                     <span class="ready-text">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v3a1 1 0 102 0V4h8v3a1 1 0 102 0V4a2 2 0 00-2-2H6zm-2 8a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2h-1v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H6a2 2 0 01-2-2v-4zm3 1a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/>
                         </svg>
                         Paid, awaiting release
                     </span>
-                    {% elif payment.service_request.status == "Released" %}
+                    {% elif payment.service_request.status == "RELEASED" %}
                     <span class="released-text">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>

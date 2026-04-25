@@ -66,8 +66,33 @@
     .detail-copy{display:grid;gap:5px;font-size:12px;color:var(--txt2);line-height:1.55}
     .detail-copy strong{color:var(--txt)}
     .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .btn-mini{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border-radius:10px;border:1px solid var(--brd);background:#fff;color:var(--pri2);font-weight:700;text-decoration:none}
-    .btn-mini:hover{text-decoration:none;color:var(--pri-hover)}
+    .btn-mini{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        min-height:40px;
+        padding:0 16px;
+        border-radius:12px;
+        border:1px solid #cfe0ff;
+        background:linear-gradient(180deg,#f8fbff 0%,#eaf2ff 100%);
+        color:#275cb8;
+        font-weight:700;
+        text-decoration:none;
+        box-shadow:0 8px 18px rgba(39,92,184,.12);
+        transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .btn-mini:hover{
+        text-decoration:none;
+        color:#1d4ca6;
+        border-color:#b8d0ff;
+        background:linear-gradient(180deg,#ffffff 0%,#dfeaff 100%);
+        box-shadow:0 12px 22px rgba(39,92,184,.16);
+        transform:translateY(-1px);
+    }
+    .btn-mini:active{
+        transform:translateY(0);
+        box-shadow:0 6px 14px rgba(39,92,184,.14);
+    }
     .empty{padding:56px 24px;text-align:center}
     .empty-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:22px;background:#eef2f7;color:#64748b;display:flex;align-items:center;justify-content:center}
     .empty-icon svg{width:30px;height:30px}

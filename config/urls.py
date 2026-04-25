@@ -35,6 +35,7 @@ urlpatterns = [
     path("audit-logs/", views.audit_logs, name="audit_logs"),
     path("residents/scan-id/", views.scan_resident_id, name="scan_resident_id"),
     
+    path("create_service_request/", views.create_walk_in_service_request, name="create_walk_in_service_request"),
     path("create_service_request/<int:resident_id>/", views.create_service_request, name="create_service_request"),
     path(
     "document/<int:request_id>/",
@@ -111,6 +112,7 @@ urlpatterns = [
 
     path("payments/", views.payment_list, name="payment_list"),
     path("record-payment/<int:request_id>/", views.record_payment, name="record_payment"),
+    path("payments/request/<int:request_id>/update/", views.treasurer_update_request_status, name="treasurer_update_request_status"),
     
 
     path("household/<int:pk>/", views.household_detail, name="household_detail"),

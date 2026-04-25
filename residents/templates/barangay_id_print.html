@@ -1,27 +1,84 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Barangay ID Request Details</title>
+    {% load static %}
+    <style>
+        body { font-family: 'Times New Roman', Georgia, serif; margin: 0; padding: 40px; color: #111; background: #fff; }
+        .page { max-width: 820px; margin: 0 auto; }
+        h1, h2, h3 { margin: 0; line-height: 1.1; }
+        h1 { font-size: 34px; letter-spacing: 2px; margin-top: 8px; }
+        h2 { font-size: 24px; margin-top: 8px; }
+        h3 { font-size: 16px; font-weight: 400; margin-bottom: 4px; }
+        .letterhead { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; }
+        .logo { max-height: 90px; width: auto; }
+        .logo.left { max-width: 140px; }
+        .logo.right { max-width: 120px; }
+        .title-block { flex: 1; padding: 0 24px; text-align: center; }
+        .contact-line { margin-top: 8px; font-size: 13px; letter-spacing: 0.4px; }
+        .header-hr { margin: 18px auto 0; border: none; border-top: 1px solid #111; width: 100%; max-width: 780px; }
+        .spacer { margin-top: 80px; }
+        .body-text { font-size: 16px; line-height: 1.95; text-align: left; max-width: 700px; margin: 0 auto; }
+        .body-text strong { font-weight: 700; }
+        .body-text p { margin: 0 0 24px; text-indent: 36px; }
+        .body-text .intro { margin-top: 28px; margin-bottom: 28px; text-indent: 0; }
+        .details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; margin-top: 20px; }
+        .details div { border-bottom: 1px solid #d0d0d0; padding-bottom: 4px; }
+        .details .full { grid-column: 1 / -1; }
+        .section-label { margin-top: 32px; font-size: 17px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+        .footer-signature { margin-top: 90px; text-align: right; }
+        .signature-block { max-width: 360px; margin: 0 0 0 auto; padding-top: 26px; }
+        .signature-name { font-weight: 700; margin-top: 14px; }
+        .print-button { position: fixed; right: 20px; bottom: 20px; padding: 12px 22px; border: none; background: #16335f; color: #fff; cursor: pointer; border-radius: 8px; }
+        @media print { .print-button { display: none; } body { padding: 0; } }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="letterhead">
+            <img class="logo left" src="{% static 'residents/img/QCLogo.png' %}" alt="QC Logo">
+            <div class="title-block">
+                <h3>REPUBLIC OF THE PHILIPPINES</h3>
+                <h2>BARANGAY GULOD</h2>
+                <h1>BARANGAY ID REQUEST DETAILS</h1>
+                <div class="contact-line">Tel. no. 8366-3198 - E-mail: TeamTolentino@gmail.com</div>
+            </div>
+            <img class="logo right" src="{{ barangay_logo_data_uri }}" alt="Barangay Gulod logo">
+        </div>
+        <hr class="header-hr">
 
-{% block content %}
+        <div class="spacer body-text">
+            <p class="intro">This document records the Barangay ID request details verified through Barangay Gulod.</p>
 
-<center>
-<h3>Republic of the Philippines</h3>
-<h3>Province of ______</h3>
-<h3>Municipality of ______</h3>
-<h2>Barangay ______</h2>
-<h1>BARANGAY ID REQUEST DETAILS</h1>
-</center>
+            <div class="details">
+                <div><strong>Date:</strong> {{ today|date:"F j, Y" }}</div>
+                <div><strong>Serial:</strong> {{ service.document_number }}</div>
+                <div class="full"><strong>Name:</strong> {{ resident.first_name }}{% if resident.middle_name %} {{ resident.middle_name }}{% endif %} {{ resident.last_name }}</div>
+                <div class="full"><strong>Address:</strong> {{ address }}</div>
+                <div><strong>Birthdate:</strong> {{ resident.birth_date|date:"F j, Y"|default:"-" }}</div>
+                <div><strong>Precinct:</strong> {{ resident.precinct|default:"-" }}</div>
+            </div>
 
-<p><b>Date:</b> {{ today|date:"m-d-Y" }}</p>
-<p><b>Serial:</b> {{ service.document_number }}</p>
-<p><b>Name:</b> {{ resident.first_name }} {{ resident.middle_name }} {{ resident.last_name }}</p>
-<p><b>Address:</b> {{ address }}</p>
-<p><b>Birthdate:</b> {{ resident.birth_date }}</p>
-<p><b>Precinct:</b> {{ resident.precinct|default:"-" }}</p>
+            <div class="section-label">Person to be notified in case of emergency</div>
+            <div class="details">
+                <div class="full"><strong>Name:</strong> {{ service.emergency_contact_name|default:"-" }}</div>
+                <div class="full"><strong>Address:</strong> {{ service.emergency_contact_address|default:"-" }}</div>
+                <div class="full"><strong>Contact:</strong> {{ service.emergency_contact_number|default:"-" }}</div>
+            </div>
+        </div>
 
-<h3>Person to be notified in case of emergency</h3>
-<p><b>Name:</b> {{ service.emergency_contact_name|default:"-" }}</p>
-<p><b>Address:</b> {{ service.emergency_contact_address|default:"-" }}</p>
-<p><b>Contact:</b> {{ service.emergency_contact_number|default:"-" }}</p>
+        <div class="footer-signature body-text">
+            <div>For and by the Authority of:</div>
+            <div class="signature-block">
+                <div class="signature-name">REY ALDRIN S. TOLENTINO</div>
+                <div>Barangay Captain</div>
+                <div class="signature-name">MARLON S. SERRANO</div>
+                <div>Barangay Kagawad</div>
+            </div>
+        </div>
+    </div>
 
-<button onclick="window.print()">Print Barangay ID Details</button>
-
-{% endblock %}
+    <button class="print-button" onclick="window.print()">Print Barangay ID Details</button>
+</body>
+</html>

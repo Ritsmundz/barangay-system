@@ -1,5 +1,6 @@
 from calendar import month
 from datetime import date, timedelta, datetime
+from decimal import Decimal
 import csv
 import json
 import os
@@ -223,6 +224,7 @@ def about_barangay(request):
     context = {
         "official_name": "Rey Aldrin S. Tolentino",
         "official_title": "Punong Barangay",
+        "official_description": "Rey Aldrin S. Tolentino leads Barangay Gulod with a focus on accessible public service, responsive governance, and programs that strengthen everyday life for residents.",
         "contact_address": "Villaflor Village, Barangay Gulod, Novaliches, Quezon City",
         "contact_phone": "8-3663-198",
         "contact_email": "teamtolentino@gmail.com",
@@ -251,68 +253,62 @@ def about_barangay(request):
         "schools": [
             {
                 "name": "Rosa L. Susano Elementary School",
+                "logo_key": "rosa",
+                "level": "Public Elementary School",
                 "address": "Quirino Highway, Brgy. Gulod, Novaliches, Quezon City",
+                "description": "A well-known public elementary school serving young learners in the community and supporting foundational education for families in Barangay Gulod.",
             },
             {
                 "name": "Jose Maria Panganiban Senior High School",
+                "logo_key": "jose",
+                "level": "Public Senior High School",
                 "address": "Villaflor Subdivision, Brgy. Gulod, Novaliches, Quezon City",
+                "description": "A senior high school that helps students continue their studies close to home with academic and community-centered learning opportunities.",
             },
         ],
     }
     return render(request, "about_barangay.html", context)
 SERVICE_REQUEST_PRIMARY_STEPS = [
-    "Submitted",
-    "Under Review",
-    "For Validation",
-    "Processing",
-    "Ready for Release",
-    "Released",
+    "PENDING",
+    "APPROVED",
+    "WAITING_PAYMENT",
+    "READY_FOR_RELEASE",
+    "RELEASED",
 ]
 
 SERVICE_REQUEST_OPTIONAL_STATES = [
-    "Pending Requirements",
-    "On Hold",
-    "Rejected",
-    "Cancelled",
+    "PENDING_REQUIREMENTS",
+    "REJECTED",
 ]
 
 SERVICE_REQUEST_STATUS_TRANSITIONS = {
-    "Submitted": ["Under Review", "Cancelled"],
-    "Under Review": ["For Validation", "Pending Requirements", "On Hold", "Rejected", "Cancelled"],
-    "Pending Requirements": ["Under Review", "Cancelled"],
-    "For Validation": ["Processing", "On Hold", "Rejected", "Cancelled"],
-    "On Hold": ["For Validation", "Cancelled"],
-    "Processing": ["Ready for Release", "On Hold", "Rejected", "Cancelled"],
-    "Ready for Release": ["Released", "On Hold", "Cancelled"],
-    "Released": [],
-    "Rejected": [],
-    "Cancelled": [],
+    "PENDING": ["APPROVED", "PENDING_REQUIREMENTS", "REJECTED"],
+    "PENDING_REQUIREMENTS": ["PENDING", "REJECTED"],
+    "APPROVED": [],
+    "WAITING_PAYMENT": [],
+    "READY_FOR_RELEASE": ["RELEASED"],
+    "RELEASED": [],
+    "REJECTED": [],
 }
 
 SERVICE_REQUEST_STATUS_COLORS = {
-    "Submitted": "blue",
-    "Under Review": "sky",
-    "For Validation": "violet",
-    "Processing": "teal",
-    "Ready for Release": "amber",
-    "Released": "green",
-    "Pending Requirements": "gold",
-    "On Hold": "orange",
-    "Rejected": "red",
-    "Cancelled": "slate",
+    "PENDING": "blue",
+    "APPROVED": "sky",
+    "WAITING_PAYMENT": "violet",
+    "READY_FOR_RELEASE": "amber",
+    "RELEASED": "green",
+    "PENDING_REQUIREMENTS": "gold",
+    "REJECTED": "red",
 }
 
 SERVICE_REQUEST_ESTIMATES = {
-    "Submitted": "Usually reviewed within the day.",
-    "Under Review": "Usually checked within 1 working day.",
-    "For Validation": "Validation usually takes 1 to 2 working days.",
-    "Processing": "Document preparation usually takes 1 working day.",
-    "Ready for Release": "Ready for pickup once the Secretary confirms release.",
-    "Released": "This request has already been claimed.",
-    "Pending Requirements": "Waiting for the resident to complete missing information.",
-    "On Hold": "Temporarily delayed while verification is being resolved.",
-    "Rejected": "This request will not proceed unless resubmitted correctly.",
-    "Cancelled": "This request has been closed without release.",
+    "PENDING": "Waiting for secretary review.",
+    "APPROVED": "Approved and routing to the next release or payment stage.",
+    "WAITING_PAYMENT": "Waiting for the Treasurer to confirm payment.",
+    "READY_FOR_RELEASE": "Ready for pickup and release.",
+    "RELEASED": "This request has already been released.",
+    "PENDING_REQUIREMENTS": "Waiting for the resident to complete missing information.",
+    "REJECTED": "This request has been rejected and will not proceed.",
 }
 
 COMPLAINT_STATUS_TRANSITIONS = {
@@ -800,13 +796,11 @@ def get_service_request_allowed_statuses(current_status):
 def get_service_request_progress_status(status):
     if status in SERVICE_REQUEST_PRIMARY_STEPS:
         return status
-    if status == "Pending Requirements":
-        return "Under Review"
-    if status == "On Hold":
-        return "For Validation"
-    if status in {"Rejected", "Cancelled"}:
-        return "Submitted"
-    return "Submitted"
+    if status == "PENDING_REQUIREMENTS":
+        return "PENDING"
+    if status == "REJECTED":
+        return "PENDING"
+    return "PENDING"
 
 
 def get_service_request_status_history(service_request):
@@ -819,12 +813,12 @@ def get_service_request_status_history(service_request):
     seen_statuses = set()
 
     history.append({
-        "status": "Submitted",
+        "status": "PENDING",
         "timestamp": service_request.request_date,
         "actor": service_request.created_by,
-        "description": "Request submitted by resident.",
+        "description": "Request submitted by secretary." if service_request.created_by and is_staff_user(service_request.created_by) else "Request submitted by resident.",
     })
-    seen_statuses.add("Submitted")
+    seen_statuses.add("PENDING")
 
     for log in logs:
         before_status = (log.before_data or {}).get("status")
@@ -920,8 +914,22 @@ def is_secretary(user):
     return user.groups.filter(name='Secretary').exists()
 
 
+def is_admin_reviewer(user):
+    if user.is_superuser:
+        return True
+    return user.groups.filter(name__in=["Admin", "Captain"]).exists()
+
+
 def is_treasurer(user):
     return user.groups.filter(name='Treasurer').exists()
+
+
+def can_manage_service_workflow(user):
+    return is_secretary(user) or is_admin_reviewer(user)
+
+
+def can_view_payment_controls(user):
+    return is_treasurer(user) or is_admin_reviewer(user)
 
 
 def is_staff_group_user(user):
@@ -956,6 +964,248 @@ def get_user_profile(user):
 
 def normalize_service_name(name):
     return re.sub(r"[^a-z0-9]+", " ", (name or "").lower()).strip()
+
+
+def is_indigency_service(service_type_or_name):
+    if isinstance(service_type_or_name, dict):
+        service_name = service_type_or_name.get("name", "")
+    else:
+        service_name = getattr(service_type_or_name, "name", service_type_or_name)
+    return "indigency" in normalize_service_name(service_name)
+
+
+def is_first_time_job_seeker_service(service_type_or_name):
+    if isinstance(service_type_or_name, dict):
+        service_name = service_type_or_name.get("name", "")
+    else:
+        service_name = getattr(service_type_or_name, "name", service_type_or_name)
+    normalized = normalize_service_name(service_name)
+    return "first time" in normalized and ("job seeker" in normalized or "jobseeker" in normalized)
+
+
+def is_first_time_job_seeker_request(service_request):
+    return any(
+        is_first_time_job_seeker_service(value)
+        for value in [
+            service_request.service_type,
+            service_request.purpose,
+            service_request.purpose_for,
+            service_request.purpose_other,
+        ]
+    )
+
+
+def has_released_first_time_job_seeker_request(resident, *, exclude_request_id=None):
+    queryset = ServiceRequest.objects.filter(
+        resident=resident,
+        status="RELEASED",
+    ).select_related("service_type")
+    if exclude_request_id:
+        queryset = queryset.exclude(id=exclude_request_id)
+    return any(is_first_time_job_seeker_request(item) for item in queryset)
+
+
+def get_released_request_count_for_service(resident, service_type, *, exclude_request_id=None):
+    queryset = ServiceRequest.objects.filter(
+        resident=resident,
+        service_type=service_type,
+        status="RELEASED",
+    )
+    if exclude_request_id:
+        queryset = queryset.exclude(id=exclude_request_id)
+    return queryset.count()
+
+
+def is_service_request_fee_exempt(resident, service_type, *, exclude_request_id=None):
+    previous_released_count = get_released_request_count_for_service(
+        resident,
+        service_type,
+        exclude_request_id=exclude_request_id,
+    )
+    free_limit = max(int(getattr(service_type, "free_limit", 1) or 0), 0)
+    return previous_released_count < free_limit, previous_released_count, free_limit
+
+
+def get_standard_service_fee(resident, service_type):
+    if resident and resident.voter_status:
+        return service_type.voter_fee
+    return service_type.non_voter_fee
+
+
+def get_service_request_fee_details(resident, service_type, *, exclude_request_id=None):
+    standard_fee = get_standard_service_fee(resident, service_type)
+    is_exempt, previous_released_count, free_limit = is_service_request_fee_exempt(
+        resident,
+        service_type,
+        exclude_request_id=exclude_request_id,
+    )
+    fee_amount = Decimal("0.00") if is_exempt else Decimal(standard_fee or 0)
+    if is_exempt:
+        if free_limit == 1:
+            fee_note = "This is your first released request for this service, so no payment is required."
+        else:
+            remaining_free_requests = max(free_limit - previous_released_count - 1, 0)
+            fee_note = (
+                "This request is within the free request limit for this service."
+                if remaining_free_requests == 0
+                else f"This request is within the free request limit for this service. {remaining_free_requests} free request(s) will remain after this one is released."
+            )
+    elif fee_amount > 0:
+        fee_note = f"You already have {previous_released_count} released request(s) for this service. Please bring the exact amount of Php {fee_amount:.2f} when claiming this document."
+    else:
+        fee_note = "No payment is required for this request."
+    return {
+        "amount": fee_amount,
+        "is_exempt": is_exempt,
+        "standard_amount": Decimal(standard_fee or 0),
+        "previous_released_count": previous_released_count,
+        "free_limit": free_limit,
+        "fee_note": fee_note,
+    }
+
+
+def get_service_payment_notice(service_request):
+    if service_request.payment_status == "PAID":
+        return f"Payment of Php {service_request.fee:.2f} has been recorded for this request."
+    if service_request.payment_status == "EXEMPT":
+        return "No payment is required for this request."
+    return f"Payment of Php {service_request.fee:.2f} is pending Treasurer confirmation for this request."
+
+
+def normalize_inconsistent_release_state(service_request):
+    if service_request.status == "RELEASED" and service_request.payment_required == "YES" and service_request.payment_status != "PAID":
+        service_request.status = "READY_FOR_RELEASE"
+        service_request.processed_date = None
+        service_request.save(update_fields=["status", "processed_date"])
+    return service_request
+
+
+def apply_treasurer_request_action(service_request, *, action, user, request_obj):
+    before_data = snapshot_instance(service_request)
+
+    if action == "mark_paid":
+        if service_request.payment_required != "YES":
+            return False, "This request is payment-exempt."
+        payment, created = Payment.objects.get_or_create(
+            service_request=service_request,
+            defaults={
+                "amount": service_request.fee,
+                "collected_by": user,
+                "received_by": user,
+            },
+        )
+        if not created:
+            payment.amount = service_request.fee
+            payment.collected_by = user
+            payment.received_by = user
+            payment.save()
+            log_audit_event(
+                action="UPDATE",
+                model_name="Payment",
+                description=f"Treasurer updated payment for {service_request.resident}.",
+                user=user,
+                target_id=payment.id,
+                after_data=snapshot_instance(payment),
+                request=request_obj,
+            )
+        else:
+            log_audit_event(
+                action="CREATE",
+                model_name="Payment",
+                description=f"Payment recorded for {service_request.resident}.",
+                user=user,
+                target_id=payment.id,
+                after_data=snapshot_instance(payment),
+                request=request_obj,
+            )
+        service_request.payment_status = "PAID"
+        service_request.status = "READY_FOR_RELEASE"
+        service_request.save(update_fields=["payment_status", "status"])
+        log_audit_event(
+            action="UPDATE",
+            model_name="ServiceRequest",
+            description=f"Treasurer marked request {service_request.document_number} as paid.",
+            user=user,
+            target_id=service_request.id,
+            before_data=before_data,
+            after_data=snapshot_instance(service_request),
+            request=request_obj,
+        )
+        notify_resident_for_service_request(
+            service_request,
+            title="Payment Confirmed",
+            message=f"Payment of Php {service_request.fee:.2f} for your {service_request.service_type.name} request has been confirmed by the Treasurer. Your request is now ready for release.",
+        )
+        return True, "Payment marked as paid."
+
+    if action == "mark_unpaid":
+        if service_request.payment_required != "YES":
+            return False, "This request does not require payment."
+        payment = Payment.objects.filter(service_request=service_request).first()
+        if payment:
+            log_audit_event(
+                action="DELETE",
+                model_name="Payment",
+                description=f"Treasurer voided payment for {service_request.resident}.",
+                user=user,
+                target_id=payment.id,
+                before_data=snapshot_instance(payment),
+                request=request_obj,
+            )
+            payment.delete()
+        service_request.payment_status = "PENDING"
+        service_request.status = "WAITING_PAYMENT"
+        service_request.save(update_fields=["payment_status", "status"])
+        log_audit_event(
+            action="UPDATE",
+            model_name="ServiceRequest",
+            description=f"Treasurer marked request {service_request.document_number} as unpaid.",
+            user=user,
+            target_id=service_request.id,
+            before_data=before_data,
+            after_data=snapshot_instance(service_request),
+            request=request_obj,
+        )
+        notify_resident_for_service_request(
+            service_request,
+            title="Payment Pending",
+            message=f"Payment for your {service_request.service_type.name} request is currently marked as pending. Please coordinate with the Treasurer if needed.",
+        )
+        return True, "Payment marked as unpaid."
+
+    if action == "mark_released":
+        if service_request.status != "READY_FOR_RELEASE":
+            return False, "Only requests that are ready for release can be marked as released."
+        if service_request.payment_required == "YES" and service_request.payment_status != "PAID":
+            return False, "Payment must be marked as paid before release."
+        if (
+            is_first_time_job_seeker_request(service_request)
+            and has_released_first_time_job_seeker_request(
+                service_request.resident,
+                exclude_request_id=service_request.id,
+            )
+        ):
+            return False, "This resident already has a released First Time Job Seeker request."
+        service_request.status = "RELEASED"
+        service_request.save(update_fields=["status", "processed_date"])
+        log_audit_event(
+            action="UPDATE",
+            model_name="ServiceRequest",
+            description=f"Treasurer released request {service_request.document_number}.",
+            user=user,
+            target_id=service_request.id,
+            before_data=before_data,
+            after_data=snapshot_instance(service_request),
+            request=request_obj,
+        )
+        notify_resident_for_service_request(
+            service_request,
+            title="Request Released",
+            message=f"Your {service_request.service_type.name} request has been released successfully. {get_service_payment_notice(service_request)}",
+        )
+        return True, "Request marked as released."
+
+    return False, "Unknown Treasurer action."
 
 
 def get_portal_service_theme(service_type):
@@ -1106,6 +1356,20 @@ def build_service_request_form_context(request, resident, service_types, service
     selected_service_type = None
     if selected_service:
         selected_service_type = selected_service.get("service_type") if isinstance(selected_service, dict) else selected_service
+    selected_service_identity = selected_service if isinstance(selected_service, dict) else selected_service_type
+    fee_preview = get_service_request_fee_details(resident, selected_service_type) if (selected_service_type and resident) else None
+    is_one_time_used = (
+        bool(selected_service_identity)
+        and is_first_time_job_seeker_service(selected_service_identity)
+        and resident
+        and has_released_first_time_job_seeker_request(resident)
+    )
+    request_history = (
+        resident.service_requests.select_related("service_type").order_by("-request_date")
+        if resident else
+        ServiceRequest.objects.none()
+    )
+    latest_released_request = request_history.filter(status="RELEASED").first() if resident else None
     return {
         "resident": resident,
         "service_types": service_types,
@@ -1115,7 +1379,17 @@ def build_service_request_form_context(request, resident, service_types, service
         "selected_service_theme": selected_service if isinstance(selected_service, dict) else (get_portal_service_theme(selected_service) if selected_service else None),
         "selected_service_rules": selected_service.get("rules") if isinstance(selected_service, dict) else (get_service_request_rules(selected_service_type) if selected_service_type else (get_service_request_rules(selected_service) if selected_service else None)),
         "selected_service_purposes": selected_service.get("purposes", []) if isinstance(selected_service, dict) else [],
+        "fee_preview": fee_preview,
+        "is_one_time_service_used": is_one_time_used,
         "is_portal_service_page": selected_service is not None,
+        "is_manual_walk_in": resident is None and is_staff_user(request.user),
+        "is_staff_intake": is_staff_user(request.user),
+        "resident_voter_status": bool(resident.voter_status) if resident else False,
+        "request_origin_label": "For Walk-In Applicants" if is_staff_user(request.user) else "Portal Request",
+        "request_origin_help": "Secretary-assisted intake with resident details pulled from the barangay record." if is_staff_user(request.user) else "Resident-submitted request linked to the verified portal account.",
+        "resident_pending_requests_count": request_history.exclude(status__in=["RELEASED", "REJECTED"]).count(),
+        "resident_released_requests_count": request_history.filter(status="RELEASED").count(),
+        "latest_released_request": latest_released_request,
     }
 
 
@@ -1149,6 +1423,121 @@ BUSINESS_PERMIT_REQUIRED_FIELDS = [
     ("business_occupants", "Number of occupants"),
     ("business_occupancy_type", "Type of occupancy"),
 ]
+
+
+WALK_IN_REQUIRED_FIELDS = [
+    ("applicant_first_name", "First name"),
+    ("applicant_last_name", "Last name"),
+    ("applicant_birth_date", "Birth date"),
+    ("applicant_gender", "Gender"),
+    ("applicant_civil_status", "Civil status"),
+    ("applicant_voter_status", "Voter status"),
+    ("applicant_address_house_number", "House number"),
+    ("applicant_address_street", "Street"),
+]
+
+
+def resolve_walk_in_resident(request, service_types, service_purposes, *, selected_service=None):
+    missing_labels = []
+    for field_name, label in WALK_IN_REQUIRED_FIELDS:
+        if not (request.POST.get(field_name) or "").strip():
+            missing_labels.append(label)
+
+    if missing_labels:
+        messages.error(request, f"Please complete the applicant information. Missing: {', '.join(missing_labels)}.")
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    birth_date = _safe_parse_date((request.POST.get("applicant_birth_date") or "").strip())
+    if not birth_date:
+        messages.error(request, "Applicant birth date must be a valid date in YYYY-MM-DD format.")
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    gender = (request.POST.get("applicant_gender") or "").strip()
+    civil_status = (request.POST.get("applicant_civil_status") or "").strip()
+    voter_status_raw = (request.POST.get("applicant_voter_status") or "").strip().lower()
+    if gender not in dict(Resident.GENDER_CHOICES):
+        messages.error(request, "Please select a valid gender.")
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    if voter_status_raw not in {"yes", "no"}:
+        messages.error(request, "Please select whether the applicant is a voter.")
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    contact_number = (request.POST.get("applicant_contact_number") or "").strip()
+    email = (request.POST.get("applicant_email") or "").strip()
+    if contact_number and not _is_valid_phone(contact_number):
+        messages.error(request, PHONE_MESSAGE)
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+    if email and not _is_valid_email(email):
+        messages.error(request, EMAIL_MESSAGE)
+        return None, build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    normalized_contact_number = "".join(ch for ch in contact_number if ch.isdigit()) if contact_number else None
+    applicant_data = {
+        "first_name": (request.POST.get("applicant_first_name") or "").strip(),
+        "middle_name": (request.POST.get("applicant_middle_name") or "").strip() or None,
+        "last_name": (request.POST.get("applicant_last_name") or "").strip(),
+        "suffix": (request.POST.get("applicant_suffix") or "").strip() or None,
+        "birth_date": birth_date,
+        "place_of_birth": (request.POST.get("applicant_place_of_birth") or "").strip() or None,
+        "gender": gender,
+        "civil_status": civil_status,
+        "occupation": (request.POST.get("applicant_occupation") or "").strip() or None,
+        "contact_number": normalized_contact_number,
+        "email": email or None,
+        "precinct": (request.POST.get("applicant_precinct") or "").strip() or None,
+        "address_house_number": (request.POST.get("applicant_address_house_number") or "").strip(),
+        "address_street": (request.POST.get("applicant_address_street") or "").strip(),
+        "address_barangay": (request.POST.get("applicant_address_barangay") or "").strip() or "Gulod",
+        "address_city": (request.POST.get("applicant_address_city") or "").strip() or "Quezon City",
+        "address_province": (request.POST.get("applicant_address_province") or "").strip() or None,
+        "voter_status": voter_status_raw == "yes",
+        "status": "Alive",
+    }
+
+    resident = Resident.objects.filter(
+        first_name__iexact=applicant_data["first_name"],
+        last_name__iexact=applicant_data["last_name"],
+        birth_date=birth_date,
+    ).first()
+
+    return {"resident": resident, "applicant_data": applicant_data}, None
 
 
 def collect_business_permit_data(request, resident):
@@ -1302,7 +1691,20 @@ def handle_service_request_submission(request, resident, service_types, service_
             )
         service_type = get_object_or_404(ServiceType, id=service_type_id)
 
-    rules = get_service_request_rules(service_type)
+    walk_in_resident_payload = None
+    if resident is None:
+        walk_in_resident_payload, resident_context = resolve_walk_in_resident(
+            request,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+        if resident_context is not None:
+            return None, resident_context
+        resident = walk_in_resident_payload["resident"] or Resident(**walk_in_resident_payload["applicant_data"])
+
+    request_service_identity = selected_service if isinstance(selected_service, dict) else service_type
+    rules = get_service_request_rules(request_service_identity)
     purpose_option = None
     purpose_text = None
 
@@ -1531,7 +1933,54 @@ def handle_service_request_submission(request, resident, service_types, service_
             selected_service=selected_service,
         )
 
-    service = ServiceRequest.objects.create(
+    if (
+        is_first_time_job_seeker_service(request_service_identity)
+        and resident
+        and resident.pk
+        and has_released_first_time_job_seeker_request(resident)
+    ):
+        messages.error(
+            request,
+            "First Time Job Seeker assistance can only be released once per resident. This resident already has a released request.",
+        )
+        return None, build_service_request_form_context(
+            request,
+            resident,
+            service_types,
+            service_purposes,
+            selected_service=selected_service,
+        )
+
+    if resident.pk:
+        fee_details = get_service_request_fee_details(resident, service_type)
+    else:
+        standard_fee = Decimal(get_standard_service_fee(resident, service_type) or 0)
+        free_limit = max(int(getattr(service_type, "free_limit", 1) or 0), 0)
+        is_exempt = free_limit > 0
+        fee_amount = Decimal("0.00") if is_exempt else standard_fee
+        fee_note = "This is the first request for this service, so no payment is required." if is_exempt else f"Please bring the exact amount of Php {fee_amount:.2f} when claiming this document."
+        fee_details = {
+            "amount": fee_amount,
+            "is_exempt": is_exempt,
+            "standard_amount": standard_fee,
+            "previous_released_count": 0,
+            "free_limit": free_limit,
+            "fee_note": fee_note,
+        }
+    payment_required = "NO" if fee_details["is_exempt"] or fee_details["amount"] <= 0 else "YES"
+    payment_status = "EXEMPT" if payment_required == "NO" else "PENDING"
+
+    if walk_in_resident_payload is not None:
+        applicant_data = walk_in_resident_payload["applicant_data"]
+        if walk_in_resident_payload["resident"] is not None:
+            resident = walk_in_resident_payload["resident"]
+            for field_name, field_value in applicant_data.items():
+                setattr(resident, field_name, field_value)
+            resident.save()
+        else:
+            resident = Resident.objects.create(**applicant_data)
+
+    service = ServiceRequest(
         resident=resident,
         service_type=service_type,
         purpose_option=purpose_option,
@@ -1594,9 +2043,14 @@ def handle_service_request_submission(request, resident, service_types, service_
         emergency_contact_address=emergency_contact_address if rules["requires_emergency"] else None,
         emergency_contact_number=emergency_contact_number if rules["requires_emergency"] else None,
         residency_since=residency_since if rules["requires_residency"] else None,
-        status="Submitted",
+        fee=fee_details["amount"],
+        payment_required=payment_required,
+        payment_status=payment_status,
+        status="PENDING",
         created_by=request.user,
     )
+    service._fee_explicitly_set = True
+    service.save()
 
     log_audit_event(
         action="CREATE",
@@ -1624,7 +2078,7 @@ def handle_service_request_submission(request, resident, service_types, service_
     notify_resident_for_service_request(
         service,
         title="Request Submitted",
-        message=f"Your {service.service_type.name} request has been submitted successfully.",
+        message=f"Your {service.service_type.name} request has been submitted successfully. {fee_details['fee_note']}",
     )
     notify_secretaries_of_service_request(service)
 
@@ -2618,13 +3072,13 @@ def dashboard(request):
             seniors += 1
 
     documents_issued = service_requests.count()
-    approved_requests = service_requests.filter(status="Ready for Release").count()
-    released_requests = service_requests.filter(status="Released").count()
-    pending_requests = service_requests.filter(status="Submitted").count()
-    review_requests = service_requests.filter(status="Under Review").count()
-    validation_requests = service_requests.filter(status="For Validation").count()
-    processing_requests = service_requests.filter(status="Processing").count()
-    rejected_requests = service_requests.filter(status="Rejected").count()
+    approved_requests = service_requests.filter(status="APPROVED").count()
+    released_requests = service_requests.filter(status="RELEASED").count()
+    pending_requests = service_requests.filter(status="PENDING").count()
+    review_requests = service_requests.filter(status="WAITING_PAYMENT").count()
+    validation_requests = service_requests.filter(status="READY_FOR_RELEASE").count()
+    processing_requests = service_requests.filter(status="PENDING_REQUIREMENTS").count()
+    rejected_requests = service_requests.filter(status="REJECTED").count()
 
     total_complaints = complaints.count()
     review_complaints = complaints.filter(status__in=["Submitted", "Under Review"]).count()
@@ -2645,11 +3099,11 @@ def dashboard(request):
     pending_verification_count = pending_verifications.count()
 
     overdue_requests = service_requests.filter(
-        status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"],
+        status__in=["PENDING", "APPROVED", "WAITING_PAYMENT", "PENDING_REQUIREMENTS"],
         request_date__date__lt=today - timedelta(days=5),
     ).count()
 
-    for_approval_count = service_requests.filter(status="Ready for Release").count() + complaints.filter(status__in=["For Scheduling", "Scheduled for Hearing"]).count()
+    for_approval_count = service_requests.filter(status__in=["PENDING", "WAITING_PAYMENT"]).count() + complaints.filter(status__in=["For Scheduling", "Scheduled for Hearing"]).count()
 
     monthly_resident_additions = residents.filter(created_at__date__gte=current_month_start).count()
     previous_month_resident_additions = residents.filter(
@@ -2765,7 +3219,7 @@ def dashboard(request):
         {"label": "Open Complaints", "value": open_complaints, "sub": "Active issues across the barangay", "tone": "red"},
         {"label": "Resolved This Month", "value": complaints.filter(status="Resolved / Settled", updated_at__date__gte=current_month_start).count(), "sub": "Complaints settled this month", "tone": "green"},
         {"label": "Pending Requests", "value": pending_requests + review_requests + validation_requests + processing_requests, "sub": "Service queue currently in progress", "tone": "blue"},
-        {"label": "Released This Week", "value": service_requests.filter(status="Released", processed_date__date__gte=today - timedelta(days=7)).count(), "sub": "Documents released in the last 7 days", "tone": "purple"},
+        {"label": "Released This Week", "value": service_requests.filter(status="RELEASED", processed_date__date__gte=today - timedelta(days=7)).count(), "sub": "Documents released in the last 7 days", "tone": "purple"},
         {"label": "Revenue This Month", "value": f"₱{month_revenue}", "sub": "Collections recorded this month", "tone": "teal"},
     ]
 
@@ -3175,7 +3629,20 @@ def portal_create_service_request(request):
     resident = profile.resident
     service_cards = get_portal_services()
     for service_card in service_cards:
-        service_card["fee_value"] = service_card["voter_fee"] if resident.voter_status else service_card["non_voter_fee"]
+        fee_details = get_service_request_fee_details(resident, service_card["service_type"])
+        is_one_time_used = (
+            is_first_time_job_seeker_service(service_card)
+            and has_released_first_time_job_seeker_request(resident)
+        )
+        service_card["fee_value"] = fee_details["amount"]
+        service_card["fee_note"] = fee_details["fee_note"]
+        service_card["is_fee_exempt"] = fee_details["is_exempt"]
+        service_card["is_unavailable"] = is_one_time_used
+        service_card["unavailable_note"] = (
+            "Already released once for this resident. This service can only be availed one time."
+            if is_one_time_used
+            else ""
+        )
         service_card["portal_name"] = MOST_REQUESTED_SERVICE_CONFIG.get(service_card["slug"], service_card["name"])
 
     featured_order = list(MOST_REQUESTED_SERVICE_CONFIG.keys())
@@ -3221,6 +3688,15 @@ def portal_service_request_type(request, service_slug):
     service_types = ServiceType.objects.order_by("name")
     selected_service = get_portal_service_by_slug(service_slug)
     if not selected_service:
+        return redirect("portal_create_service_request")
+    if (
+        is_first_time_job_seeker_service(selected_service)
+        and has_released_first_time_job_seeker_request(resident)
+    ):
+        messages.error(
+            request,
+            "First Time Job Seeker assistance can only be released once per resident. You already have a released request.",
+        )
         return redirect("portal_create_service_request")
 
     service_purposes = RequestPurpose.objects.filter(is_active=True)
@@ -3280,10 +3756,12 @@ def secretary_dashboard(request):
     ).count()
     open_complaint_count = Complaint.objects.filter(status__in=COMPLAINT_OPEN_STATUSES).count()
     pending_service_request_count = ServiceRequest.objects.filter(
-        status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"]
+        status__in=["PENDING", "APPROVED", "WAITING_PAYMENT", "PENDING_REQUIREMENTS"]
     ).count()
+    waiting_payment_count = ServiceRequest.objects.filter(status="WAITING_PAYMENT").count()
+    ready_for_release_count = ServiceRequest.objects.filter(status="READY_FOR_RELEASE").count()
     certifications_issued_today = ServiceRequest.objects.filter(
-        status="Released",
+        status="RELEASED",
         processed_date__date=today,
     ).count()
 
@@ -3343,8 +3821,13 @@ def secretary_dashboard(request):
             "url": "service_requests",
         },
         {
+            "label": "Waiting Treasurer Confirmation",
+            "count": waiting_payment_count or 0,
+            "url": "service_requests",
+        },
+        {
             "label": "Ready for Release",
-            "count": ServiceRequest.objects.filter(status="Ready for Release").count() or 7,
+            "count": ready_for_release_count or 7,
             "url": "service_requests",
         },
     ]
@@ -3472,19 +3955,20 @@ def secretary_dashboard(request):
 #TREASURER DASHBOARD
 @group_required(is_treasurer)
 def treasurer_dashboard(request):
-
     today = timezone.now().date()
     month = today.month
     year = today.year
 
-    # Paid clearances
-    approved_requests = ServiceRequest.objects.filter(status="Ready for Release")
-    payments = Payment.objects.all()
-
-    context = {
-    "approved_requests": approved_requests,
-    "payments": payments
-}
+    for_payment_requests = ServiceRequest.objects.select_related("resident", "service_type").filter(
+        status="WAITING_PAYMENT"
+    ).order_by("-request_date")
+    ready_for_release_requests = ServiceRequest.objects.select_related("resident", "service_type").filter(
+        status="READY_FOR_RELEASE"
+    ).order_by("-request_date")
+    released_requests = ServiceRequest.objects.select_related("resident", "service_type").filter(
+        status="RELEASED"
+    ).order_by("-processed_date", "-request_date")
+    payments = Payment.objects.select_related("service_request", "service_request__resident", "service_request__service_type").all()
 
     total_revenue = payments.aggregate(total=Sum("amount"))["total"] or 0
 
@@ -3512,12 +3996,16 @@ def treasurer_dashboard(request):
     months = [m["month"] for m in monthly_data]
     totals = [float(m["total"]) for m in monthly_data]
 
-
-
     return render(request, "treasurer_dashboard.html", {
         "total_revenue": total_revenue,
         "today_collections": today_collections,
         "monthly_collections": monthly_collections,
+        "for_payment_requests": for_payment_requests[:5],
+        "ready_for_release_requests": ready_for_release_requests[:5],
+        "released_requests": released_requests[:5],
+        "for_payment_count": for_payment_requests.count(),
+        "ready_for_release_count": ready_for_release_requests.count(),
+        "released_count": released_requests.count(),
         "recent_payments": recent_payments,
         "months": months,
         "totals": totals
@@ -3794,6 +4282,34 @@ def create_service_request(request, resident_id):
 
     return render_request_form()
 
+
+@group_required(is_staff_user)
+def create_walk_in_service_request(request):
+    service_types = ServiceType.objects.order_by("name")
+    service_purposes = RequestPurpose.objects.filter(is_active=True)
+
+    if request.method == "POST":
+        service, context = handle_service_request_submission(
+            request,
+            None,
+            service_types,
+            service_purposes,
+        )
+        if context is not None:
+            return render(request, "service_request_form.html", context)
+        return redirect("generate_document", request_id=service.id)
+
+    return render(
+        request,
+        "service_request_form.html",
+        build_service_request_form_context(
+            request,
+            None,
+            service_types,
+            service_purposes,
+        ),
+    )
+
 #UPDATE SERVICE REQUEST STATUS
 #UPDATE SERVICE REQUEST STATUS
 #UPDATE SERVICE REQUEST STATUS
@@ -3802,8 +4318,8 @@ def update_service_request_status(request, request_id):
 
     service_request = get_object_or_404(ServiceRequest, id=request_id)
 
-    if not is_secretary(request.user):
-        return HttpResponseForbidden("Only the Secretary can update service request statuses.")
+    if not can_manage_service_workflow(request.user):
+        return HttpResponseForbidden("Only workflow staff can review service requests.")
 
     if request.method == "POST":
 
@@ -3819,7 +4335,7 @@ def update_service_request_status(request, request_id):
             messages.error(request, "That status change is not allowed from the current workflow stage.")
             return redirect(request.META.get("HTTP_REFERER"))
 
-        if new_status == "Pending Requirements":
+        if new_status == "PENDING_REQUIREMENTS":
             messages.error(request, "Use the requirements form so the resident can see exactly what to submit.")
             return redirect(request.META.get("HTTP_REFERER"))
 
@@ -3827,7 +4343,7 @@ def update_service_request_status(request, request_id):
         if (
             review_summary
             and not review_summary["is_complete"]
-            and new_status in {"For Validation", "Processing", "Ready for Release", "Released"}
+            and new_status in {"APPROVED", "WAITING_PAYMENT", "READY_FOR_RELEASE", "RELEASED"}
         ):
             messages.error(
                 request,
@@ -3836,12 +4352,48 @@ def update_service_request_status(request, request_id):
             return redirect(request.META.get("HTTP_REFERER"))
 
         if new_status in dict(ServiceRequest.STATUS_CHOICES):
-            service_request.status = new_status
+            if new_status == "APPROVED":
+                service_request.status = "WAITING_PAYMENT" if service_request.payment_required == "YES" else "READY_FOR_RELEASE"
+            elif new_status == "RELEASED":
+                if service_request.status != "READY_FOR_RELEASE":
+                    messages.error(request, "Only requests that are ready for release can be marked as released.")
+                    return redirect(request.META.get("HTTP_REFERER"))
+                if service_request.payment_required == "YES" and service_request.payment_status != "PAID":
+                    messages.error(request, "Release is locked until the Treasurer confirms payment.")
+                    return redirect(request.META.get("HTTP_REFERER"))
+                if (
+                    is_first_time_job_seeker_request(service_request)
+                    and has_released_first_time_job_seeker_request(
+                        service_request.resident,
+                        exclude_request_id=service_request.id,
+                    )
+                ):
+                    messages.error(request, "This resident already has a released First Time Job Seeker request.")
+                    return redirect(request.META.get("HTTP_REFERER"))
+                service_request.status = "RELEASED"
+            elif new_status == "READY_FOR_RELEASE":
+                if service_request.payment_required == "YES" and service_request.payment_status != "PAID":
+                    messages.error(request, "This request is still waiting for Treasurer payment confirmation.")
+                    return redirect(request.META.get("HTTP_REFERER"))
+                service_request.status = "READY_FOR_RELEASE"
+            else:
+                service_request.status = new_status
             service_request.save()
+            if service_request.status == "WAITING_PAYMENT":
+                resident_message = (
+                    f"Your {service_request.service_type.name} request was approved and is now waiting for Treasurer payment confirmation."
+                )
+            elif service_request.status == "READY_FOR_RELEASE":
+                resident_message = (
+                    f"Your {service_request.service_type.name} request is ready for pickup. {get_service_payment_notice(service_request)} "
+                    f"Please visit the barangay office during office hours to claim your document."
+                )
+            else:
+                resident_message = f"Your {service_request.service_type.name} request is now marked as {service_request.status_label}."
             log_audit_event(
                 action="UPDATE",
                 model_name="ServiceRequest",
-                description=f"Updated request {service_request.document_number} to {new_status}.",
+                description=f"Updated request {service_request.document_number} to {service_request.status_label}.",
                 user=request.user,
                 target_id=service_request.id,
                 before_data=before_data,
@@ -3850,8 +4402,8 @@ def update_service_request_status(request, request_id):
             )
             notify_resident_for_service_request(
                 service_request,
-                title=f"Request {new_status}",
-                message=f"Your {service_request.service_type.name} request is now marked as {new_status}.",
+                title=f"Request {service_request.status_label}",
+                message=resident_message,
             )
 
     return redirect(request.META.get("HTTP_REFERER"))
@@ -3900,8 +4452,8 @@ def resident_profile(request, resident_id):
         "resident": resident,
         "services": services,
         "total_requests": all_services.count(),
-        "released_count": all_services.filter(status="Released").count(),
-        "pending_count": all_services.filter(status__in=["Submitted", "Under Review", "For Validation", "Processing", "Pending Requirements", "On Hold"]).count(),
+        "released_count": all_services.filter(status="RELEASED").count(),
+        "pending_count": all_services.filter(status__in=["PENDING", "APPROVED", "WAITING_PAYMENT", "PENDING_REQUIREMENTS", "READY_FOR_RELEASE"]).count(),
         "status_filter": status_filter,
         "sort_filter": sort_filter,
         "status_choices": ServiceRequest.STATUS_CHOICES,
@@ -3989,15 +4541,24 @@ def quick_add_household(request):
 #PAYMENT LIST
 @group_required(is_treasurer)
 def payment_list(request):
+    approved_requests = ServiceRequest.objects.filter(
+        status="WAITING_PAYMENT",
+        payment_required="YES",
+        payment_status="PENDING",
+    ).select_related("resident", "service_type")
+    ready_for_release_requests = ServiceRequest.objects.filter(
+        status="READY_FOR_RELEASE",
+    ).select_related("resident", "service_type")
+    released_requests = ServiceRequest.objects.filter(
+        status="RELEASED",
+    ).select_related("resident", "service_type").order_by("-processed_date", "-request_date")
 
-    # requests waiting for payment
-    approved_requests = ServiceRequest.objects.filter(status="Ready for Release")
-
-    # already paid
-    payments = Payment.objects.all()
+    payments = Payment.objects.select_related("service_request", "service_request__resident", "service_request__service_type", "collected_by").all()
 
     return render(request, "payment_list.html", {
         "approved_requests": approved_requests,
+        "ready_for_release_requests": ready_for_release_requests,
+        "released_requests": released_requests,
         "payments": payments
     })
 
@@ -4010,38 +4571,38 @@ def record_payment(request, request_id):
 
     service_request = get_object_or_404(ServiceRequest, id=request_id)
 
-    if service_request.status != "Ready for Release":
-        messages.error(request, "Only requests marked ready for release can be paid at the cashier.")
-        return redirect("payment_list")
-
-    # prevent duplicate payments
-    if Payment.objects.filter(service_request=service_request).exists():
-        messages.warning(request, "Payment already exists for this request.")
-        return redirect("payment_list")
-
-    payment = Payment.objects.create(
-        service_request=service_request,
-        amount=service_request.fee,
-        collected_by=request.user
-    )
-    log_audit_event(
-        action="CREATE",
-        model_name="Payment",
-        description=f"Payment recorded for {service_request.resident}.",
-        user=request.user,
-        target_id=payment.id,
-        after_data=snapshot_instance(payment),
-        request=request,
-    )
-
-    notify_resident_for_service_request(
+    success, message = apply_treasurer_request_action(
         service_request,
-        title="Payment Recorded",
-        message=f"Payment for your {service_request.service_type.name} request has been recorded.",
+        action="mark_paid",
+        user=request.user,
+        request_obj=request,
     )
-
-    messages.success(request, "Payment recorded successfully.")
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
     return redirect("payment_list")
+
+
+@group_required(is_treasurer)
+def treasurer_update_request_status(request, request_id):
+    if request.method != "POST":
+        return redirect("payment_list")
+
+    service_request = get_object_or_404(ServiceRequest, id=request_id)
+    action = (request.POST.get("action") or "").strip()
+    success, message = apply_treasurer_request_action(
+        service_request,
+        action=action,
+        user=request.user,
+        request_obj=request,
+    )
+    if success:
+        messages.success(request, message)
+    else:
+        messages.error(request, message)
+
+    return redirect(request.META.get("HTTP_REFERER") or "payment_list")
 
 #ADD HOUSEHOLD
 #ADD HOUSEHOLD
@@ -4789,16 +5350,31 @@ def print_and_release_document(request, request_id):
 
     service = get_object_or_404(ServiceRequest, id=request_id)
 
-    if not is_secretary(request.user):
-        return HttpResponseForbidden("Only the Secretary can release service requests.")
+    if not (can_manage_service_workflow(request.user) or is_treasurer(request.user)):
+        return HttpResponseForbidden("Only the Secretary, Admin, or Treasurer can release service requests.")
 
-    if service.status not in {"Ready for Release", "Released"}:
+    if service.status not in {"READY_FOR_RELEASE", "RELEASED"}:
         messages.error(request, "Only requests marked ready for release can be released.")
         return redirect("service_requests")
 
-    if service.status == "Ready for Release":
+    if service.status == "READY_FOR_RELEASE":
+        if service.payment_required == "YES" and service.payment_status != "PAID":
+            messages.error(
+                request,
+                f"This request cannot be released yet. The resident must pay Php {service.fee:.2f} first."
+            )
+            return redirect("service_request_detail", request_id=service.id)
+        if (
+            is_first_time_job_seeker_request(service)
+            and has_released_first_time_job_seeker_request(
+                service.resident,
+                exclude_request_id=service.id,
+            )
+        ):
+            messages.error(request, "This resident already has a released First Time Job Seeker request.")
+            return redirect("service_request_detail", request_id=service.id)
         before_data = snapshot_instance(service)
-        service.status = "Released"
+        service.status = "RELEASED"
         service.save()
         log_audit_event(
             action="UPDATE",
@@ -4813,7 +5389,7 @@ def print_and_release_document(request, request_id):
         notify_resident_for_service_request(
             service,
             title="Request Released",
-            message=f"Your {service.service_type.name} request has been released successfully.",
+            message=f"Your {service.service_type.name} request has been released successfully. {get_service_payment_notice(service)}",
         )
 
     log_audit_event(
@@ -4838,9 +5414,11 @@ def service_request_detail(request, request_id):
             "service_type",
             "created_by",
             "requirements_requested_by",
+            "payment",
         ).prefetch_related("attachments__uploaded_by"),
         id=request_id,
     )
+    normalize_inconsistent_release_state(service_request)
 
     if is_resident(request.user):
         profile = get_user_profile(request.user)
@@ -4852,28 +5430,9 @@ def service_request_detail(request, request_id):
     elif not is_staff_user(request.user):
         return HttpResponseForbidden("You do not have permission to access this page.")
 
-    can_manage = is_secretary(request.user)
+    can_manage = can_manage_service_workflow(request.user)
+    can_manage_payment = is_treasurer(request.user)
     is_resident_user = is_resident(request.user)
-
-    if can_manage and service_request.status == "Submitted":
-        before_data = snapshot_instance(service_request)
-        service_request.status = "Under Review"
-        service_request.save(update_fields=["status"])
-        log_audit_event(
-            action="UPDATE",
-            model_name="ServiceRequest",
-            description=f"Request {service_request.document_number} automatically moved to Under Review when opened by the Secretary.",
-            user=request.user,
-            target_id=service_request.id,
-            before_data=before_data,
-            after_data=snapshot_instance(service_request),
-            request=request,
-        )
-        notify_resident_for_service_request(
-            service_request,
-            title="Request Under Review",
-            message=f"Your {service_request.service_type.name} request is now under review by the Secretary.",
-        )
 
     requirement_initial = {
         "requirements_note": service_request.requirements_note,
@@ -4891,14 +5450,14 @@ def service_request_detail(request, request_id):
 
         if action == "request_requirements":
             if not can_manage:
-                return HttpResponseForbidden("Only the Secretary can request additional requirements.")
-            if service_request.status not in {"Under Review", "Pending Requirements"}:
-                messages.error(request, "Requirements can only be requested while the service request is under review.")
+                return HttpResponseForbidden("Only workflow staff can request additional requirements.")
+            if service_request.status not in {"PENDING", "PENDING_REQUIREMENTS"}:
+                messages.error(request, "Requirements can only be requested while the service request is pending secretary review.")
                 return redirect("service_request_detail", request_id=service_request.id)
 
             requirement_form = ServiceRequestRequirementsForm(request.POST)
             if requirement_form.is_valid():
-                is_updating_existing_request = service_request.status == "Pending Requirements" and bool(
+                is_updating_existing_request = service_request.status == "PENDING_REQUIREMENTS" and bool(
                     service_request.requirements_requested_at
                 )
                 before_data = snapshot_instance(service_request)
@@ -4907,7 +5466,7 @@ def service_request_detail(request, request_id):
                 service_request.requirements_deadline = requirement_form.cleaned_data["requirements_deadline"]
                 service_request.requirements_requested_at = timezone.now()
                 service_request.requirements_requested_by = request.user
-                service_request.status = "Pending Requirements"
+                service_request.status = "PENDING_REQUIREMENTS"
                 service_request.save()
                 log_audit_event(
                     action="UPDATE",
@@ -4943,7 +5502,7 @@ def service_request_detail(request, request_id):
         elif action == "submit_requirements":
             if not is_resident_user:
                 return HttpResponseForbidden("Only the resident can submit requirement files for this request.")
-            if service_request.status != "Pending Requirements":
+            if service_request.status != "PENDING_REQUIREMENTS":
                 messages.error(request, "This request is not currently waiting for resident requirements.")
                 return redirect("service_request_detail", request_id=service_request.id)
 
@@ -4957,7 +5516,7 @@ def service_request_detail(request, request_id):
                     before_data = snapshot_instance(service_request)
                     service_request.resident_response_note = response_note
                     service_request.resident_responded_at = timezone.now()
-                    service_request.status = "Under Review"
+                    service_request.status = "PENDING"
                     service_request.save()
                     for uploaded_file in uploaded_files:
                         ServiceRequestAttachment.objects.create(
@@ -4980,9 +5539,9 @@ def service_request_detail(request, request_id):
                     notify_resident_for_service_request(
                         service_request,
                         title="Requirements Submitted",
-                        message=f"Your additional files for the {service_request.service_type.name} request were submitted to the Secretary.",
+                        message=f"Your additional files for the {service_request.service_type.name} request were submitted for secretary review.",
                     )
-                    messages.success(request, "Your files and note were submitted. The request is back under review.")
+                    messages.success(request, "Your files and note were submitted. The request is back in the pending review queue.")
                     return redirect("service_request_detail", request_id=service_request.id)
 
     status_history = get_service_request_status_history(service_request)
@@ -4992,7 +5551,7 @@ def service_request_detail(request, request_id):
         AuditLog.objects.filter(
             model_name="ServiceRequest",
             target_id=str(service_request.id),
-            user__groups__name="Secretary",
+            user__groups__name__in=["Admin", "Secretary"],
         )
         .select_related("user")
         .order_by("-timestamp")
@@ -5003,12 +5562,34 @@ def service_request_detail(request, request_id):
     business_review_summary = get_business_permit_review_summary(service_request)
     address_display = resident.formatted_address or "No address recorded"
 
+    def get_actor_display_name(actor):
+        if not actor:
+            return "System"
+        if hasattr(actor, "get_full_name"):
+            full_name = actor.get_full_name().strip()
+            return full_name or getattr(actor, "username", str(actor))
+        first_name = getattr(actor, "first_name", "")
+        last_name = getattr(actor, "last_name", "")
+        full_name = f"{first_name} {last_name}".strip()
+        return full_name or str(actor)
+
+    timeline_status_icons = {
+        "PENDING": "clock",
+        "PENDING_REQUIREMENTS": "file-alert",
+        "APPROVED": "check",
+        "WAITING_PAYMENT": "wallet",
+        "READY_FOR_RELEASE": "box-check",
+        "RELEASED": "document-check",
+        "REJECTED": "alert",
+    }
+
     timeline_items = []
     timeline_items.append({
         "title": "Request submitted",
         "meta": service_request.request_date,
         "description": f"{resident} submitted a {service_request.service_type.name} request.",
         "actor": service_request.created_by,
+        "icon": "send",
         "tone": "blue",
     })
     for item in status_history[1:]:
@@ -5017,6 +5598,7 @@ def service_request_detail(request, request_id):
             "meta": item["timestamp"],
             "description": item["description"],
             "actor": item["actor"],
+            "icon": timeline_status_icons.get(item["status"], "update"),
             "tone": SERVICE_REQUEST_STATUS_COLORS.get(item["status"], "blue"),
         })
     if service_request.requirements_requested_at and service_request.requirements_note:
@@ -5025,6 +5607,7 @@ def service_request_detail(request, request_id):
             "meta": service_request.requirements_requested_at,
             "description": service_request.requirements_note,
             "actor": service_request.requirements_requested_by,
+            "icon": "file-alert",
             "tone": "gold",
         })
     if service_request.resident_responded_at:
@@ -5039,34 +5622,63 @@ def service_request_detail(request, request_id):
             "meta": service_request.resident_responded_at,
             "description": " ".join(response_parts) if response_parts else "The resident submitted the requested requirements.",
             "actor": resident,
+            "icon": "upload",
             "tone": "teal",
         })
     timeline_items.sort(key=lambda item: item["meta"])
+    for item in timeline_items:
+        item["actor_name"] = get_actor_display_name(item.get("actor"))
 
-    current_handler_name = "Secretary Workspace"
+    current_handler_name = "Secretary Review"
     if latest_secretary_log and latest_secretary_log.user:
         current_handler_name = latest_secretary_log.user.get_full_name() or latest_secretary_log.user.username
 
     last_status_entry = status_history[-1] if status_history else None
     elapsed_days = max((timezone.now() - service_request.request_date).days, 0)
-    can_print_release = is_secretary(request.user) and service_request.status == "Ready for Release"
+    can_print_release = can_manage and service_request.status == "READY_FOR_RELEASE"
+    can_release_request = can_print_release and (service_request.payment_required == "NO" or service_request.payment_status == "PAID")
+    can_mark_paid = can_manage_payment and service_request.payment_required == "YES" and service_request.status in {"WAITING_PAYMENT", "READY_FOR_RELEASE"}
+    can_mark_unpaid = can_manage_payment and service_request.payment_required == "YES" and service_request.payment_status == "PAID"
     allowed_statuses = get_service_request_allowed_statuses(service_request.status)
-    non_requirement_statuses = [status for status in allowed_statuses if status != "Pending Requirements"]
+    non_requirement_statuses = [status for status in allowed_statuses if status != "PENDING_REQUIREMENTS"]
     next_step = non_requirement_statuses[0] if non_requirement_statuses else None
     has_active_requirement_request = (
-        service_request.status == "Pending Requirements"
+        service_request.status == "PENDING_REQUIREMENTS"
         and bool(service_request.requirements_requested_at and service_request.requirements_note)
     )
     is_editing_requirement_request = (
         can_manage
         and request.GET.get("edit_requirements") == "1"
-        and service_request.status == "Pending Requirements"
+        and service_request.status == "PENDING_REQUIREMENTS"
     )
     resident_action_text = None
-    if service_request.status == "Pending Requirements":
+    release_lock_text = None
+    if service_request.status == "PENDING_REQUIREMENTS":
         resident_action_text = "Resident action required: submit the missing information or documents so processing can continue."
-    elif service_request.status == "Ready for Release":
-        resident_action_text = "Resident may prepare for pickup. The Secretary can now release the finished document."
+    elif service_request.status == "WAITING_PAYMENT":
+        resident_action_text = "Treasurer action required: payment must be confirmed before release."
+        release_lock_text = "Release is locked while waiting for Treasurer payment confirmation."
+    elif service_request.status == "READY_FOR_RELEASE":
+        resident_action_text = f"Resident may prepare for pickup. {get_service_payment_notice(service_request)}"
+    elif service_request.payment_required == "YES" and service_request.payment_status != "PAID":
+        release_lock_text = "Waiting for Treasurer payment confirmation before release."
+
+    payment_status_text = get_service_payment_notice(service_request)
+    allowed_status_options = [
+        {
+            "value": status,
+            "label": dict(ServiceRequest.STATUS_CHOICES).get(status, status.replace("_", " ").title()),
+        }
+        for status in non_requirement_statuses
+    ]
+    primary_step_items = [
+        {
+            "value": step,
+            "label": dict(ServiceRequest.STATUS_CHOICES).get(step, step.replace("_", " ").title()),
+        }
+        for step in SERVICE_REQUEST_PRIMARY_STEPS
+    ]
+    next_step_label = dict(ServiceRequest.STATUS_CHOICES).get(next_step, next_step.replace("_", " ").title()) if next_step else None
 
     notification_items = [
         {
@@ -5076,61 +5688,54 @@ def service_request_detail(request, request_id):
             "tone": "blue",
         }
     ]
-    if service_request.status in {"Under Review", "For Validation", "Processing"}:
+    if service_request.status in {"PENDING", "APPROVED"}:
         notification_items.append({
             "title": "Processing Update",
-            "message": f"Your request is now {service_request.status.lower()} by the Secretary.",
+            "message": f"Your request is now {service_request.status_label.lower()} in the secretary workflow.",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
-            "tone": "sky" if service_request.status == "Under Review" else "violet" if service_request.status == "For Validation" else "teal",
+            "tone": "sky" if service_request.status == "PENDING" else "violet",
         })
-    elif service_request.status == "Pending Requirements":
+    elif service_request.status == "PENDING_REQUIREMENTS":
         notification_items.append({
             "title": "Action Needed",
             "message": service_request.requirements_note or "Please submit the missing requirements so the Secretary can continue processing your request.",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
             "tone": "gold",
         })
-    elif service_request.status == "On Hold":
+    elif service_request.status == "WAITING_PAYMENT":
         notification_items.append({
-            "title": "Request On Hold",
-            "message": "Your request is temporarily on hold while records or details are being checked.",
+            "title": "Waiting Payment",
+            "message": f"Your request was approved and is waiting for Treasurer payment confirmation. {get_service_payment_notice(service_request)}",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
-            "tone": "orange",
+            "tone": "violet",
         })
-    elif service_request.status == "Ready for Release":
+    elif service_request.status == "READY_FOR_RELEASE":
         notification_items.append({
             "title": "Ready for Release",
-            "message": "Your document is ready for pickup. Please wait for release confirmation from the Secretary.",
+            "message": f"Your document is ready for pickup. {get_service_payment_notice(service_request)}",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
             "tone": "amber",
         })
-    elif service_request.status == "Released":
+    elif service_request.status == "RELEASED":
         notification_items.append({
             "title": "Released",
-            "message": "Your document has been released successfully.",
+            "message": f"Your document has been released successfully. {get_service_payment_notice(service_request)}",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
             "tone": "green",
         })
-    elif service_request.status == "Rejected":
+    elif service_request.status == "REJECTED":
         notification_items.append({
             "title": "Request Rejected",
             "message": "Your request could not be processed. Please contact the barangay office for guidance.",
             "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
             "tone": "red",
         })
-    elif service_request.status == "Cancelled":
-        notification_items.append({
-            "title": "Request Cancelled",
-            "message": "This request has been cancelled and closed.",
-            "timestamp": last_status_entry["timestamp"] if last_status_entry else service_request.request_date,
-            "tone": "slate",
-        })
 
     context = {
         "service_request": service_request,
         "resident": resident,
         "address_display": address_display,
-        "primary_steps": SERVICE_REQUEST_PRIMARY_STEPS,
+        "primary_steps": primary_step_items,
         "progress_status": progress_status,
         "progress_index": progress_index,
         "status_history": status_history,
@@ -5141,24 +5746,33 @@ def service_request_detail(request, request_id):
         "estimated_processing_text": SERVICE_REQUEST_ESTIMATES.get(service_request.status, "Processing time will depend on request completeness."),
         "elapsed_days": elapsed_days,
         "allowed_statuses": non_requirement_statuses,
+        "allowed_status_options": allowed_status_options,
         "next_step": next_step,
+        "next_step_label": next_step_label,
         "resident_action_text": resident_action_text,
+        "release_lock_text": release_lock_text,
         "notification_items": notification_items,
         "current_status_tone": SERVICE_REQUEST_STATUS_COLORS.get(service_request.status, "blue"),
         "can_manage": can_manage,
+        "can_manage_payment": can_manage_payment,
         "can_print_release": can_print_release,
+        "can_release_request": can_release_request,
+        "can_mark_paid": can_mark_paid,
+        "can_mark_unpaid": can_mark_unpaid,
+        "payment_status_text": payment_status_text,
         "is_view_only": not can_manage,
+        "is_resident_user": is_resident_user,
         "requirement_form": requirement_form,
         "resident_submission_form": resident_submission_form,
         "requirement_attachments": service_request.attachments.all(),
         "business_review_summary": business_review_summary,
-        "can_request_requirements": can_manage and service_request.status in {"Under Review", "Pending Requirements"},
+        "can_request_requirements": can_manage and service_request.status in {"PENDING", "PENDING_REQUIREMENTS"},
         "has_active_requirement_request": has_active_requirement_request,
         "show_requirement_request_form": can_manage and (
-            service_request.status == "Under Review" or is_editing_requirement_request
+            service_request.status == "PENDING" or is_editing_requirement_request
         ),
         "is_editing_requirement_request": is_editing_requirement_request,
-        "can_submit_requirements": is_resident_user and service_request.status == "Pending Requirements",
+        "can_submit_requirements": is_resident_user and service_request.status == "PENDING_REQUIREMENTS",
     }
     return render(request, "service_request_detail.html", context)
 
@@ -5223,6 +5837,9 @@ def service_requests(request):
 
     query = request.GET.get("q", "").strip()
     status_filter = request.GET.get("status", "").strip()
+    requested_scope = request.GET.get("scope", "").strip()
+    date_scope = requested_scope if requested_scope in {"today", "history", "all"} else ("all" if query else "today")
+    today = timezone.localdate()
 
     if query:
         requests = requests.filter(
@@ -5236,23 +5853,46 @@ def service_requests(request):
         requests = requests.filter(status=status_filter)
     else:
         status_filter = ""
+    if date_scope == "today":
+        requests = requests.filter(request_date__date=today)
+    elif date_scope == "history":
+        requests = requests.filter(request_date__date__lt=today)
 
     request_list = list(requests)
     for item in request_list:
+        normalize_inconsistent_release_state(item)
         item.allowed_statuses = get_service_request_allowed_statuses(item.status)
+        item.allowed_status_options = [
+            (status, dict(ServiceRequest.STATUS_CHOICES).get(status, status.replace("_", " ").title()))
+            for status in item.allowed_statuses
+        ]
+        if item.payment_required == "YES" and item.payment_status != "PAID":
+            item.allowed_status_options = [
+                (status, label)
+                for status, label in item.allowed_status_options
+                if status not in {"READY_FOR_RELEASE", "RELEASED"}
+            ]
+        item.can_release_request = item.status == "READY_FOR_RELEASE" and (item.payment_required == "NO" or item.payment_status == "PAID")
+        item.can_mark_paid = is_treasurer(request.user) and item.payment_required == "YES" and item.status in {"WAITING_PAYMENT", "READY_FOR_RELEASE"}
+        item.can_mark_unpaid = is_treasurer(request.user) and item.payment_required == "YES" and item.payment_status == "PAID"
+        item.release_lock_text = "Waiting for Treasurer payment confirmation." if item.status == "WAITING_PAYMENT" else ""
 
     return render(request, "service_requests.html", {
         "requests": request_list,
-        "submitted_total": sum(1 for item in request_list if item.status == "Submitted"),
-        "review_total": sum(1 for item in request_list if item.status == "Under Review"),
-        "validation_total": sum(1 for item in request_list if item.status == "For Validation"),
-        "processing_total": sum(1 for item in request_list if item.status == "Processing"),
-        "ready_total": sum(1 for item in request_list if item.status == "Ready for Release"),
-        "released_total": sum(1 for item in request_list if item.status == "Released"),
+        "submitted_total": sum(1 for item in request_list if item.status == "PENDING"),
+        "review_total": sum(1 for item in request_list if item.status == "APPROVED"),
+        "validation_total": sum(1 for item in request_list if item.status == "WAITING_PAYMENT"),
+        "processing_total": sum(1 for item in request_list if item.status == "PENDING_REQUIREMENTS"),
+        "ready_total": sum(1 for item in request_list if item.status == "READY_FOR_RELEASE"),
+        "released_total": sum(1 for item in request_list if item.status == "RELEASED"),
         "status_choices": ServiceRequest.STATUS_CHOICES,
         "q": query,
         "status_filter": status_filter,
-        "can_manage_requests": is_secretary(request.user),
+        "date_scope": date_scope,
+        "scope_was_requested": bool(requested_scope),
+        "today": today,
+        "can_manage_requests": can_manage_service_workflow(request.user),
+        "can_manage_payment_requests": is_treasurer(request.user),
     })
 
 @login_required

@@ -9,7 +9,12 @@ _LOGO_DATA_URI = None
 _HALL_DATA_URI = None
 _OFFICIAL_DATA_URI = None
 _SCHOOL_DATA_URI = None
+_ROSA_SCHOOL_DATA_URI = None
+_JOSE_SCHOOL_DATA_URI = None
 _ACTIVITIES_DATA_URI = None
+_EVENT1_DATA_URI = None
+_EVENT2_DATA_URI = None
+_EVENT3_DATA_URI = None
 
 
 def _build_data_uri(path):
@@ -62,6 +67,7 @@ def _get_official_data_uri():
         return _OFFICIAL_DATA_URI
 
     _OFFICIAL_DATA_URI = _read_first_image([
+        "captain.png",
         "rey-aldrin-s-tolentino.png",
         "rey-aldrin-s-tolentino.jpg",
         "rey-aldrin-s-tolentino.jpeg",
@@ -75,11 +81,41 @@ def _get_school_data_uri():
         return _SCHOOL_DATA_URI
 
     _SCHOOL_DATA_URI = _read_first_image([
+        "rosa2.jpg",
+        "rosa.jpg",
         "rosa-l-susano-elementary-school.png",
         "rosa-l-susano-elementary-school.jpg",
         "rosa-l-susano-elementary-school.jpeg",
     ])
     return _SCHOOL_DATA_URI
+
+
+def _get_rosa_school_data_uri():
+    global _ROSA_SCHOOL_DATA_URI
+    if _ROSA_SCHOOL_DATA_URI is not None:
+        return _ROSA_SCHOOL_DATA_URI
+
+    _ROSA_SCHOOL_DATA_URI = _read_first_image([
+        "rosa2.jpg",
+        "rosa.jpg",
+        "rosa-l-susano-elementary-school.png",
+        "rosa-l-susano-elementary-school.jpg",
+        "rosa-l-susano-elementary-school.jpeg",
+    ])
+    return _ROSA_SCHOOL_DATA_URI
+
+
+def _get_jose_school_data_uri():
+    global _JOSE_SCHOOL_DATA_URI
+    if _JOSE_SCHOOL_DATA_URI is not None:
+        return _JOSE_SCHOOL_DATA_URI
+
+    _JOSE_SCHOOL_DATA_URI = _read_first_image([
+        "jose.jpg",
+        "jose.jpeg",
+        "jose.png",
+    ])
+    return _JOSE_SCHOOL_DATA_URI
 
 
 def _get_activities_data_uri():
@@ -98,12 +134,44 @@ def _get_activities_data_uri():
     return _ACTIVITIES_DATA_URI
 
 
+def _get_event1_data_uri():
+    global _EVENT1_DATA_URI
+    if _EVENT1_DATA_URI is not None:
+        return _EVENT1_DATA_URI
+
+    _EVENT1_DATA_URI = _read_first_image(["event1.jpg", "event1.jpeg", "event1.png"])
+    return _EVENT1_DATA_URI
+
+
+def _get_event2_data_uri():
+    global _EVENT2_DATA_URI
+    if _EVENT2_DATA_URI is not None:
+        return _EVENT2_DATA_URI
+
+    _EVENT2_DATA_URI = _read_first_image(["event2.jpg", "event2.jpeg", "event2.png"])
+    return _EVENT2_DATA_URI
+
+
+def _get_event3_data_uri():
+    global _EVENT3_DATA_URI
+    if _EVENT3_DATA_URI is not None:
+        return _EVENT3_DATA_URI
+
+    _EVENT3_DATA_URI = _read_first_image(["event3.jpg", "event3.jpeg", "event3.png"])
+    return _EVENT3_DATA_URI
+
+
 def app_shell(request):
     logo_data_uri = _get_logo_data_uri()
     hall_data_uri = _get_hall_data_uri()
     official_data_uri = _get_official_data_uri()
     school_data_uri = _get_school_data_uri()
+    rosa_school_data_uri = _get_rosa_school_data_uri()
+    jose_school_data_uri = _get_jose_school_data_uri()
     activities_data_uri = _get_activities_data_uri()
+    event1_data_uri = _get_event1_data_uri()
+    event2_data_uri = _get_event2_data_uri()
+    event3_data_uri = _get_event3_data_uri()
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return {
@@ -114,7 +182,12 @@ def app_shell(request):
             "barangay_hall_data_uri": hall_data_uri,
             "barangay_official_data_uri": official_data_uri,
             "barangay_school_data_uri": school_data_uri,
+            "rosa_school_data_uri": rosa_school_data_uri,
+            "jose_school_data_uri": jose_school_data_uri,
             "barangay_activities_data_uri": activities_data_uri,
+            "barangay_event1_data_uri": event1_data_uri,
+            "barangay_event2_data_uri": event2_data_uri,
+            "barangay_event3_data_uri": event3_data_uri,
             "resident_notifications": [],
             "resident_unread_notifications_count": 0,
         }
@@ -158,7 +231,12 @@ def app_shell(request):
         "barangay_hall_data_uri": hall_data_uri,
         "barangay_official_data_uri": official_data_uri,
         "barangay_school_data_uri": school_data_uri,
+        "rosa_school_data_uri": rosa_school_data_uri,
+        "jose_school_data_uri": jose_school_data_uri,
         "barangay_activities_data_uri": activities_data_uri,
+        "barangay_event1_data_uri": event1_data_uri,
+        "barangay_event2_data_uri": event2_data_uri,
+        "barangay_event3_data_uri": event3_data_uri,
         "resident_notifications": resident_notifications,
         "resident_unread_notifications_count": resident_unread_notifications_count,
     }

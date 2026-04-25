@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block page_title %}Service Request Details{% endblock %}
-{% block page_subtitle %}Monitor request progress clearly from submission to release using the Secretary-managed workflow.{% endblock %}
+{% block page_subtitle %}Monitor request progress clearly from submission to release using separate Resident, Admin, and Treasurer roles.{% endblock %}
 
 {% block content %}
 <style>
@@ -11,7 +11,7 @@
     .crumbs a{color:var(--txt2);text-decoration:none}
     .crumbs a:hover{color:var(--pri2)}
     .crumbs svg{width:12px;height:12px}
-    .detail-layout{display:grid;grid-template-columns:minmax(0,1.7fr) 320px;gap:18px}
+    .detail-layout{display:grid;grid-template-columns:minmax(0,1.75fr) 300px;gap:18px}
     .panel{background:linear-gradient(180deg,#fff,var(--card-soft));border:1px solid var(--brd);border-radius:22px;box-shadow:var(--shadow-md)}
     .hero{padding:22px}
     .hero-top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
@@ -30,7 +30,7 @@
     .tone-red{background:#fff0f0;color:#be3d3d}
     .tone-slate{background:#eef2f7;color:#64748b}
     .progress-card{padding:18px 18px 10px}
-    .step-track{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;border:1px solid #e3ebf8;border-radius:18px;overflow:hidden;background:#fbfdff}
+    .step-track{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:0;border:1px solid #e3ebf8;border-radius:18px;overflow:hidden;background:#fbfdff}
     .step{padding:16px 12px;text-align:center;position:relative}
     .step:not(:last-child)::after{content:"";position:absolute;top:24px;right:-1px;width:2px;height:18px;background:#dce6f5}
     .step-index{width:34px;height:34px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:#edf2fb;color:#6a7b95}
@@ -39,7 +39,7 @@
     .step.done .step-label,.step.current .step-label{color:var(--txt)}
     .step.done{background:linear-gradient(180deg,#f9fbff,#f3f8ff)}
     .step.current{background:linear-gradient(180deg,#eef5ff,#e4efff)}
-    .grid-two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:16px}
+    .grid-two{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
     .summary-card,.status-card,.timeline-card,.side-card{padding:20px}
     .section-title{font-size:18px;font-weight:700;color:var(--txt)}
     .section-sub{margin-top:4px;font-size:13px;color:var(--txt2)}
@@ -51,7 +51,11 @@
     .info-label{font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em}
     .info-value{margin-top:6px;font-size:14px;color:var(--txt);line-height:1.5}
     .status-card .section-title{display:flex;align-items:center;gap:10px}
-    .status-note{margin-top:12px;padding:14px;border:1px solid #dce6f5;border-radius:16px;background:#f8fbff;color:var(--txt2);font-size:13px;line-height:1.6}
+    .status-note{margin-top:12px;padding:16px;border:1px solid #dce6f5;border-radius:16px;background:#f8fbff;color:var(--txt2);font-size:13px;line-height:1.6}
+    .status-note strong{display:block;margin-bottom:4px;color:var(--txt);font-size:15px}
+    .status-summary{display:grid;gap:10px;margin-top:12px}
+    .status-summary-item{padding:13px 14px;border:1px solid #e2eaf6;border-radius:14px;background:#fcfdff;font-size:13px;color:var(--txt2);line-height:1.5}
+    .status-summary-item strong{color:var(--txt)}
     .status-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px}
     .status-select{min-height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--brd);background:#fff;color:var(--txt);outline:none}
     .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border:none;border-radius:12px;font-weight:700;text-decoration:none;cursor:pointer}
@@ -62,14 +66,16 @@
     .btn-soft:hover{text-decoration:none;color:#204ea7}
     .timeline-card{padding-top:18px}
     .timeline-list{display:grid;gap:14px;margin-top:16px}
-    .timeline-item{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:start}
-    .timeline-dot{width:14px;height:14px;border-radius:50%;margin-top:5px}
+    .timeline-item{display:grid;grid-template-columns:46px 1fr auto;gap:12px;align-items:start}
+    .timeline-badge{width:42px;height:42px;border-radius:14px;margin-top:1px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+    .timeline-badge svg{width:22px;height:22px;display:block}
     .timeline-content{padding-bottom:14px;border-bottom:1px solid #e8eef7}
     .timeline-item:last-child .timeline-content{border-bottom:none;padding-bottom:0}
     .entry-title{font-size:15px;font-weight:700;color:var(--txt)}
     .entry-copy{margin-top:4px;color:var(--txt2);font-size:13px;line-height:1.55}
     .entry-meta{font-size:12px;color:var(--txt3);white-space:nowrap}
     .side-stack{display:grid;gap:16px}
+    .resident-detail-layout{grid-template-columns:1fr}
     .handler-name{font-size:20px;font-weight:700;color:var(--txt)}
     .mini-list{display:grid;gap:12px;margin-top:14px}
     .mini-item{padding:14px;border:1px solid #e5edf8;border-radius:16px;background:#fcfdff}
@@ -109,7 +115,7 @@
     .attachment-meta{margin-top:5px;font-size:12px;color:var(--txt3)}
     .errorlist{margin:6px 0 0;padding-left:18px;color:#be3d3d;font-size:12px}
     @media (max-width:1180px){.detail-layout{grid-template-columns:1fr}.grid-two{grid-template-columns:1fr}.side-stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media (max-width:780px){.step-track{grid-template-columns:repeat(2,minmax(0,1fr))}.info-grid,.side-stack{grid-template-columns:1fr}.timeline-item{grid-template-columns:18px 1fr}}
+    @media (max-width:780px){.step-track{grid-template-columns:repeat(2,minmax(0,1fr))}.info-grid,.side-stack{grid-template-columns:1fr}.timeline-item{grid-template-columns:46px 1fr}.entry-meta{grid-column:2;white-space:normal}}
 </style>
 
 <div class="detail-page">
@@ -119,7 +125,7 @@
         <span>{{ service_request.document_number }}</span>
     </div>
 
-    <div class="detail-layout">
+    <div class="detail-layout {% if is_resident_user %}resident-detail-layout{% endif %}">
         <div style="display:grid;gap:18px">
             <section class="panel hero">
                 <div class="hero-top">
@@ -127,21 +133,24 @@
                         <h2>{{ service_request.service_type }}</h2>
                         <div class="hero-sub">{{ service_request.document_number }} · Request submitted {{ service_request.request_date|timesince }} ago</div>
                         <div class="hero-meta">
-                            <span class="pill tone-{{ current_status_tone }}">{{ service_request.status }}</span>
-                            <span class="pill tone-sky">Handled by: Secretary</span>
-                            <span class="pill tone-blue">Estimated: {{ estimated_processing_text }}</span>
+                            <span class="pill tone-{{ current_status_tone }}">{{ service_request.get_status_display }}</span>
+                            {% if not is_resident_user %}
+                            <span class="pill tone-sky">Secretary workflow</span>
+                            {% endif %}
                         </div>
                     </div>
+                    {% if not is_resident_user %}
                     <div class="pill tone-slate">{{ elapsed_days }} day{{ elapsed_days|pluralize }} in workflow</div>
+                    {% endif %}
                 </div>
             </section>
 
             <section class="panel progress-card">
                 <div class="step-track">
                     {% for step in primary_steps %}
-                    <div class="step {% if forloop.counter0 < progress_index %}done{% elif step == progress_status %}current{% endif %}">
+                    <div class="step {% if forloop.counter0 < progress_index %}done{% elif step.value == progress_status %}current{% endif %}">
                         <div class="step-index">{{ forloop.counter }}</div>
-                        <div class="step-label">{{ step }}</div>
+                        <div class="step-label">{{ step.label }}</div>
                     </div>
                     {% endfor %}
                 </div>
@@ -164,6 +173,7 @@
                                 <div class="info-label">Fee</div>
                                 <div class="info-value">₱{{ service_request.fee|floatformat:2 }}</div>
                             </div>
+                            {% if not is_resident_user %}
                             <div class="info-item">
                                 <div class="info-label">Contact</div>
                                 <div class="info-value">{{ resident.contact_number|default:"No contact number" }}</div>
@@ -172,26 +182,33 @@
                                 <div class="info-label">Address</div>
                                 <div class="info-value">{{ address_display }}</div>
                             </div>
+                            {% endif %}
                         </div>
                     </article>
 
                     <article class="panel status-card">
                         <div class="section-title">Current Status</div>
-                        <div class="section-sub">The Secretary manages all processing stages for this request.</div>
+                        {% if not is_resident_user %}
+                        <div class="section-sub">The Secretary manages the request workflow, and the Treasurer handles payment separately.</div>
+                        {% endif %}
                         <div class="status-note">
-                            <strong>{{ service_request.status }}</strong><br>
+                            <strong>{{ service_request.get_status_display }}</strong>
                             {{ estimated_processing_text }}
                         </div>
-                        {% if next_step %}
-                        <div class="callout">
-                            <strong>Next step:</strong> {{ next_step }}
+                        <div class="status-summary">
+                            {% if next_step_label %}
+                            <div class="status-summary-item"><strong>Next step:</strong> {{ next_step_label }}</div>
+                            {% endif %}
+                            {% if resident_action_text %}
+                            <div class="status-summary-item"><strong>Resident update:</strong> {{ resident_action_text }}</div>
+                            {% endif %}
+                            {% if release_lock_text %}
+                            <div class="status-summary-item"><strong>Release status:</strong> {{ release_lock_text }}</div>
+                            {% endif %}
+                            {% if not is_resident_user or service_request.payment_required == "YES" %}
+                            <div class="status-summary-item"><strong>Payment:</strong> {{ payment_status_text }}</div>
+                            {% endif %}
                         </div>
-                        {% endif %}
-                        {% if resident_action_text %}
-                        <div class="callout">
-                            <strong>Resident update:</strong> {{ resident_action_text }}
-                        </div>
-                        {% endif %}
                         {% if service_request.requirements_note %}
                         <div class="requirement-box">
                             <strong>Needed Requirements</strong>
@@ -241,7 +258,7 @@
                             {% if can_manage %}
                             <div class="review-actions">
                                 <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Print Preview</a>
-                                {% if not business_review_summary.is_complete and service_request.status == "Under Review" %}
+                                {% if not business_review_summary.is_complete and service_request.status == "PENDING" %}
                                 <a href="{% url 'service_request_detail' service_request.id %}#requirements-form" class="btn btn-soft">Request Missing Fields</a>
                                 {% endif %}
                             </div>
@@ -252,14 +269,43 @@
                         <form method="post" action="{% url 'update_service_request_status' service_request.id %}" class="status-form">
                             {% csrf_token %}
                             <select name="status" class="status-select">
-                                {% for next_status in allowed_statuses %}
-                                <option value="{{ next_status }}">{{ next_status }}</option>
+                                {% for next_status in allowed_status_options %}
+                                <option value="{{ next_status.value }}">{{ next_status.label }}</option>
                                 {% endfor %}
                             </select>
                             <button type="submit" class="btn btn-primary">Move to Next Stage</button>
                         </form>
-                        {% elif is_view_only %}
-                        <div class="status-note">View only: only the Secretary can update the workflow status.</div>
+                        {% elif is_view_only and not can_manage_payment and not is_resident_user %}
+                        <div class="status-note">View only: only the Secretary or Admin workflow staff can approve, reject, and release requests.</div>
+                        {% endif %}
+                        {% if can_manage_payment %}
+                        <div class="action-panel">
+                            <h4>Treasurer Actions</h4>
+                            <p>Use these controls for payment handling and release only.</p>
+                            <div class="status-form">
+                                {% if can_mark_paid %}
+                                <form method="post" action="{% url 'treasurer_update_request_status' service_request.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="mark_paid">
+                                    <button type="submit" class="btn btn-primary">Mark Paid</button>
+                                </form>
+                                {% endif %}
+                                {% if can_mark_unpaid %}
+                                <form method="post" action="{% url 'treasurer_update_request_status' service_request.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="mark_unpaid">
+                                    <button type="submit" class="btn btn-soft">Mark Unpaid</button>
+                                </form>
+                                {% endif %}
+                                {% if can_release_request %}
+                                <form method="post" action="{% url 'treasurer_update_request_status' service_request.id %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="mark_released">
+                                    <button type="submit" class="btn btn-release">Mark Released</button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% endif %}
                         {% if can_request_requirements and has_active_requirement_request and not show_requirement_request_form %}
                         <div class="action-panel">
@@ -342,14 +388,17 @@
                             </form>
                         </div>
                         {% endif %}
-                        {% if can_print_release %}
+                        {% if can_manage and can_print_release and can_release_request %}
                         <div class="status-form">
                             <a href="{% url 'print_and_release_document' service_request.id %}" class="btn btn-release">Release & Print</a>
                             <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Preview Document</a>
                         </div>
-                        {% elif service_request.status == "Released" %}
+                        {% elif can_manage and can_print_release %}
+                        <div class="callout">
+                            <strong>Release blocked:</strong> Waiting for Treasurer payment confirmation before release.
+                        </div>
                         <div class="status-form">
-                            <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Reprint Document</a>
+                            <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Preview Document</a>
                         </div>
                         {% endif %}
                     </article>
@@ -358,15 +407,39 @@
 
             <section class="panel timeline-card">
                 <div class="section-title">Activity Timeline</div>
+                {% if not is_resident_user %}
                 <div class="section-sub">Every important action for this request is logged for traceability.</div>
+                {% endif %}
                 <div class="timeline-list">
                     {% for item in timeline_items %}
                     <div class="timeline-item">
-                        <div class="timeline-dot tone-{{ item.tone }}"></div>
+                        <div class="timeline-badge tone-{{ item.tone }}" title="{{ item.title }}" aria-label="{{ item.title }}">
+                            {% if item.icon == "send" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg>
+                            {% elif item.icon == "clock" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                            {% elif item.icon == "file-alert" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="M12 10v4"/><path d="M12 18h.01"/></svg>
+                            {% elif item.icon == "check" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+                            {% elif item.icon == "wallet" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a3 3 0 0 0 0 6h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a3 3 0 0 1-3-3V6"/><path d="M16 13h.01"/></svg>
+                            {% elif item.icon == "box-check" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="m9 15 2 2 4-5"/></svg>
+                            {% elif item.icon == "document-check" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7Z"/><path d="M14 2v5h5"/><path d="m9 15 2 2 4-5"/></svg>
+                            {% elif item.icon == "alert" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 4.3 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                            {% elif item.icon == "upload" %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="m7 9 5-5 5 5"/><path d="M20 16v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>
+                            {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.7"/><path d="M20 12a8 8 0 0 1-13.7 5.7"/><path d="M18 2v5h-5"/><path d="M6 22v-5h5"/></svg>
+                            {% endif %}
+                        </div>
                         <div class="timeline-content">
                             <div class="entry-title">{{ item.title }}</div>
                             <div class="entry-copy">{{ item.description }}</div>
-                            <div class="entry-copy">By: {{ item.actor|default:"System" }}</div>
+                            <div class="entry-copy">By: {{ item.actor_name }}</div>
                         </div>
                         <div class="entry-meta">{{ item.meta|date:"M d, Y" }}<br>{{ item.meta|date:"g:i a" }}</div>
                     </div>
@@ -375,50 +448,11 @@
             </section>
         </div>
 
+        {% if not is_resident_user %}
         <aside class="side-stack">
             <section class="panel side-card">
-                <div class="section-title">Current Handler</div>
-                <div class="section-sub">Single-role processing keeps the workflow simple and fast.</div>
-                <div class="mini-list">
-                    <div class="mini-item">
-                        <strong>{{ current_handler_name }}</strong>
-                        <span>Secretary Workspace</span>
-                        <span>Last updated: {{ last_updated_at|date:"M d, Y, g:i a" }}</span>
-                        <span>Current stage since: {{ current_stage_since|timesince }} ago</span>
-                    </div>
-                    <div class="mini-item">
-                        <strong>Resident Visibility</strong>
-                        <span>The resident can check this page anytime to see the live request status and history.</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel side-card">
-                <div class="section-title">Processing Estimate</div>
-                <div class="mini-list">
-                    <div class="mini-item">
-                        <strong>Current estimate</strong>
-                        <span>{{ estimated_processing_text }}</span>
-                    </div>
-                    <div class="mini-item">
-                        <strong>Next action</strong>
-                        <span>{% if next_step %}Expected next step is {{ next_step }}.{% else %}This request is already in a final stage.{% endif %}</span>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel side-card">
-                <div class="section-title">Status Guide</div>
-                <div class="mini-list">
-                    <div class="mini-item"><strong>Pending Requirements</strong><span>Resident needs to submit missing information or documents.</span></div>
-                    <div class="mini-item"><strong>On Hold</strong><span>The Secretary paused the request while verifying records.</span></div>
-                    <div class="mini-item"><strong>Rejected / Cancelled</strong><span>Terminal states used for invalid or closed requests.</span></div>
-                </div>
-            </section>
-
-            <section class="panel side-card">
                 <div class="section-title">Resident Notifications</div>
-                <div class="section-sub">Updates the resident can expect to see for this request.</div>
+                <div class="section-sub">Resident-facing updates for this request.</div>
                 <div class="notify-list">
                     {% for item in notification_items %}
                     <div class="notify-item">
@@ -435,7 +469,7 @@
             {% if requirement_attachments %}
             <section class="panel side-card">
                 <div class="section-title">Submitted Files</div>
-                <div class="section-sub">Files uploaded for this request are listed here for both the resident and the Secretary.</div>
+                <div class="section-sub">Files uploaded for this request are listed here for both the resident and the reviewing staff.</div>
                 <div class="attachment-list">
                     {% for item in requirement_attachments %}
                     <div class="attachment-item">
@@ -447,6 +481,21 @@
             </section>
             {% endif %}
         </aside>
+        {% else %}
+        {% if requirement_attachments %}
+        <section class="panel side-card">
+            <div class="section-title">Submitted Files</div>
+            <div class="attachment-list">
+                {% for item in requirement_attachments %}
+                <div class="attachment-item">
+                    <a href="{{ item.file.url }}" target="_blank">{{ item.original_name|default:"Attachment" }}</a>
+                    <div class="attachment-meta">{{ item.created_at|date:"M d, Y, g:i a" }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+        {% endif %}
     </div>
 </div>
 <script src="{% static 'residents/js/form_validation.js' %}"></script>

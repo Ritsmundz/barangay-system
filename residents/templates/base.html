@@ -362,6 +362,42 @@
             justify-content: flex-end;
         }
 
+        .tb-left {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .tb-copy {
+            min-width: 0;
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            border: 1px solid var(--brd);
+            background: #fff;
+            color: var(--txt);
+            box-shadow: var(--shadow-md);
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .mobile-nav-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .mobile-sidebar-backdrop {
+            display: none;
+        }
+
         .notif-wrap {
             position: relative;
         }
@@ -644,12 +680,94 @@
                 margin-left: 0;
             }
         }
+
+        @media (max-width: 900px) {
+            body.resident-mobile-shell .mobile-nav-toggle {
+                display: inline-flex;
+            }
+
+            body.resident-mobile-shell .bmis-sidebar {
+                display: flex;
+                width: min(86vw, 320px);
+                min-width: min(86vw, 320px);
+                transform: translateX(-100%);
+                transition: transform .22s ease;
+            }
+
+            body.resident-mobile-shell.resident-sidebar-open .bmis-sidebar {
+                transform: translateX(0);
+            }
+
+            body.resident-mobile-shell .bmis-main {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            body.resident-mobile-shell .mobile-sidebar-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(13, 28, 56, 0.42);
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .2s ease;
+                z-index: 90;
+            }
+
+            body.resident-mobile-shell.resident-sidebar-open .mobile-sidebar-backdrop {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            body.resident-mobile-shell .bmis-topbar {
+                padding: 16px 16px 14px;
+                align-items: flex-start;
+            }
+
+            body.resident-mobile-shell .tb-title {
+                font-size: 22px;
+            }
+
+            body.resident-mobile-shell .tb-logged {
+                margin-top: 6px;
+                font-size: 12px;
+            }
+
+            body.resident-mobile-shell .tb-right {
+                gap: 10px;
+            }
+
+            body.resident-mobile-shell .bmis-content {
+                padding: 16px 14px 24px;
+            }
+
+            body.resident-mobile-shell .notif-panel {
+                right: 0;
+                width: min(92vw, 340px);
+            }
+        }
+
+        @media (max-width: 640px) {
+            body.resident-mobile-shell .bmis-topbar {
+                flex-direction: column;
+            }
+
+            body.resident-mobile-shell .tb-left,
+            body.resident-mobile-shell .tb-right {
+                width: 100%;
+            }
+
+            body.resident-mobile-shell .tb-right {
+                justify-content: space-between;
+            }
+        }
     </style>
 </head>
 
-<body>
+<body class="{% if request.user.is_authenticated and primary_role == 'Resident' %}resident-mobile-shell{% endif %}">
 
 <div class="bmis-layout">
+    <div class="mobile-sidebar-backdrop" data-resident-nav-close></div>
 
     <!-- ═══════════════════════════════════════
          SIDEBAR NAVIGATION
@@ -743,6 +861,12 @@
                     </svg>
                     Payments
                 </a>
+                <a href="{% url 'service_requests' %}" class="sb-item {% if request.resolver_match.url_name == 'service_requests' or request.resolver_match.url_name == 'service_request_detail' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                    </svg>
+                    Request Queue
+                </a>
                 {% endif %}
 
                 {% if group.name == "Secretary" %}
@@ -784,6 +908,12 @@
                         <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
                     </svg>
                     Service Requests
+                </a>
+                <a href="{% url 'create_walk_in_service_request' %}" class="sb-item {% if request.resolver_match.url_name == 'create_walk_in_service_request' %}active{% endif %}">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 2a5 5 0 00-5 5v1H4a2 2 0 00-2 2v1a7 7 0 1014 0v-1a2 2 0 00-2-2h-1V7a5 5 0 00-5-5zm3 6V7a3 3 0 10-6 0v1h6zm-7 3a1 1 0 011-1h6a1 1 0 011 1v1a5 5 0 11-8 0v-1z" clip-rule="evenodd"/>
+                    </svg>
+                    Walk-In Applicants
                 </a>
                 {% endif %}
 
@@ -857,9 +987,18 @@
 
         <!-- Topbar -->
         <div class="bmis-topbar">
-            <div>
-                <div class="tb-title">{% block page_title %}Barangay E-Governance System{% endblock %}</div>
-                <span class="tb-logged">{% block page_subtitle %}Manage resident records, public services, and barangay operations from one unified workspace.{% endblock %}</span>
+            <div class="tb-left">
+                {% if request.user.is_authenticated and primary_role == "Resident" %}
+                <button type="button" class="mobile-nav-toggle" data-resident-nav-toggle aria-label="Open menu" aria-expanded="false">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4A1 1 0 013 5zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm1 4a1 1 0 100 2h12a1 1 0 100-2H4z" clip-rule="evenodd"/>
+                    </svg>
+                </button>
+                {% endif %}
+                <div class="tb-copy">
+                    <div class="tb-title">{% block page_title %}Barangay E-Governance System{% endblock %}</div>
+                    <span class="tb-logged">{% block page_subtitle %}Manage resident records, public services, and barangay operations from one unified workspace.{% endblock %}</span>
+                </div>
             </div>
             <div class="tb-right">
                 {% if request.user.is_authenticated and primary_role == "Resident" %}
@@ -912,6 +1051,41 @@
     </div><!-- /bmis-main -->
 
     </div><!-- /bmis-layout -->
+
+<script>
+    (function () {
+        const body = document.body;
+        if (!body.classList.contains("resident-mobile-shell")) return;
+
+        const toggle = document.querySelector("[data-resident-nav-toggle]");
+        const closeLayer = document.querySelector("[data-resident-nav-close]");
+
+        function setOpen(nextOpen) {
+            body.classList.toggle("resident-sidebar-open", nextOpen);
+            if (toggle) {
+                toggle.setAttribute("aria-expanded", nextOpen ? "true" : "false");
+            }
+        }
+
+        if (toggle) {
+            toggle.addEventListener("click", function () {
+                setOpen(!body.classList.contains("resident-sidebar-open"));
+            });
+        }
+
+        if (closeLayer) {
+            closeLayer.addEventListener("click", function () {
+                setOpen(false);
+            });
+        }
+
+        window.addEventListener("resize", function () {
+            if (window.innerWidth > 900) {
+                setOpen(false);
+            }
+        });
+    })();
+</script>
 
 </body>
 </html>

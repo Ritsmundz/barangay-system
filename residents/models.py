@@ -1,5 +1,7 @@
 from datetime import date, timezone
 
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -228,6 +230,7 @@ class ServiceType(models.Model):
     fee = models.DecimalField(max_digits=8, decimal_places=2)
     voter_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
     non_voter_fee = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    free_limit = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -251,6 +254,17 @@ class RequestPurpose(models.Model):
 from datetime import date
 from django.utils import timezone
 class ServiceRequest(models.Model):
+    PAYMENT_REQUIRED_CHOICES = [
+        ("YES", "YES"),
+        ("NO", "NO"),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ("PENDING", "PENDING"),
+        ("EXEMPT", "EXEMPT"),
+        ("PAID", "PAID"),
+    ]
+
     BUSINESS_ORGANIZATION_TYPE_CHOICES = [
         ("sole_proprietorship", "Sole Proprietorship"),
         ("partnership", "Partnership"),
@@ -288,16 +302,13 @@ class ServiceRequest(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ("Submitted", "Submitted"),
-        ("Under Review", "Under Review"),
-        ("For Validation", "For Validation"),
-        ("Processing", "Processing"),
-        ("Ready for Release", "Ready for Release"),
-        ("Released", "Released"),
-        ("Pending Requirements", "Pending Requirements"),
-        ("On Hold", "On Hold"),
-        ("Rejected", "Rejected"),
-        ("Cancelled", "Cancelled"),
+        ("PENDING", "Pending"),
+        ("PENDING_REQUIREMENTS", "Pending Requirements"),
+        ("APPROVED", "Approved"),
+        ("WAITING_PAYMENT", "Waiting Payment"),
+        ("READY_FOR_RELEASE", "Ready for Release"),
+        ("RELEASED", "Released"),
+        ("REJECTED", "Rejected"),
     ]
 
     resident = models.ForeignKey(
@@ -406,10 +417,22 @@ class ServiceRequest(models.Model):
         default=0
     )
 
+    payment_required = models.CharField(
+        max_length=3,
+        choices=PAYMENT_REQUIRED_CHOICES,
+        default="NO",
+    )
+
+    payment_status = models.CharField(
+        max_length=10,
+        choices=PAYMENT_STATUS_CHOICES,
+        default="EXEMPT",
+    )
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='Submitted'
+        default='PENDING'
     )
 
     document_number = models.CharField(
@@ -452,6 +475,35 @@ class ServiceRequest(models.Model):
         return f"{self.service_type} - {self.resident}"
 
     @property
+    def has_payment_record(self):
+        try:
+            return self.payment is not None
+        except Payment.DoesNotExist:
+            return False
+
+    @property
+    def is_payment_exempt(self):
+        return self.payment_required == "NO"
+
+    @property
+    def amount_due(self):
+        if self.is_payment_exempt or self.payment_status == "PAID":
+            return Decimal("0.00")
+        return Decimal(self.fee or 0)
+
+    @property
+    def status_label(self):
+        return dict(self.STATUS_CHOICES).get(self.status, self.status.replace("_", " ").title())
+
+    @property
+    def payment_required_label(self):
+        return "YES" if self.payment_required == "YES" else "NO"
+
+    @property
+    def payment_status_label(self):
+        return dict(self.PAYMENT_STATUS_CHOICES).get(self.payment_status, self.payment_status)
+
+    @property
     def purpose_display(self):
         if self.purpose_option:
             if self.purpose_option.requires_details and self.purpose_other:
@@ -466,15 +518,27 @@ class ServiceRequest(models.Model):
     def save(self, *args, **kwargs):
 
         # SNAPSHOT FEE
-        if not self.fee:
+        if self.fee in (None, "") or (self._state.adding and Decimal(self.fee or 0) == Decimal("0.00") and not getattr(self, "_fee_explicitly_set", False)):
             if self.resident and self.resident.voter_status:
                 self.fee = self.service_type.voter_fee
             else:
                 self.fee = self.service_type.non_voter_fee
 
+        if self.payment_required not in {"YES", "NO"}:
+            self.payment_required = "YES" if Decimal(self.fee or 0) > Decimal("0.00") else "NO"
+
+        if self.payment_required == "NO":
+            self.payment_status = "EXEMPT"
+        elif self.has_payment_record or self.payment_status == "PAID":
+            self.payment_status = "PAID"
+        else:
+            self.payment_status = "PENDING"
+
             # AUTO SET PROCESSED DATE WHEN RELEASED
-        if self.status == "Released" and not self.processed_date:
+        if self.status == "RELEASED" and not self.processed_date:
             self.processed_date = timezone.now()
+        elif self.status != "RELEASED":
+            self.processed_date = None
 
         # GENERATE DOCUMENT NUMBER
         if not self.document_number:

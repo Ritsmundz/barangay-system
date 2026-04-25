@@ -87,7 +87,12 @@
     .portal-resident strong { color: #203357; display: block; }
     .portal-resident span, .portal-note { color: #60708c; line-height: 1.6; }
     @media (max-width: 1040px) { .portal-form-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 720px) { .portal-info-grid, .portal-fields { grid-template-columns: 1fr; } .portal-form-head, .portal-form-body { padding-left: 18px; padding-right: 18px; } }
+    @media (max-width: 720px) {
+        .portal-info-grid, .portal-fields { grid-template-columns: 1fr; }
+        .portal-form-head, .portal-form-body { padding-left: 18px; padding-right: 18px; }
+        .portal-fee-row, .portal-actions { flex-direction: column; align-items: stretch; }
+        .portal-btn { width: 100%; }
+    }
 </style>
 
 <div class="portal-form-grid">
@@ -128,9 +133,17 @@
                         <p>{{ selected_service_theme.summary }}</p>
                     </div>
                     <div class="portal-fee-row">
-                        <span>Service fee for {% if resident.voter_status %}voters{% else %}non-voters{% endif %}</span>
-                        <strong>Php {% if resident.voter_status %}{{ selected_service.voter_fee }}{% else %}{{ selected_service.non_voter_fee }}{% endif %}</strong>
+                        <span>Service fee for this request</span>
+                        <strong>Php {{ fee_preview.amount|floatformat:2 }}</strong>
                     </div>
+                    {% if fee_preview %}
+                    <p style="margin-top:-4px;color:#60708c;line-height:1.6;">
+                        {{ fee_preview.fee_note }} Collection is done when you claim the finished document from the barangay office.
+                    </p>
+                    {% endif %}
+                    {% if is_one_time_service_used %}
+                    <div class="portal-message">This service can only be availed once. A First Time Job Seeker request has already been released for this resident.</div>
+                    {% endif %}
 
                     <div class="portal-fields">
                         {% if selected_service_rules.requires_purpose %}

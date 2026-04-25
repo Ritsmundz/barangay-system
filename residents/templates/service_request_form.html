@@ -4,7 +4,6 @@
 {% block content %}
 
 <style>
-    /* ── Breadcrumb ── */
     .breadcrumb {
         display: flex;
         align-items: center;
@@ -18,7 +17,6 @@
     .breadcrumb svg { width: 12px; height: 12px; }
     .breadcrumb .cur { color: #1E293B; font-weight: 500; }
 
-    /* ── Page header ── */
     .page-header {
         display: flex;
         align-items: flex-start;
@@ -27,28 +25,55 @@
         flex-wrap: wrap;
         gap: 12px;
     }
-    .page-title   { font-size: 18px; font-weight: 600; color: #1E293B; }
-    .page-subtitle { font-size: 12px; color: #64748B; margin-top: 2px; }
+    .page-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #E0ECFF;
+        color: #1D4ED8;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+    }
+    .page-eyebrow-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #2563EB;
+    }
+    .page-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1E293B;
+    }
+    .page-subtitle {
+        font-size: 12px;
+        color: #64748B;
+        margin-top: 2px;
+    }
 
-    /* ── Layout ── */
     .request-layout {
         display: grid;
-        grid-template-columns: 1fr 300px;
+        grid-template-columns: minmax(0, 1fr) 320px;
         gap: 16px;
         align-items: start;
-        max-width: 1100px;
+        max-width: 1180px;
         margin: 0 auto;
         padding: 0 20px;
     }
-    @media (max-width: 720px) {
-        .request-layout { grid-template-columns: 1fr; }
+    .request-layout.request-layout-walkin {
+        grid-template-columns: minmax(0, 1fr);
+        max-width: 1360px;
     }
 
-    /* ── Form card ── */
     .form-card {
         background: #fff;
         border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
     }
     .form-card-hdr {
@@ -70,10 +95,206 @@
     }
     .form-card-hdr-icon svg { width: 18px; height: 18px; color: #fff; }
     .form-card-hdr-title { font-size: 14px; font-weight: 600; color: #fff; }
-    .form-card-hdr-sub   { font-size: 11.5px; color: rgba(255,255,255,.7); margin-top: 1px; }
-    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 18px; }
+    .form-card-hdr-sub { font-size: 11.5px; color: rgba(255,255,255,.78); margin-top: 1px; }
+    .form-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
 
-    /* ── Field group ── */
+    .wizard-shell {
+        display: grid;
+        gap: 16px;
+    }
+    .wizard-steps {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+    }
+    .wizard-step {
+        border: 1px solid #D8E4F5;
+        border-radius: 14px;
+        background: #F8FBFF;
+        padding: 12px 14px;
+        text-align: left;
+        cursor: pointer;
+        transition: .15s ease;
+    }
+    .wizard-step.is-active {
+        border-color: #2563EB;
+        background: #EFF6FF;
+        box-shadow: 0 0 0 3px rgba(37,99,235,.08);
+    }
+    .wizard-step.is-complete {
+        background: #F0FDF4;
+        border-color: #BBF7D0;
+    }
+    .wizard-step-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 999px;
+        background: #DCEAFE;
+        color: #1D4ED8;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .wizard-step.is-complete .wizard-step-index {
+        background: #DCFCE7;
+        color: #15803D;
+    }
+    .wizard-step-title {
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .wizard-step-copy {
+        margin-top: 4px;
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: #64748B;
+    }
+    .wizard-overview {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+    }
+    .wizard-overview-card {
+        border: 1px solid #DBEAFE;
+        border-radius: 14px;
+        background: linear-gradient(180deg, #F8FBFF 0%, #EFF6FF 100%);
+        padding: 14px 16px;
+    }
+    .wizard-overview-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+    .wizard-overview-value {
+        margin-top: 6px;
+        font-size: 15px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .wizard-overview-copy {
+        margin-top: 4px;
+        font-size: 11.5px;
+        color: #475569;
+        line-height: 1.5;
+    }
+    .form-step-panel {
+        display: none;
+    }
+    .form-step-panel.is-active {
+        display: block;
+    }
+
+    .intake-banner {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(220px, .9fr);
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid #DBEAFE;
+        background: linear-gradient(180deg, #F8FBFF 0%, #EFF6FF 100%);
+        border-radius: 12px;
+    }
+    .intake-banner-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .intake-banner-copy {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.6;
+        color: #475569;
+    }
+    .intake-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .intake-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        font-size: 11.5px;
+        font-weight: 600;
+        background: #FFFFFF;
+        color: #334155;
+        border: 1px solid #D7E6FF;
+    }
+    .intake-tag.accent {
+        background: #1D4ED8;
+        border-color: #1D4ED8;
+        color: #FFFFFF;
+    }
+    .intake-panel {
+        background: rgba(255,255,255,.88);
+        border: 1px solid #D7E6FF;
+        border-radius: 12px;
+        padding: 14px;
+    }
+    .intake-panel-label {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+    .intake-panel-value {
+        margin-top: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .intake-panel-meta {
+        margin-top: 6px;
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: #475569;
+    }
+
+    .section-card {
+        padding: 16px;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        background: #FFFFFF;
+    }
+    .section-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .section-subtitle {
+        margin-top: 3px;
+        font-size: 11.5px;
+        color: #64748B;
+        line-height: 1.5;
+    }
+    .section-kicker {
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #475569;
+        font-size: 10.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
     .field-group { display: flex; flex-direction: column; gap: 6px; }
     .field-label {
         font-size: 12px;
@@ -93,28 +314,15 @@
         padding: 10px 12px;
         font-size: 12px;
     }
-    .fee-box {
-        border: 1px solid #BFDBFE;
-        background: #EFF6FF;
-        border-radius: 8px;
-        padding: 10px 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    .field-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
     }
-    .fee-label {
-        font-size: 12px;
-        color: #1E3A8A;
-        font-weight: 500;
-    }
-    .fee-value {
-        font-size: 18px;
-        color: #1D4ED8;
-        font-weight: 700;
+    .field-span-2 {
+        grid-column: 1 / -1;
     }
 
-    /* ── Inputs ── */
     .bmis-input,
     .bmis-select,
     .bmis-textarea {
@@ -150,7 +358,6 @@
     .bmis-select:hover,
     .bmis-textarea:hover { border-color: #CBD5E1; }
 
-    /* Custom select arrow */
     .select-wrap { position: relative; }
     .select-wrap::after {
         content: '';
@@ -167,7 +374,32 @@
     }
     .select-wrap .bmis-select { padding-right: 32px; cursor: pointer; }
 
-    /* ── Service type cards ── */
+    .service-toolbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 4px;
+    }
+    .search-wrap {
+        position: relative;
+    }
+    .search-wrap svg {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 14px;
+        height: 14px;
+        color: #94A3B8;
+        pointer-events: none;
+    }
+    .search-wrap .bmis-input { padding-left: 36px; }
+    .service-count {
+        font-size: 11.5px;
+        color: #64748B;
+        font-weight: 600;
+    }
     .service-options {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -175,6 +407,9 @@
     }
     .service-option {
         position: relative;
+    }
+    .service-option.is-hidden {
+        display: none;
     }
     .service-option input[type="radio"] {
         position: absolute;
@@ -226,8 +461,70 @@
     .service-option input[type="radio"]:checked + label .service-option-icon svg {
         color: #fff;
     }
+    .empty-service-state {
+        display: none;
+        padding: 16px;
+        border-radius: 10px;
+        border: 1px dashed #CBD5E1;
+        background: #F8FAFC;
+        font-size: 12px;
+        color: #64748B;
+        text-align: center;
+    }
 
-    /* ── Form footer ── */
+    .request-snapshot {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 12px;
+    }
+    .snapshot-box {
+        border: 1px solid #DBEAFE;
+        background: #F8FBFF;
+        border-radius: 10px;
+        padding: 11px 12px;
+    }
+    .snapshot-label {
+        font-size: 10.5px;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #64748B;
+        font-weight: 700;
+    }
+    .snapshot-value {
+        margin-top: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #0F172A;
+        line-height: 1.4;
+    }
+    .snapshot-meta {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #64748B;
+    }
+
+    .fee-box {
+        border: 1px solid #BFDBFE;
+        background: #EFF6FF;
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .fee-label {
+        font-size: 12px;
+        color: #1E3A8A;
+        font-weight: 500;
+    }
+    .fee-value {
+        font-size: 18px;
+        color: #1D4ED8;
+        font-weight: 700;
+    }
+
     .form-footer {
         display: flex;
         align-items: center;
@@ -247,8 +544,8 @@
     }
     .footer-note svg { width: 13px; height: 13px; flex-shrink: 0; }
     .footer-actions { display: flex; align-items: center; gap: 8px; }
+    .footer-actions .is-hidden { display: none; }
 
-    /* ── Buttons ── */
     .btn-bmis {
         display: inline-flex;
         align-items: center;
@@ -271,7 +568,6 @@
     .btn-ghost { background: transparent; color: #64748B; border: 1px solid #E2E8F0; }
     .btn-ghost:hover { background: #F8FAFC; color: #1E293B; text-decoration: none; }
 
-    /* ── Resident info sidebar ── */
     .resident-sidebar {
         display: flex;
         flex-direction: column;
@@ -310,7 +606,7 @@
     }
     .res-label {
         font-size: 10.5px;
-        color: rgba(255,255,255,.6);
+        color: rgba(255,255,255,.66);
         margin-top: 3px;
     }
     .resident-card-body { padding: 14px 16px; }
@@ -326,7 +622,46 @@
     .res-info-key { font-size: 11px; color: #94A3B8; font-weight: 500; }
     .res-info-val { font-size: 12px; font-weight: 500; color: #1E293B; text-align: right; }
 
-    /* ── Info notice card ── */
+    .sidebar-card {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 14px 16px;
+    }
+    .sidebar-card-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .sidebar-card-copy {
+        margin-top: 6px;
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: #475569;
+    }
+    .sidebar-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+    }
+    .metric-box {
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        background: #F8FAFC;
+        padding: 10px 12px;
+    }
+    .metric-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+    .metric-label {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #64748B;
+    }
+
     .notice-card {
         background: #FFFBEB;
         border: 1px solid #FDE68A;
@@ -338,29 +673,59 @@
     .notice-card svg { width: 15px; height: 15px; color: #D97706; flex-shrink: 0; margin-top: 1px; }
     .notice-card-text { font-size: 11.5px; color: #78350F; line-height: 1.6; }
     .notice-card-text strong { color: #92400E; }
+
+    @media (max-width: 980px) {
+        .request-layout,
+        .intake-banner,
+        .request-snapshot,
+        .wizard-overview {
+            grid-template-columns: 1fr;
+        }
+    }
+    @media (max-width: 720px) {
+        .service-options,
+        .service-toolbar,
+        .field-grid,
+        .sidebar-metrics {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 
-<!-- Breadcrumb -->
 <div class="breadcrumb">
+    {% if is_manual_walk_in %}
+    <a href="{% url 'service_requests' %}">Service Requests</a>
+    {% else %}
     <a href="{% url 'resident_list' %}">Residents</a>
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
     <a href="{% url 'resident_profile' resident.id %}">{{ resident.first_name }} {{ resident.last_name }}</a>
+    {% endif %}
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
     <span class="cur">New Service Request</span>
 </div>
 
-<!-- Page header -->
 <div class="page-header">
     <div>
+        {% if is_staff_intake %}
+        <div class="page-eyebrow">
+            <span class="page-eyebrow-dot"></span>
+            {{ request_origin_label }}
+        </div>
+        {% endif %}
         <div class="page-title">Service Request</div>
-        <div class="page-subtitle">Submit a new document request for this resident</div>
+        <div class="page-subtitle">
+            {% if is_manual_walk_in %}
+            Manual secretary encoding with immediate print-ready output after submission
+            {% elif is_staff_intake %}
+            Secretary intake form for resident-assisted document processing
+            {% else %}
+            Submit a new document request for this resident
+            {% endif %}
+        </div>
     </div>
 </div>
 
-<!-- ═══════════════ MAIN LAYOUT ═══════════════ -->
-<div class="request-layout">
-
-    <!-- ── Left: Form ── -->
+<div class="request-layout {% if is_manual_walk_in %}request-layout-walkin{% endif %}">
     <div class="form-card">
         <div class="form-card-hdr">
             <div class="form-card-hdr-icon">
@@ -370,11 +735,10 @@
             </div>
             <div>
                 <div class="form-card-hdr-title">New Service Request</div>
-                <div class="form-card-hdr-sub">For: {{ resident.first_name }} {{ resident.last_name }}</div>
+                <div class="form-card-hdr-sub">{% if is_manual_walk_in %}Manual walk-in entry{% else %}For: {{ resident.first_name }} {{ resident.last_name }}{% endif %}</div>
             </div>
         </div>
 
-        <!-- ═══ FORM — method POST + csrf_token preserved ═══ -->
         <form method="POST">
             {% csrf_token %}
 
@@ -385,256 +749,347 @@
                     {% endfor %}
                 {% endif %}
 
-                <!-- Service Type — preserved: name="service_type", service loop -->
-                <div class="field-group">
-                    <div class="field-label">
-                        Service Type <span class="field-required">*</span>
+                <div class="wizard-shell" data-stepper data-total-steps="{% if is_manual_walk_in %}3{% else %}2{% endif %}">
+                {% if is_staff_intake %}
+                <div class="intake-banner">
+                    <div>
+                        <div class="intake-banner-title">For Walk-In Applicants</div>
+                        <div class="intake-banner-copy">Use this form to encode a walk-in request directly at the barangay office.</div>
+                        <div class="intake-tags">
+                            <span class="intake-tag accent">Secretary-assisted intake</span>
+                            <span class="intake-tag">Fill up required fields</span>
+                            <span class="intake-tag">Fee updates automatically</span>
+                        </div>
+                    </div>
+                    <div class="intake-panel">
+                        <div class="intake-panel-label">Current intake source</div>
+                        <div class="intake-panel-value">{{ request_origin_label }}</div>
+                        <div class="intake-panel-meta">
+                            Walk-in applicants should be encoded here during counter processing.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="wizard-steps">
+                    {% if is_manual_walk_in %}
+                    <button type="button" class="wizard-step" data-step-target="1">
+                        <span class="wizard-step-index">1</span>
+                        <div class="wizard-step-title">Applicant</div>
+                        <div class="wizard-step-copy">Encode the walk-in applicant details first.</div>
+                    </button>
+                    {% endif %}
+                    <button type="button" class="wizard-step" data-step-target="{% if is_manual_walk_in %}2{% else %}1{% endif %}">
+                        <span class="wizard-step-index">{% if is_manual_walk_in %}2{% else %}1{% endif %}</span>
+                        <div class="wizard-step-title">Service Setup</div>
+                        <div class="wizard-step-copy">Select the document type and check the fee preview.</div>
+                    </button>
+                    <button type="button" class="wizard-step" data-step-target="{% if is_manual_walk_in %}3{% else %}2{% endif %}">
+                        <span class="wizard-step-index">{% if is_manual_walk_in %}3{% else %}2{% endif %}</span>
+                        <div class="wizard-step-title">Request Details</div>
+                        <div class="wizard-step-copy">Complete only the fields needed for the chosen service.</div>
+                    </button>
+                </div>
+
+                {% if is_manual_walk_in %}
+                <div class="wizard-overview">
+                    <div class="wizard-overview-card">
+                        <div class="wizard-overview-label">Encoding Mode</div>
+                        <div class="wizard-overview-value">Walk-In Applicants</div>
+                        <div class="wizard-overview-copy">The secretary can finish this intake in a guided three-step flow.</div>
+                    </div>
+                    <div class="wizard-overview-card">
+                        <div class="wizard-overview-label">Queue Status</div>
+                        <div class="wizard-overview-value">Submitted First</div>
+                        <div class="wizard-overview-copy">After saving, the request enters the normal processing workflow.</div>
+                    </div>
+                    <div class="wizard-overview-card">
+                        <div class="wizard-overview-label">Print Flow</div>
+                        <div class="wizard-overview-value">Ready Right After</div>
+                        <div class="wizard-overview-copy">The matched print template opens after submission for immediate release work.</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if is_manual_walk_in %}
+                <div class="form-step-panel" data-step="1">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-title">Applicant Information</div>
+                            <div class="section-subtitle">Manual typing only. No linked resident account is used in this walk-in intake.</div>
+                        </div>
+                        <div class="section-kicker">Step 1</div>
                     </div>
 
-                    <!-- Visual radio cards (value still posts as service.id) -->
-                    <div class="service-options">
-                        {% for service in service_types %}
-                        <div class="service-option">
-                            <input
-                                type="radio"
-                                id="service_{{ service.id }}"
-                                name="service_type"
-                                value="{{ service.id }}"
-                                data-service-name="{{ service.name|lower }}"
-                                data-voter-fee="{{ service.voter_fee }}"
-                                data-non-voter-fee="{{ service.non_voter_fee }}"
-                                {% if posted_data and posted_data.service_type|stringformat:"s" == service.id|stringformat:"s" %}
-                                    checked
-                                {% elif not posted_data and forloop.first %}
-                                    checked
-                                {% endif %}>
-                            <label for="service_{{ service.id }}">
-                                <div class="service-option-icon">
-                                    <svg viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                {{ service.name }}
-                            </label>
+                    <div class="field-grid">
+                        <input id="applicant_first_name" name="applicant_first_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_first_name }}{% endif %}" placeholder="First Name">
+                        <input id="applicant_last_name" name="applicant_last_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_last_name }}{% endif %}" placeholder="Last Name">
+                        <input id="applicant_middle_name" name="applicant_middle_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_middle_name }}{% endif %}" placeholder="Middle Name">
+                        <input id="applicant_suffix" name="applicant_suffix" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_suffix }}{% endif %}" placeholder="Suffix">
+                        <input id="applicant_birth_date" name="applicant_birth_date" class="bmis-input" type="date" value="{% if posted_data %}{{ posted_data.applicant_birth_date }}{% endif %}">
+                        <select id="applicant_gender" name="applicant_gender" class="bmis-select">
+                            <option value="">Gender</option>
+                            <option value="Male" {% if posted_data and posted_data.applicant_gender == "Male" %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if posted_data and posted_data.applicant_gender == "Female" %}selected{% endif %}>Female</option>
+                        </select>
+                        <input id="applicant_civil_status" name="applicant_civil_status" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_civil_status }}{% endif %}" placeholder="Civil Status">
+                        <select id="applicant_voter_status" name="applicant_voter_status" class="bmis-select">
+                            <option value="">Voter Status</option>
+                            <option value="yes" {% if posted_data and posted_data.applicant_voter_status == "yes" %}selected{% endif %}>Voter</option>
+                            <option value="no" {% if posted_data and posted_data.applicant_voter_status == "no" %}selected{% endif %}>Non-Voter</option>
+                        </select>
+                        <input id="applicant_contact_number" name="applicant_contact_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_contact_number }}{% endif %}" placeholder="Contact Number">
+                        <input id="applicant_email" name="applicant_email" class="bmis-input" type="email" value="{% if posted_data %}{{ posted_data.applicant_email }}{% endif %}" placeholder="Email Address">
+                        <input id="applicant_place_of_birth" name="applicant_place_of_birth" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_place_of_birth }}{% endif %}" placeholder="Place of Birth">
+                        <input id="applicant_occupation" name="applicant_occupation" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_occupation }}{% endif %}" placeholder="Occupation">
+                        <input id="applicant_precinct" name="applicant_precinct" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_precinct }}{% endif %}" placeholder="Precinct">
+                        <div></div>
+                        <input id="applicant_address_house_number" name="applicant_address_house_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_house_number }}{% endif %}" placeholder="House Number">
+                        <input id="applicant_address_street" name="applicant_address_street" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_street }}{% endif %}" placeholder="Street">
+                        <input id="applicant_address_barangay" name="applicant_address_barangay" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_barangay }}{% else %}Gulod{% endif %}" placeholder="Barangay">
+                        <input id="applicant_address_city" name="applicant_address_city" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_city }}{% else %}Quezon City{% endif %}" placeholder="City">
+                        <input id="applicant_address_province" name="applicant_address_province" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_province }}{% endif %}" placeholder="Province">
+                    </div>
+                    <div class="field-hint">After submission, the secretary is sent directly to the print-ready document for the selected service.</div>
+                </div>
+                </div>
+                {% endif %}
+
+                <div class="form-step-panel" data-step="{% if is_manual_walk_in %}2{% else %}1{% endif %}">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-title">Request Setup</div>
+                            <div class="section-subtitle">Choose the document type first. The form below adjusts automatically based on the selected service.</div>
                         </div>
-                    {% empty %}
-                        <!-- Fallback: plain select if service_types is empty -->
-                        <div style="grid-column:1/-1">
-                            <div class="select-wrap">
-                                <select name="service_type" class="bmis-select">
-                                    <option value="">— No service types available —</option>
-                                </select>
+                        <div class="section-kicker">{% if is_manual_walk_in %}Step 2{% else %}Step 1{% endif %}</div>
+                    </div>
+
+                    <div class="field-group">
+                        <div class="field-label">
+                            Service Type <span class="field-required">*</span>
+                        </div>
+
+                        <div class="service-toolbar">
+                            <label class="search-wrap" for="service-search">
+                                <svg viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8.5 3a5.5 5.5 0 013.975 9.303l3.111 3.111a1 1 0 01-1.414 1.414l-3.111-3.11A5.5 5.5 0 118.5 3zm0 2a3.5 3.5 0 100 7 3.5 3.5 0 000-7z" clip-rule="evenodd"/>
+                                </svg>
+                                <input id="service-search" type="text" class="bmis-input" placeholder="Search service type">
+                            </label>
+                            <div class="service-count"><span id="visible-service-count">{{ service_types|length }}</span> services shown</div>
+                        </div>
+
+                        <div class="service-options">
+                            {% for service in service_types %}
+                            <div class="service-option" data-service-search="{{ service.name|lower }}">
+                                <input
+                                    type="radio"
+                                    id="service_{{ service.id }}"
+                                    name="service_type"
+                                    value="{{ service.id }}"
+                                    data-service-name="{{ service.name|lower }}"
+                                    data-voter-fee="{{ service.voter_fee }}"
+                                    data-non-voter-fee="{{ service.non_voter_fee }}"
+                                    {% if posted_data and posted_data.service_type|stringformat:"s" == service.id|stringformat:"s" %}
+                                        checked
+                                    {% elif not posted_data and forloop.first %}
+                                        checked
+                                    {% endif %}
+                                >
+                                <label for="service_{{ service.id }}">
+                                    <div class="service-option-icon">
+                                        <svg viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    {{ service.name }}
+                                </label>
+                            </div>
+                            {% empty %}
+                            <div style="grid-column:1/-1">
+                                <div class="select-wrap">
+                                    <select name="service_type" class="bmis-select">
+                                        <option value="">No service types available</option>
+                                    </select>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div id="empty-service-state" class="empty-service-state">No matching service type. Clear the search and choose from the available requests.</div>
+                        <div class="field-hint">Use search to reduce scrolling when the secretary is handling a queue.</div>
+
+                        <div class="request-snapshot">
+                            <div class="snapshot-box">
+                                <div class="snapshot-label">Selected Service</div>
+                                <div class="snapshot-value" id="selected-service-name">Waiting for selection</div>
+                                <div class="snapshot-meta" id="selected-service-meta">Choose a service card to continue.</div>
+                            </div>
+                            <div class="snapshot-box">
+                                <div class="snapshot-label">Fee Preview</div>
+                                <div class="snapshot-value" id="service-fee-value">P0.00</div>
+                                <div class="snapshot-meta">Applicant is tagged as <span id="fee-type-label">Non-Voter</span>.</div>
+                            </div>
+                            <div class="snapshot-box">
+                                <div class="snapshot-label">Release History</div>
+                                <div class="snapshot-value">{{ resident_released_requests_count }} released</div>
+                                <div class="snapshot-meta">Pending queue: {{ resident_pending_requests_count }} request{{ resident_pending_requests_count|pluralize }}</div>
                             </div>
                         </div>
-                    {% endfor %}
+
+                        <div class="fee-box">
+                            <span class="fee-label">Collection note</span>
+                            <span class="fee-value" id="fee-note-inline" style="font-size:12px; font-weight:600; text-align:right;">Fee updates after service selection.</span>
+                        </div>
                     </div>
-                    <div class="field-hint">Select the type of document being requested.</div>
-                    <div class="fee-box">
-                        <span class="fee-label">Service Fee (<span id="fee-type-label">Non-Voter</span>)</span>
-                        <span class="fee-value" id="service-fee-value">₱0.00</span>
+                </div>
+                </div>
+
+                <div class="form-step-panel" data-step="{% if is_manual_walk_in %}3{% else %}2{% endif %}">
+                <div class="section-card">
+                    <div class="section-header">
+                        <div>
+                            <div class="section-title">Request Details</div>
+                            <div class="section-subtitle">Only the fields required for the chosen service stay visible, so encoding stays focused.</div>
+                        </div>
+                        <div class="section-kicker">{% if is_manual_walk_in %}Step 3{% else %}Step 2{% endif %}</div>
+                    </div>
+
+                    <div class="field-group" id="purpose-section">
+                        <label class="field-label" for="purpose_for">
+                            Purpose <span class="field-required">*</span>
+                        </label>
+                        <div class="select-wrap">
+                            <select id="purpose_for" name="purpose_for" class="bmis-select">
+                                <option value="">Select purpose</option>
+                                {% for purpose in service_purposes %}
+                                <option value="{{ purpose.id }}" data-requires-other="{% if purpose.requires_details %}1{% else %}0{% endif %}" {% if posted_data and posted_data.purpose_for|stringformat:"s" == purpose.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ purpose.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input
+                            id="purpose_other"
+                            name="purpose_other"
+                            class="bmis-input"
+                            type="text"
+                            value="{% if posted_data %}{{ posted_data.purpose_other }}{% endif %}"
+                            placeholder="State other purpose"
+                            style="margin-top:8px; display:none;"
+                        >
+                        <div class="field-hint">Select the request purpose. Choose Other to specify custom purpose.</div>
+                    </div>
+
+                    <div class="field-group" id="business-section" style="display:none;">
+                        <div class="field-label">Business Permit Information</div>
+                        <div class="field-grid">
+                            <input id="business_name" name="business_name" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.business_name }}{% endif %}" placeholder="Business Name">
+                            <input id="business_owner_name" name="business_owner_name" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.business_owner_name }}{% endif %}" placeholder="Business Owner / Authorized Representative">
+                            <input id="business_address" name="business_address" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.business_address }}{% endif %}" placeholder="Business Address">
+                            <input id="business_nature" name="business_nature" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.business_nature }}{% endif %}" placeholder="Nature of Business">
+                        </div>
+                        <div class="field-hint">Complete these fields once so the secretary can print the permit without re-encoding.</div>
+
+                        <div class="field-label" style="margin-top:16px;">Registration and Contact Details</div>
+                        <div class="field-grid">
+                            <select id="business_organization_type" name="business_organization_type" class="bmis-select">
+                                <option value="">Business Organization Type</option>
+                                <option value="sole_proprietorship" {% if posted_data and posted_data.business_organization_type == 'sole_proprietorship' %}selected{% endif %}>Sole Proprietorship</option>
+                                <option value="partnership" {% if posted_data and posted_data.business_organization_type == 'partnership' %}selected{% endif %}>Partnership</option>
+                                <option value="corporation" {% if posted_data and posted_data.business_organization_type == 'corporation' %}selected{% endif %}>Corporation</option>
+                                <option value="cooperative" {% if posted_data and posted_data.business_organization_type == 'cooperative' %}selected{% endif %}>Cooperative</option>
+                            </select>
+                            <input id="business_registration_number" name="business_registration_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_registration_number }}{% endif %}" placeholder="DTI / SEC / CDA Registration Number">
+                            <input id="business_tin" name="business_tin" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_tin }}{% endif %}" placeholder="Tax Identification Number (TIN)">
+                            <input id="business_trade_name" name="business_trade_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_trade_name }}{% endif %}" placeholder="Trade Name / Franchise (if applicable)">
+                            <input id="business_psic_code" name="business_psic_code" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_psic_code }}{% endif %}" placeholder="Philippine Standard Industrial Code">
+                            <input id="business_telephone" name="business_telephone" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_telephone }}{% elif resident %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone / Landline Number">
+                            <input id="business_email" name="business_email" class="bmis-input" type="email" value="{% if posted_data %}{{ posted_data.business_email }}{% elif resident %}{{ resident.email|default:'' }}{% endif %}" placeholder="Business Email Address">
+                            <input id="business_representative_designation" name="business_representative_designation" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_representative_designation }}{% else %}OWNER / AUTHORIZED REPRESENTATIVE{% endif %}" placeholder="Designation / Position">
+                        </div>
+
+                        <div class="field-label" style="margin-top:16px;">Business Address Breakdown</div>
+                        <div class="field-grid">
+                            <input id="business_house_number" name="business_house_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_house_number }}{% elif resident and resident.household %}{{ resident.household.house_number }}{% endif %}" placeholder="House / Building No.">
+                            <input id="business_building_name" name="business_building_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_building_name }}{% endif %}" placeholder="Building Name">
+                            <input id="business_street" name="business_street" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_street }}{% elif resident and resident.household %}{{ resident.household.street }}{% endif %}" placeholder="Street">
+                            <input id="business_block_number" name="business_block_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_block_number }}{% endif %}" placeholder="Block No. (if applicable)">
+                            <input id="business_lot_number" name="business_lot_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_lot_number }}{% endif %}" placeholder="Lot No. (if applicable)">
+                            <input id="business_subdivision" name="business_subdivision" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_subdivision }}{% endif %}" placeholder="Subdivision (if applicable)">
+                            <input id="business_zip_code" name="business_zip_code" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_zip_code }}{% endif %}" placeholder="ZIP Code">
+                        </div>
+
+                        <div class="field-label" style="margin-top:16px;">Corporation / Partnership Details</div>
+                        <div class="field-grid">
+                            <input id="business_president_name" name="business_president_name" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.business_president_name }}{% endif %}" placeholder="President / Officer-in-Charge (for corporation, cooperative, or partnership)">
+                            <select id="business_corporation_nationality" name="business_corporation_nationality" class="bmis-select">
+                                <option value="">Corporation Nationality</option>
+                                <option value="filipino" {% if posted_data and posted_data.business_corporation_nationality == 'filipino' %}selected{% endif %}>Filipino</option>
+                                <option value="foreign" {% if posted_data and posted_data.business_corporation_nationality == 'foreign' %}selected{% endif %}>Foreign</option>
+                            </select>
+                        </div>
+
+                        <div class="field-label" style="margin-top:16px;">Business Operation Details</div>
+                        <div class="field-grid">
+                            <input id="business_area_sqm" name="business_area_sqm" class="bmis-input" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_area_sqm }}{% endif %}" placeholder="Business Area (sq. m.)">
+                            <input id="business_operation_time" name="business_operation_time" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_operation_time }}{% endif %}" placeholder="Time of Operation (ex. 8:00 AM - 5:00 PM)">
+                            <input id="business_employee_count" name="business_employee_count" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_employee_count }}{% endif %}" placeholder="Total Number of Employees">
+                            <input id="business_qc_employee_count" name="business_qc_employee_count" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_qc_employee_count }}{% endif %}" placeholder="Employees Residing Within QC">
+                            <input id="business_floor_area_sqm" name="business_floor_area_sqm" class="bmis-input" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_floor_area_sqm }}{% endif %}" placeholder="Total Floor Area (sq. m.)">
+                            <input id="business_male_employee_count" name="business_male_employee_count" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_male_employee_count }}{% endif %}" placeholder="Male Employees">
+                            <input id="business_female_employee_count" name="business_female_employee_count" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_female_employee_count }}{% endif %}" placeholder="Female Employees">
+                            <input id="business_delivery_vans" name="business_delivery_vans" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_delivery_vans }}{% endif %}" placeholder="Delivery Vans / Trucks (if applicable)">
+                            <input id="business_delivery_motorcycles" name="business_delivery_motorcycles" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_delivery_motorcycles }}{% endif %}" placeholder="Delivery Motorcycles (if applicable)">
+                            <select id="business_property_status" name="business_property_status" class="bmis-select">
+                                <option value="">Property Status</option>
+                                <option value="owned" {% if posted_data and posted_data.business_property_status == 'owned' %}selected{% endif %}>Owned</option>
+                                <option value="leased" {% if posted_data and posted_data.business_property_status == 'leased' %}selected{% endif %}>Leased</option>
+                            </select>
+                            <input id="business_tax_declaration_number" name="business_tax_declaration_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_tax_declaration_number }}{% endif %}" placeholder="Tax Declaration Number">
+                            <input id="business_property_identification_number" name="business_property_identification_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_property_identification_number }}{% endif %}" placeholder="Property Identification Number">
+                            <input id="business_capital_investment" name="business_capital_investment" class="bmis-input" type="number" step="0.01" min="0" value="{% if posted_data %}{{ posted_data.business_capital_investment }}{% endif %}" placeholder="Total Capital Investment">
+                            <label class="field-span-2" style="display:flex; align-items:center; gap:8px; margin-top:2px;">
+                                <input id="business_has_tax_incentives" name="business_has_tax_incentives" type="checkbox" {% if posted_data and posted_data.business_has_tax_incentives %}checked{% endif %}>
+                                Business has tax incentives from a government entity
+                            </label>
+                            <select id="business_activity_type" name="business_activity_type" class="bmis-select">
+                                <option value="">Business Activity</option>
+                                <option value="main_office" {% if posted_data and posted_data.business_activity_type == 'main_office' %}selected{% endif %}>Main Office</option>
+                                <option value="branch" {% if posted_data and posted_data.business_activity_type == 'branch' %}selected{% endif %}>Branch</option>
+                                <option value="admin_office_only" {% if posted_data and posted_data.business_activity_type == 'admin_office_only' %}selected{% endif %}>Admin Office Only</option>
+                            </select>
+                            <input id="business_products_services" name="business_products_services" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_products_services }}{% endif %}" placeholder="Products / Services">
+                            <input id="business_equipment" name="business_equipment" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_equipment }}{% endif %}" placeholder="Equipment (if applicable)">
+                            <input id="business_equipment_units" name="business_equipment_units" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_equipment_units }}{% endif %}" placeholder="No. of Units">
+                            <input id="business_equipment_size" name="business_equipment_size" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_equipment_size }}{% endif %}" placeholder="Equipment Size">
+                            <input id="business_storeys" name="business_storeys" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_storeys }}{% endif %}" placeholder="Number of Storeys">
+                            <input id="business_occupants" name="business_occupants" class="bmis-input" type="number" min="0" value="{% if posted_data %}{{ posted_data.business_occupants }}{% endif %}" placeholder="Number of Occupants">
+                            <input id="business_occupancy_type" name="business_occupancy_type" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_occupancy_type }}{% else %}{{ posted_data.business_nature }}{% endif %}" placeholder="Type of Occupancy">
+                        </div>
+                    </div>
+
+                    <div class="field-group" id="emergency-section">
+                        <div class="field-label">Person to Notify in Case of Emergency</div>
+                        <div class="field-grid">
+                            <input id="emergency_contact_name" type="text" name="emergency_contact_name" class="bmis-input field-span-2" placeholder="Name" value="{% if posted_data %}{{ posted_data.emergency_contact_name }}{% endif %}">
+                            <input id="emergency_contact_address" type="text" name="emergency_contact_address" class="bmis-input field-span-2" placeholder="Address" value="{% if posted_data %}{{ posted_data.emergency_contact_address }}{% endif %}">
+                            <input id="emergency_contact_number" type="text" name="emergency_contact_number" class="bmis-input" placeholder="Contact Number" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}">
+                        </div>
+                    </div>
+
+                    <div class="field-group" id="residency-section">
+                        <label class="field-label" for="residency_since">Residency of Barangay Gulod Since</label>
+                        <input id="residency_since" type="date" name="residency_since" class="bmis-input" value="{% if posted_data %}{{ posted_data.residency_since }}{% endif %}">
+                        <div class="field-hint">Used for QCID and residency-related requirements.</div>
                     </div>
                 </div>
-
-                <!-- Purpose -->
-                <div class="field-group" id="purpose-section">
-                    <label class="field-label" for="purpose_for">
-                        Purpose <span class="field-required">*</span>
-                    </label>
-                    <div class="select-wrap">
-                        <select id="purpose_for" name="purpose_for" class="bmis-select">
-                            <option value="">Select purpose</option>
-                            {% for purpose in service_purposes %}
-                            <option value="{{ purpose.id }}" data-requires-other="{% if purpose.requires_details %}1{% else %}0{% endif %}" {% if posted_data and posted_data.purpose_for|stringformat:"s" == purpose.id|stringformat:"s" %}selected{% endif %}>
-                                {{ purpose.name }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <input
-                        id="purpose_other"
-                        name="purpose_other"
-                        class="bmis-input"
-                        type="text"
-                        value="{% if posted_data %}{{ posted_data.purpose_other }}{% endif %}"
-                        placeholder="State other purpose"
-                        style="margin-top:8px; display:none;"
-                    >
-                    <div class="field-hint">Select the request purpose. Choose Other to specify custom purpose.</div>
                 </div>
-
-                <!-- Business Permit Details -->
-                <div class="field-group" id="business-section" style="display:none;">
-                    <div class="field-label">Business Permit Information</div>
-                    <input id="business_name" name="business_name" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_name }}{% endif %}"
-                        placeholder="Business Name">
-                    <input id="business_owner_name" name="business_owner_name" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_owner_name }}{% endif %}"
-                        placeholder="Business Owner / Authorized Representative" style="margin-top:8px;">
-                    <input id="business_address" name="business_address" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_address }}{% endif %}"
-                        placeholder="Business Address" style="margin-top:8px;">
-                    <input id="business_nature" name="business_nature" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_nature }}{% endif %}"
-                        placeholder="Nature of Business" style="margin-top:8px;">
-                    <div class="field-hint">Complete these fields once so the secretary can print the permit without re-encoding.</div>
-
-                    <div class="field-label" style="margin-top:16px;">Registration and Contact Details</div>
-                    <select id="business_organization_type" name="business_organization_type" class="bmis-select" style="margin-top:8px;">
-                        <option value="">Business Organization Type</option>
-                        <option value="sole_proprietorship" {% if posted_data and posted_data.business_organization_type == 'sole_proprietorship' %}selected{% endif %}>Sole Proprietorship</option>
-                        <option value="partnership" {% if posted_data and posted_data.business_organization_type == 'partnership' %}selected{% endif %}>Partnership</option>
-                        <option value="corporation" {% if posted_data and posted_data.business_organization_type == 'corporation' %}selected{% endif %}>Corporation</option>
-                        <option value="cooperative" {% if posted_data and posted_data.business_organization_type == 'cooperative' %}selected{% endif %}>Cooperative</option>
-                    </select>
-                    <input id="business_registration_number" name="business_registration_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_registration_number }}{% endif %}"
-                        placeholder="DTI / SEC / CDA Registration Number" style="margin-top:8px;">
-                    <input id="business_tin" name="business_tin" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_tin }}{% endif %}"
-                        placeholder="Tax Identification Number (TIN)" style="margin-top:8px;">
-                    <input id="business_trade_name" name="business_trade_name" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_trade_name }}{% endif %}"
-                        placeholder="Trade Name / Franchise (if applicable)" style="margin-top:8px;">
-                    <input id="business_psic_code" name="business_psic_code" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_psic_code }}{% endif %}"
-                        placeholder="Philippine Standard Industrial Code" style="margin-top:8px;">
-                    <input id="business_telephone" name="business_telephone" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_telephone }}{% else %}{{ resident.contact_number|default:'' }}{% endif %}"
-                        placeholder="Telephone / Landline Number" style="margin-top:8px;">
-                    <input id="business_email" name="business_email" class="bmis-input" type="email"
-                        value="{% if posted_data %}{{ posted_data.business_email }}{% else %}{{ resident.email|default:'' }}{% endif %}"
-                        placeholder="Business Email Address" style="margin-top:8px;">
-                    <input id="business_representative_designation" name="business_representative_designation" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_representative_designation }}{% else %}OWNER / AUTHORIZED REPRESENTATIVE{% endif %}"
-                        placeholder="Designation / Position" style="margin-top:8px;">
-
-                    <div class="field-label" style="margin-top:16px;">Business Address Breakdown</div>
-                    <input id="business_house_number" name="business_house_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_house_number }}{% else %}{% if resident.household %}{{ resident.household.house_number }}{% endif %}{% endif %}"
-                        placeholder="House / Building No." style="margin-top:8px;">
-                    <input id="business_building_name" name="business_building_name" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_building_name }}{% endif %}"
-                        placeholder="Building Name" style="margin-top:8px;">
-                    <input id="business_street" name="business_street" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_street }}{% else %}{% if resident.household %}{{ resident.household.street }}{% endif %}{% endif %}"
-                        placeholder="Street" style="margin-top:8px;">
-                    <input id="business_block_number" name="business_block_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_block_number }}{% endif %}"
-                        placeholder="Block No. (if applicable)" style="margin-top:8px;">
-                    <input id="business_lot_number" name="business_lot_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_lot_number }}{% endif %}"
-                        placeholder="Lot No. (if applicable)" style="margin-top:8px;">
-                    <input id="business_subdivision" name="business_subdivision" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_subdivision }}{% endif %}"
-                        placeholder="Subdivision (if applicable)" style="margin-top:8px;">
-                    <input id="business_zip_code" name="business_zip_code" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_zip_code }}{% endif %}"
-                        placeholder="ZIP Code" style="margin-top:8px;">
-
-                    <div class="field-label" style="margin-top:16px;">Corporation / Partnership Details</div>
-                    <input id="business_president_name" name="business_president_name" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_president_name }}{% endif %}"
-                        placeholder="President / Officer-in-Charge (for corporation, cooperative, or partnership)" style="margin-top:8px;">
-                    <select id="business_corporation_nationality" name="business_corporation_nationality" class="bmis-select" style="margin-top:8px;">
-                        <option value="">Corporation Nationality</option>
-                        <option value="filipino" {% if posted_data and posted_data.business_corporation_nationality == 'filipino' %}selected{% endif %}>Filipino</option>
-                        <option value="foreign" {% if posted_data and posted_data.business_corporation_nationality == 'foreign' %}selected{% endif %}>Foreign</option>
-                    </select>
-
-                    <div class="field-label" style="margin-top:16px;">Business Operation Details</div>
-                    <input id="business_area_sqm" name="business_area_sqm" class="bmis-input" type="number" step="0.01" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_area_sqm }}{% endif %}"
-                        placeholder="Business Area (sq. m.)" style="margin-top:8px;">
-                    <input id="business_operation_time" name="business_operation_time" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_operation_time }}{% endif %}"
-                        placeholder="Time of Operation (ex. 8:00 AM - 5:00 PM)" style="margin-top:8px;">
-                    <input id="business_employee_count" name="business_employee_count" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_employee_count }}{% endif %}"
-                        placeholder="Total Number of Employees" style="margin-top:8px;">
-                    <input id="business_qc_employee_count" name="business_qc_employee_count" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_qc_employee_count }}{% endif %}"
-                        placeholder="Employees Residing Within QC" style="margin-top:8px;">
-                    <input id="business_floor_area_sqm" name="business_floor_area_sqm" class="bmis-input" type="number" step="0.01" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_floor_area_sqm }}{% endif %}"
-                        placeholder="Total Floor Area (sq. m.)" style="margin-top:8px;">
-                    <input id="business_male_employee_count" name="business_male_employee_count" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_male_employee_count }}{% endif %}"
-                        placeholder="Male Employees" style="margin-top:8px;">
-                    <input id="business_female_employee_count" name="business_female_employee_count" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_female_employee_count }}{% endif %}"
-                        placeholder="Female Employees" style="margin-top:8px;">
-                    <input id="business_delivery_vans" name="business_delivery_vans" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_delivery_vans }}{% endif %}"
-                        placeholder="Delivery Vans / Trucks (if applicable)" style="margin-top:8px;">
-                    <input id="business_delivery_motorcycles" name="business_delivery_motorcycles" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_delivery_motorcycles }}{% endif %}"
-                        placeholder="Delivery Motorcycles (if applicable)" style="margin-top:8px;">
-                    <select id="business_property_status" name="business_property_status" class="bmis-select" style="margin-top:8px;">
-                        <option value="">Property Status</option>
-                        <option value="owned" {% if posted_data and posted_data.business_property_status == 'owned' %}selected{% endif %}>Owned</option>
-                        <option value="leased" {% if posted_data and posted_data.business_property_status == 'leased' %}selected{% endif %}>Leased</option>
-                    </select>
-                    <input id="business_tax_declaration_number" name="business_tax_declaration_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_tax_declaration_number }}{% endif %}"
-                        placeholder="Tax Declaration Number" style="margin-top:8px;">
-                    <input id="business_property_identification_number" name="business_property_identification_number" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_property_identification_number }}{% endif %}"
-                        placeholder="Property Identification Number" style="margin-top:8px;">
-                    <input id="business_capital_investment" name="business_capital_investment" class="bmis-input" type="number" step="0.01" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_capital_investment }}{% endif %}"
-                        placeholder="Total Capital Investment" style="margin-top:8px;">
-                    <label style="display:flex; align-items:center; gap:8px; margin-top:10px;">
-                        <input id="business_has_tax_incentives" name="business_has_tax_incentives" type="checkbox" {% if posted_data and posted_data.business_has_tax_incentives %}checked{% endif %}>
-                        Business has tax incentives from a government entity
-                    </label>
-                    <select id="business_activity_type" name="business_activity_type" class="bmis-select" style="margin-top:8px;">
-                        <option value="">Business Activity</option>
-                        <option value="main_office" {% if posted_data and posted_data.business_activity_type == 'main_office' %}selected{% endif %}>Main Office</option>
-                        <option value="branch" {% if posted_data and posted_data.business_activity_type == 'branch' %}selected{% endif %}>Branch</option>
-                        <option value="admin_office_only" {% if posted_data and posted_data.business_activity_type == 'admin_office_only' %}selected{% endif %}>Admin Office Only</option>
-                    </select>
-                    <input id="business_products_services" name="business_products_services" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_products_services }}{% endif %}"
-                        placeholder="Products / Services" style="margin-top:8px;">
-                    <input id="business_equipment" name="business_equipment" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_equipment }}{% endif %}"
-                        placeholder="Equipment (if applicable)" style="margin-top:8px;">
-                    <input id="business_equipment_units" name="business_equipment_units" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_equipment_units }}{% endif %}"
-                        placeholder="No. of Units" style="margin-top:8px;">
-                    <input id="business_equipment_size" name="business_equipment_size" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_equipment_size }}{% endif %}"
-                        placeholder="Equipment Size" style="margin-top:8px;">
-                    <input id="business_storeys" name="business_storeys" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_storeys }}{% endif %}"
-                        placeholder="Number of Storeys" style="margin-top:8px;">
-                    <input id="business_occupants" name="business_occupants" class="bmis-input" type="number" min="0"
-                        value="{% if posted_data %}{{ posted_data.business_occupants }}{% endif %}"
-                        placeholder="Number of Occupants" style="margin-top:8px;">
-                    <input id="business_occupancy_type" name="business_occupancy_type" class="bmis-input" type="text"
-                        value="{% if posted_data %}{{ posted_data.business_occupancy_type }}{% else %}{{ posted_data.business_nature }}{% endif %}"
-                        placeholder="Type of Occupancy" style="margin-top:8px;">
                 </div>
+            </div>
 
-                <!-- Emergency Contact -->
-                <div class="field-group" id="emergency-section">
-                    <div class="field-label">Person to Notify in Case of Emergency</div>
-                    <input id="emergency_contact_name" type="text" name="emergency_contact_name" class="bmis-input" placeholder="Name" value="{% if posted_data %}{{ posted_data.emergency_contact_name }}{% endif %}">
-                    <input id="emergency_contact_address" type="text" name="emergency_contact_address" class="bmis-input" placeholder="Address" style="margin-top:8px;" value="{% if posted_data %}{{ posted_data.emergency_contact_address }}{% endif %}">
-                    <input id="emergency_contact_number" type="text" name="emergency_contact_number" class="bmis-input" placeholder="Contact Number" style="margin-top:8px;" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}">
-                </div>
-
-                <!-- QCID Residency Date -->
-                <div class="field-group" id="residency-section">
-                    <label class="field-label" for="residency_since">Residency of Barangay Gulod Since</label>
-                    <input id="residency_since" type="date" name="residency_since" class="bmis-input" value="{% if posted_data %}{{ posted_data.residency_since }}{% endif %}">
-                    <div class="field-hint">Used for QCID and residency-related requirements.</div>
-                </div>
-
-            </div><!-- /form-body -->
-
-            <!-- Footer: Submit + Cancel -->
             <div class="form-footer">
                 <div class="footer-note">
                     <svg viewBox="0 0 20 20" fill="currentColor">
@@ -643,13 +1098,15 @@
                     Request will be logged under Submitted status.
                 </div>
                 <div class="footer-actions">
-                    <a href="{% url 'resident_profile' resident.id %}" class="btn-bmis btn-ghost">
+                    <a href="{% if is_manual_walk_in %}{% url 'service_requests' %}{% else %}{% url 'resident_profile' resident.id %}{% endif %}" class="btn-bmis btn-ghost">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
                         </svg>
                         Cancel
                     </a>
-                    <button type="submit" class="btn-bmis btn-primary">
+                    <button type="button" id="step-prev-btn" class="btn-bmis btn-ghost is-hidden">Previous</button>
+                    <button type="button" id="step-next-btn" class="btn-bmis btn-primary">Next</button>
+                    <button type="submit" id="step-submit-btn" class="btn-bmis btn-primary is-hidden">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clip-rule="evenodd"/>
                         </svg>
@@ -657,67 +1114,54 @@
                     </button>
                 </div>
             </div>
-
         </form>
-    </div><!-- /form-card -->
+    </div>
 
-    <!-- ── Right: Resident summary + notice ── -->
+    {% if not is_manual_walk_in %}
     <div class="resident-sidebar">
-
-        <!-- Resident summary card -->
         <div class="resident-card">
             <div class="resident-card-top">
-                <div class="res-avatar">
-                    {{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}
-                </div>
+                <div class="res-avatar">{{ resident.first_name|slice:":1" }}{{ resident.last_name|slice:":1" }}</div>
                 <div class="res-name">{{ resident.first_name }} {{ resident.last_name }}</div>
-                <div class="res-label">Requesting Resident</div>
+                <div class="res-label">{% if is_staff_intake %}Walk-in applicant record{% else %}Requesting Resident{% endif %}</div>
             </div>
             <div class="resident-card-body">
-                <div class="res-info-row">
-                    <span class="res-info-key">Status</span>
-                    <span class="res-info-val" style="color:#16A34A">{{ resident.status }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Gender</span>
-                    <span class="res-info-val">{{ resident.gender }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Age</span>
-                    <span class="res-info-val">{{ resident.age }} yrs</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Voter</span>
-                    <span class="res-info-val">
-                        {% if resident.voter_status %}Yes{% else %}No{% endif %}
-                    </span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Birthplace</span>
-                    <span class="res-info-val">{{ resident.place_of_birth|default:"-" }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Birthdate</span>
-                    <span class="res-info-val">{{ resident.birth_date }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Civil Status</span>
-                    <span class="res-info-val">{{ resident.civil_status }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Precinct</span>
-                    <span class="res-info-val">{{ resident.precinct|default:"-" }}</span>
-                </div>
-                <div class="res-info-row">
-                    <span class="res-info-key">Address</span>
-                    <span class="res-info-val">
-                        {{ resident.formatted_address|default:"-" }}
-                    </span>
-                </div>
+                <div class="res-info-row"><span class="res-info-key">Status</span><span class="res-info-val" style="color:#16A34A">{{ resident.status }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Gender</span><span class="res-info-val">{{ resident.gender }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Age</span><span class="res-info-val">{{ resident.age }} yrs</span></div>
+                <div class="res-info-row"><span class="res-info-key">Voter</span><span class="res-info-val">{% if resident.voter_status %}Yes{% else %}No{% endif %}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Contact</span><span class="res-info-val">{{ resident.contact_number|default:"-" }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Email</span><span class="res-info-val">{{ resident.email|default:"-" }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Birthplace</span><span class="res-info-val">{{ resident.place_of_birth|default:"-" }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Birthdate</span><span class="res-info-val">{{ resident.birth_date }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Civil Status</span><span class="res-info-val">{{ resident.civil_status }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Occupation</span><span class="res-info-val">{{ resident.occupation|default:"-" }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Precinct</span><span class="res-info-val">{{ resident.precinct|default:"-" }}</span></div>
+                <div class="res-info-row"><span class="res-info-key">Address</span><span class="res-info-val">{{ resident.formatted_address|default:"-" }}</span></div>
             </div>
         </div>
 
-        <!-- Notice card -->
+        <div class="sidebar-card">
+            <div class="sidebar-card-title">Resident request activity</div>
+            <div class="sidebar-metrics">
+                <div class="metric-box">
+                    <div class="metric-value">{{ resident_pending_requests_count }}</div>
+                    <div class="metric-label">Active requests</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">{{ resident_released_requests_count }}</div>
+                    <div class="metric-label">Released requests</div>
+                </div>
+            </div>
+            <div class="sidebar-card-copy">
+                {% if latest_released_request %}
+                Last released document: <strong>{{ latest_released_request.service_type.name }}</strong> on {{ latest_released_request.request_date|date:"M d, Y" }}.
+                {% else %}
+                No released service request on file yet for this resident.
+                {% endif %}
+            </div>
+        </div>
+
         <div class="notice-card">
             <svg viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -728,27 +1172,115 @@
                 review, validation, processing, and release stages.
             </div>
         </div>
-
-    </div><!-- /resident-sidebar -->
-
-</div><!-- /request-layout -->
+    </div>
+    {% endif %}
+</div>
 
 <script src="{% static 'residents/js/form_validation.js' %}"></script>
 <script>
     (function () {
+        const form = document.querySelector(".form-card form");
+        const wizardShell = document.querySelector("[data-stepper]");
+        const stepPanels = Array.from(document.querySelectorAll(".form-step-panel"));
+        const stepButtons = Array.from(document.querySelectorAll(".wizard-step"));
+        const prevStepButton = document.getElementById("step-prev-btn");
+        const nextStepButton = document.getElementById("step-next-btn");
+        const submitStepButton = document.getElementById("step-submit-btn");
         const purposeSelect = document.getElementById("purpose_for");
         const purposeOther = document.getElementById("purpose_other");
         const serviceInputs = document.querySelectorAll('input[name="service_type"]');
         const purposeSection = document.getElementById("purpose-section");
+        const businessSection = document.getElementById("business-section");
         const emergencySection = document.getElementById("emergency-section");
         const residencySection = document.getElementById("residency-section");
         const feeValue = document.getElementById("service-fee-value");
         const feeTypeLabel = document.getElementById("fee-type-label");
+        const feeNoteInline = document.getElementById("fee-note-inline");
+        const serviceSearch = document.getElementById("service-search");
+        const emptyServiceState = document.getElementById("empty-service-state");
+        const visibleServiceCount = document.getElementById("visible-service-count");
+        const selectedServiceNameLabel = document.getElementById("selected-service-name");
+        const selectedServiceMeta = document.getElementById("selected-service-meta");
+        const applicantVoterStatus = document.getElementById("applicant_voter_status");
         const emergencyName = document.getElementById("emergency_contact_name");
         const emergencyAddress = document.getElementById("emergency_contact_address");
         const emergencyNumber = document.getElementById("emergency_contact_number");
         const residencySince = document.getElementById("residency_since");
         if (!purposeSelect || !purposeOther || !serviceInputs.length) return;
+        let currentStep = 1;
+        const totalSteps = wizardShell ? Number(wizardShell.dataset.totalSteps || stepPanels.length || 1) : 1;
+
+        function isVisible(element) {
+            return !!(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
+        }
+
+        function validateCurrentStep() {
+            const currentPanel = document.querySelector('.form-step-panel[data-step="' + currentStep + '"]');
+            if (!currentPanel) return true;
+
+            const radiosByName = {};
+            const fields = Array.from(currentPanel.querySelectorAll("input, select, textarea")).filter((field) => {
+                if (field.disabled) return false;
+                return isVisible(field);
+            });
+
+            for (const field of fields) {
+                if (field.type === "radio") {
+                    radiosByName[field.name] = radiosByName[field.name] || [];
+                    radiosByName[field.name].push(field);
+                    continue;
+                }
+
+                if (!field.checkValidity()) {
+                    field.reportValidity();
+                    field.focus();
+                    return false;
+                }
+            }
+
+            for (const name in radiosByName) {
+                const radioGroup = radiosByName[name];
+                const requiresSelection = radioGroup.some((radio) => radio.required || radio.name === "service_type");
+                if (requiresSelection && !radioGroup.some((radio) => radio.checked)) {
+                    radioGroup[0].setCustomValidity("Please select an option.");
+                    radioGroup[0].reportValidity();
+                    radioGroup[0].focus();
+                    radioGroup[0].setCustomValidity("");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function syncWizard() {
+            stepPanels.forEach((panel) => {
+                panel.classList.toggle("is-active", Number(panel.dataset.step) === currentStep);
+            });
+
+            stepButtons.forEach((button) => {
+                const step = Number(button.dataset.stepTarget);
+                button.classList.toggle("is-active", step === currentStep);
+                button.classList.toggle("is-complete", step < currentStep);
+            });
+
+            if (prevStepButton) {
+                prevStepButton.classList.toggle("is-hidden", currentStep === 1);
+            }
+            if (nextStepButton) {
+                nextStepButton.classList.toggle("is-hidden", currentStep === totalSteps);
+            }
+            if (submitStepButton) {
+                submitStepButton.classList.toggle("is-hidden", currentStep !== totalSteps);
+            }
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function goToStep(targetStep) {
+            const boundedStep = Math.min(totalSteps, Math.max(1, targetStep));
+            currentStep = boundedStep;
+            syncWizard();
+        }
 
         function selectedServiceName() {
             const selected = document.querySelector('input[name="service_type"]:checked');
@@ -762,24 +1294,53 @@
                 .trim();
         }
 
+        function titleCaseWords(name) {
+            return (name || "")
+                .split(/\s+/)
+                .filter(Boolean)
+                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(" ");
+        }
+
         function setRequired(el, state) {
             if (!el) return;
             el.required = !!state;
+        }
+
+        function isApplicantVoter() {
+            if (applicantVoterStatus) {
+                return applicantVoterStatus.value === "yes";
+            }
+            return {{ resident_voter_status|yesno:"true,false" }};
         }
 
         function toggleSectionsByService() {
             const serviceName = normalizedServiceName(selectedServiceName());
             const selected = document.querySelector('input[name="service_type"]:checked');
             if (selected && feeValue) {
-                const isVoter = {{ resident.voter_status|yesno:"true,false" }};
+                const isVoter = isApplicantVoter();
                 const rawFee = parseFloat(
                     isVoter ? (selected.dataset.voterFee || "0") : (selected.dataset.nonVoterFee || "0")
                 );
-                feeValue.textContent = "₱" + rawFee.toFixed(2);
+                feeValue.textContent = "P" + rawFee.toFixed(2);
                 if (feeTypeLabel) {
                     feeTypeLabel.textContent = isVoter ? "Voter" : "Non-Voter";
                 }
+                if (selectedServiceNameLabel) {
+                    selectedServiceNameLabel.textContent = titleCaseWords(selected.dataset.serviceName || selected.parentElement.textContent.trim());
+                }
+                if (selectedServiceMeta) {
+                    selectedServiceMeta.textContent = rawFee > 0
+                        ? "Prepare the resident for payment before release."
+                        : "This service currently shows no collection amount.";
+                }
+                if (feeNoteInline) {
+                    feeNoteInline.textContent = rawFee > 0
+                        ? "Collect upon release after Treasurer confirmation."
+                        : "No fee is currently due for this request.";
+                }
             }
+
             const showPurpose = [
                 "barangay clearance",
                 "certificate of residency",
@@ -795,7 +1356,7 @@
             const showBusiness = ["business clearance", "barangay permit", "business permit"].includes(serviceName);
 
             purposeSection.style.display = showPurpose ? "flex" : "none";
-            document.getElementById("business-section").style.display = showBusiness ? "flex" : "none";
+            businessSection.style.display = showBusiness ? "flex" : "none";
             emergencySection.style.display = showEmergency ? "flex" : "none";
             residencySection.style.display = showResidency ? "flex" : "none";
 
@@ -830,6 +1391,7 @@
                 "business_occupants",
                 "business_occupancy_type"
             ].forEach((id) => setRequired(document.getElementById(id), showBusiness));
+
             if (!showPurpose) {
                 purposeSelect.value = "";
                 purposeOther.value = "";
@@ -864,18 +1426,82 @@
             }
         }
 
+        function filterServices() {
+            if (!serviceSearch) return;
+            const query = serviceSearch.value.trim().toLowerCase();
+            let visibleCount = 0;
+
+            document.querySelectorAll(".service-option").forEach((card) => {
+                const matches = !query || (card.dataset.serviceSearch || "").includes(query);
+                card.classList.toggle("is-hidden", !matches);
+                if (matches) visibleCount += 1;
+            });
+
+            if (visibleServiceCount) {
+                visibleServiceCount.textContent = visibleCount;
+            }
+            if (emptyServiceState) {
+                emptyServiceState.style.display = visibleCount === 0 ? "block" : "none";
+            }
+        }
+
         serviceInputs.forEach((input) => {
             input.addEventListener("change", () => {
+                input.setCustomValidity("");
                 toggleSectionsByService();
                 toggleOtherInput();
             });
         });
+
+        stepButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const targetStep = Number(button.dataset.stepTarget);
+                if (targetStep <= currentStep) {
+                    goToStep(targetStep);
+                    return;
+                }
+                if (validateCurrentStep()) {
+                    goToStep(targetStep);
+                }
+            });
+        });
+
+        if (prevStepButton) {
+            prevStepButton.addEventListener("click", () => goToStep(currentStep - 1));
+        }
+        if (nextStepButton) {
+            nextStepButton.addEventListener("click", () => {
+                if (validateCurrentStep()) {
+                    goToStep(currentStep + 1);
+                }
+            });
+        }
+
+        if (serviceSearch) {
+            serviceSearch.addEventListener("input", filterServices);
+            filterServices();
+        }
+        if (applicantVoterStatus) {
+            applicantVoterStatus.addEventListener("change", toggleSectionsByService);
+        }
+
         purposeSelect.addEventListener("change", toggleOtherInput);
         toggleSectionsByService();
         toggleOtherInput();
+        syncWizard();
 
-        BMISFormValidation.init(document.querySelector(".form-card form"), {
+        BMISFormValidation.init(form, {
             rules: {
+                applicant_first_name: { label: "First name", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_last_name: { label: "Last name", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_birth_date: { label: "Birth date", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
+                applicant_gender: { label: "Gender", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_civil_status: { label: "Civil status", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_voter_status: { label: "Voter status", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_contact_number: { label: "Applicant contact number", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : "" },
+                applicant_email: { email: true, label: "Applicant email" },
+                applicant_address_house_number: { label: "House number", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
+                applicant_address_street: { label: "Street", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
                 purpose_for: { label: "Purpose", custom: () => purposeSection.style.display !== "none" && !purposeSelect.value ? "This field is required." : "" },
                 purpose_other: { label: "Other purpose", custom: () => purposeOther.required && !purposeOther.value.trim() ? "This field is required." : "" },
                 emergency_contact_name: { label: "Emergency contact name", custom: (input, value) => input.required && !value ? "This field is required." : "" },
@@ -888,6 +1514,12 @@
                 business_owner_name: { label: "Business owner", custom: (input, value) => input.required && !value ? "This field is required." : "" },
                 business_address: { label: "Business address", custom: (input, value) => input.required && !value ? "This field is required." : "" },
             },
+        });
+
+        form.addEventListener("submit", (event) => {
+            if (!validateCurrentStep()) {
+                event.preventDefault();
+            }
         });
     })();
 </script>

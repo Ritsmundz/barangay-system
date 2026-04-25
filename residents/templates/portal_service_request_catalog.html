@@ -90,6 +90,10 @@
         text-decoration: none; color: #fff; font-weight: 700; border-radius: 14px; padding: 11px 16px; display: inline-flex; gap: 8px; align-items: center;
     }
     .catalog-card-link:hover { text-decoration: none; filter: brightness(.97); }
+    .catalog-card.unavailable { opacity: .72; }
+    .catalog-card-unavailable {
+        border-radius: 14px; padding: 11px 14px; background: #eef2f7; color: #667085; font-weight: 700; font-size: .86rem; text-align: center;
+    }
     .catalog-side-card { border-radius: 22px; overflow: hidden; }
     .catalog-side-head { padding: 18px 20px 14px; border-bottom: 1px solid #edf2fa; }
     .catalog-side-head h3 { font-size: 1.18rem; color: #203357; }
@@ -116,6 +120,12 @@
     @media (max-width: 760px) {
         .catalog-hero { padding: 20px 18px; }
         .catalog-title { font-size: 1.6rem; }
+        .catalog-hero-top, .catalog-card-footer { flex-direction: column; align-items: stretch; }
+        .catalog-welcome { min-width: 0; width: 100%; }
+        .catalog-search-row { flex-direction: column; align-items: stretch; }
+        .catalog-tabs { width: 100%; }
+        .catalog-tab { flex: 1 1 calc(50% - 10px); text-align: center; }
+        .catalog-card { min-height: 0; }
         .catalog-cards, .catalog-stats { grid-template-columns: 1fr; }
     }
 </style>
@@ -182,16 +192,17 @@
                 </div>
                 <div class="catalog-cards">
                     {% for item in featured_services %}
-                    <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
+                    <article class="catalog-card {% if item.is_unavailable %}unavailable{% endif %}" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
                         <div>
                             <div class="catalog-card-top">
                                 <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
-                                <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+                                <div class="catalog-card-fee">Php {{ item.fee_value|floatformat:2 }}</div>
                             </div>
                             <h3>{{ item.portal_name }}</h3>
                             <p>{{ item.description }}</p>
                             <ul>
                                 <li>{{ item.summary }}</li>
+                                <li>{% if item.is_unavailable %}{{ item.unavailable_note }}{% else %}{{ item.fee_note }}{% endif %}</li>
                                 {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
                                 {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
                                 {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
@@ -199,9 +210,13 @@
                         </div>
                         <div class="catalog-card-footer">
                             <span class="catalog-card-tag">{{ item.category }}</span>
+                            {% if item.is_unavailable %}
+                            <span class="catalog-card-unavailable">Already Availed</span>
+                            {% else %}
                             <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
                                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
                             </a>
+                            {% endif %}
                         </div>
                     </article>
                     {% empty %}
@@ -217,16 +232,17 @@
                 </div>
                 <div class="catalog-cards" id="service-card-grid">
                     {% for item in other_services %}
-                    <article class="catalog-card" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
+                    <article class="catalog-card {% if item.is_unavailable %}unavailable{% endif %}" data-category="{{ item.category }}" data-search="{{ item.portal_name|lower }} {{ item.name|lower }} {{ item.description|lower }}" style="background: {{ item.soft_color }};">
                         <div>
                             <div class="catalog-card-top">
                                 <div class="catalog-card-badge" style="background: {{ item.icon_color }};">{{ item.badge }}</div>
-                                <div class="catalog-card-fee">Php {{ item.fee_value }}</div>
+                                <div class="catalog-card-fee">Php {{ item.fee_value|floatformat:2 }}</div>
                             </div>
                             <h3>{{ item.portal_name }}</h3>
                             <p>{{ item.description }}</p>
                             <ul>
                                 <li>{{ item.summary }}</li>
+                                <li>{% if item.is_unavailable %}{{ item.unavailable_note }}{% else %}{{ item.fee_note }}{% endif %}</li>
                                 {% if item.rules.requires_purpose %}<li>Purpose selection required</li>{% endif %}
                                 {% if item.rules.requires_emergency %}<li>Emergency contact required</li>{% endif %}
                                 {% if item.rules.requires_residency %}<li>Residency date required</li>{% endif %}
@@ -234,9 +250,13 @@
                         </div>
                         <div class="catalog-card-footer">
                             <span class="catalog-card-tag">{{ item.category }}</span>
+                            {% if item.is_unavailable %}
+                            <span class="catalog-card-unavailable">Already Availed</span>
+                            {% else %}
                             <a class="catalog-card-link" href="{% url 'portal_service_request_type' item.slug %}" style="background: {{ item.accent_color }};">Request Now
                                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
                             </a>
+                            {% endif %}
                         </div>
                     </article>
                     {% empty %}
