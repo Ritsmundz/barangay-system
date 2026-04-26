@@ -54,10 +54,11 @@ def _get_logo_data_uri():
 
 def _get_hall_data_uri():
     global _HALL_DATA_URI
-    if _HALL_DATA_URI is not None:
-        return _HALL_DATA_URI
-
-    _HALL_DATA_URI = _read_first_image(["barangay-gulod-hall.png"])
+    _HALL_DATA_URI = _read_first_image([
+        "barangay gulod hall.webp",
+        "barangay-gulod-hall.webp",
+        "barangay-gulod-hall.png",
+    ])
     return _HALL_DATA_URI
 
 

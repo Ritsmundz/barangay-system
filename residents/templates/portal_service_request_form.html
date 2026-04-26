@@ -263,7 +263,7 @@
                         </div>
                         <div class="portal-field">
                             <label for="business_telephone">Telephone / Landline</label>
-                            <input id="business_telephone" name="business_telephone" type="text" value="{% if posted_data %}{{ posted_data.business_telephone }}{% else %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone Number">
+                            <input id="business_telephone" name="business_telephone" type="text" inputmode="numeric" value="{% if posted_data %}{{ posted_data.business_telephone }}{% else %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone Number">
                         </div>
                         <div class="portal-field full">
                             <label for="business_email">Business Email</label>
@@ -418,12 +418,20 @@
                         </div>
                         <div class="portal-field">
                             <label for="emergency_contact_number">Emergency contact number <span>*</span></label>
-                            <input id="emergency_contact_number" name="emergency_contact_number" type="text" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}" required>
+                            <input id="emergency_contact_number" name="emergency_contact_number" type="text" inputmode="numeric" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}" required>
                         </div>
                         <div class="portal-field full">
                             <label for="emergency_contact_address">Emergency contact address <span>*</span></label>
                             <input id="emergency_contact_address" name="emergency_contact_address" type="text" value="{% if posted_data %}{{ posted_data.emergency_contact_address }}{% endif %}" required>
                             <small>Barangay ID requests require complete emergency contact details.</small>
+                        </div>
+                        {% endif %}
+
+                        {% if selected_service_rules.requires_id_photo %}
+                        <div class="portal-field full">
+                            <label for="photo_2x2">Upload 2x2 Picture <span>*</span></label>
+                            <input id="photo_2x2" name="photo_2x2" type="file" accept="image/*" required>
+                            <small>Upload a clear 2x2 picture for ID-style requests such as Barangay ID or Solo Parent ID.</small>
                         </div>
                         {% endif %}
 
@@ -553,8 +561,9 @@
                 portal_purpose: { label: "Purpose", custom: () => document.getElementById("portal_purpose") && document.getElementById("portal_purpose").required && !document.getElementById("portal_purpose").value ? "This field is required." : "" },
                 purpose_other: { label: "Other purpose details", custom: () => document.getElementById("purpose_other") && document.getElementById("purpose_other").required && !document.getElementById("purpose_other").value.trim() ? "This field is required." : "" },
                 business_email: { email: true, label: "Business email" },
-                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
-                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input && input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : value && value.replace(/\D/g, "").length < 7 ? "Contact number must be at least 7 digits." : "" },
+                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input && input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : value && value.replace(/\D/g, "").length < 7 ? "Contact number must be at least 7 digits." : "" },
+                photo_2x2: { label: "2x2 picture", custom: (input) => input && input.required && (!input.files || !input.files.length) ? "This field is required." : "" },
                 residency_since: { label: "Residency since", custom: (input, value) => input && input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
                 date_of_death: { label: "Date of death", custom: (input, value) => input && input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
                 requestor_name: { label: "Requestor name", custom: (input, value) => input && input.required && !value ? "This field is required." : "" },

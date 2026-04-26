@@ -357,6 +357,199 @@
     .bmis-input:hover,
     .bmis-select:hover,
     .bmis-textarea:hover { border-color: #CBD5E1; }
+    .photo-tools {
+        display: grid;
+        gap: 12px;
+    }
+    .photo-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .photo-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+        padding: 0 14px;
+        border-radius: 10px;
+        border: 1px solid #cfe0f7;
+        background: #f7fbff;
+        color: #1e3a63;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .photo-action-btn:hover {
+        border-color: #9cc0ef;
+        background: #eef6ff;
+    }
+    .photo-preview-shell {
+        display: grid;
+        grid-template-columns: 124px minmax(0, 1fr);
+        gap: 14px;
+        padding: 14px;
+        border-radius: 14px;
+        border: 1px solid #d9e7f8;
+        background: linear-gradient(180deg, #f9fbff 0%, #f1f7ff 100%);
+    }
+    .photo-preview-box {
+        width: 124px;
+        aspect-ratio: 1 / 1;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #cfe0f7;
+        background: #e8eef7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .photo-preview-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+    .photo-preview-box.has-image img {
+        display: block;
+    }
+    .photo-preview-placeholder {
+        padding: 12px;
+        text-align: center;
+        font-size: 11px;
+        line-height: 1.5;
+        color: #64748b;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+    .photo-preview-box.has-image .photo-preview-placeholder {
+        display: none;
+    }
+    .photo-preview-copy {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+        min-width: 0;
+    }
+    .photo-preview-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .photo-preview-meta {
+        font-size: 11.5px;
+        line-height: 1.6;
+        color: #516176;
+    }
+    .camera-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(15, 23, 42, 0.60);
+    }
+    .camera-modal.is-open {
+        display: flex;
+    }
+    .camera-dialog {
+        width: min(760px, 100%);
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #dbe5f2;
+        background: #fff;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.30);
+    }
+    .camera-dialog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid #e7eef8;
+    }
+    .camera-dialog-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .camera-dialog-copy {
+        margin-top: 4px;
+        font-size: 11.5px;
+        color: #64748b;
+    }
+    .camera-close-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        border: 1px solid #d9e5f5;
+        background: #fff;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        color: #475569;
+    }
+    .camera-dialog-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        gap: 16px;
+        padding: 18px;
+        align-items: start;
+    }
+    .camera-video-shell {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #0f172a;
+        min-height: 320px;
+    }
+    .camera-video-shell video,
+    .camera-video-shell canvas {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        display: block;
+        object-fit: cover;
+    }
+    .camera-frame-guide {
+        position: absolute;
+        inset: 50%;
+        width: min(72%, 320px);
+        aspect-ratio: 1 / 1;
+        transform: translate(-50%, -50%);
+        border: 3px solid rgba(255,255,255,0.95);
+        border-radius: 18px;
+        box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.28);
+        pointer-events: none;
+    }
+    .camera-side {
+        display: grid;
+        gap: 12px;
+    }
+    .camera-note {
+        padding: 14px;
+        border-radius: 14px;
+        background: #f8fbff;
+        border: 1px solid #dde9f8;
+        font-size: 12px;
+        line-height: 1.7;
+        color: #4c5f79;
+    }
+    .camera-side .photo-preview-box {
+        width: 100%;
+        max-width: 180px;
+        justify-self: center;
+    }
+    .camera-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 0 18px 18px;
+        justify-content: flex-end;
+    }
 
     .select-wrap { position: relative; }
     .select-wrap::after {
@@ -739,7 +932,7 @@
             </div>
         </div>
 
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
 
             <div class="form-body">
@@ -839,7 +1032,7 @@
                             <option value="yes" {% if posted_data and posted_data.applicant_voter_status == "yes" %}selected{% endif %}>Voter</option>
                             <option value="no" {% if posted_data and posted_data.applicant_voter_status == "no" %}selected{% endif %}>Non-Voter</option>
                         </select>
-                        <input id="applicant_contact_number" name="applicant_contact_number" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_contact_number }}{% endif %}" placeholder="Contact Number">
+                        <input id="applicant_contact_number" name="applicant_contact_number" class="bmis-input" type="text" inputmode="numeric" value="{% if posted_data %}{{ posted_data.applicant_contact_number }}{% endif %}" placeholder="Contact Number">
                         <input id="applicant_email" name="applicant_email" class="bmis-input" type="email" value="{% if posted_data %}{{ posted_data.applicant_email }}{% endif %}" placeholder="Email Address">
                         <input id="applicant_place_of_birth" name="applicant_place_of_birth" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_place_of_birth }}{% endif %}" placeholder="Place of Birth">
                         <input id="applicant_occupation" name="applicant_occupation" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_occupation }}{% endif %}" placeholder="Occupation">
@@ -1006,7 +1199,7 @@
                             <input id="business_tin" name="business_tin" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_tin }}{% endif %}" placeholder="Tax Identification Number (TIN)">
                             <input id="business_trade_name" name="business_trade_name" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_trade_name }}{% endif %}" placeholder="Trade Name / Franchise (if applicable)">
                             <input id="business_psic_code" name="business_psic_code" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_psic_code }}{% endif %}" placeholder="Philippine Standard Industrial Code">
-                            <input id="business_telephone" name="business_telephone" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_telephone }}{% elif resident %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone / Landline Number">
+                            <input id="business_telephone" name="business_telephone" class="bmis-input" type="text" inputmode="numeric" value="{% if posted_data %}{{ posted_data.business_telephone }}{% elif resident %}{{ resident.contact_number|default:'' }}{% endif %}" placeholder="Telephone / Landline Number">
                             <input id="business_email" name="business_email" class="bmis-input" type="email" value="{% if posted_data %}{{ posted_data.business_email }}{% elif resident %}{{ resident.email|default:'' }}{% endif %}" placeholder="Business Email Address">
                             <input id="business_representative_designation" name="business_representative_designation" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.business_representative_designation }}{% else %}OWNER / AUTHORIZED REPRESENTATIVE{% endif %}" placeholder="Designation / Position">
                         </div>
@@ -1076,8 +1269,29 @@
                         <div class="field-grid">
                             <input id="emergency_contact_name" type="text" name="emergency_contact_name" class="bmis-input field-span-2" placeholder="Name" value="{% if posted_data %}{{ posted_data.emergency_contact_name }}{% endif %}">
                             <input id="emergency_contact_address" type="text" name="emergency_contact_address" class="bmis-input field-span-2" placeholder="Address" value="{% if posted_data %}{{ posted_data.emergency_contact_address }}{% endif %}">
-                            <input id="emergency_contact_number" type="text" name="emergency_contact_number" class="bmis-input" placeholder="Contact Number" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}">
+                            <input id="emergency_contact_number" type="text" name="emergency_contact_number" class="bmis-input" inputmode="numeric" placeholder="Contact Number" value="{% if posted_data %}{{ posted_data.emergency_contact_number }}{% endif %}">
                         </div>
+                    </div>
+
+                    <div class="field-group" id="photo-section">
+                        <label class="field-label" for="photo_2x2">Upload 2x2 Picture</label>
+                        <div class="photo-tools">
+                            <input id="photo_2x2" name="photo_2x2" class="bmis-input" type="file" accept="image/*" capture="user">
+                            <div class="photo-actions">
+                                <button type="button" class="photo-action-btn" id="take-photo-btn">Take a Picture</button>
+                            </div>
+                            <div class="photo-preview-shell">
+                                <div class="photo-preview-box" id="photo-preview-box">
+                                    <img id="photo-preview-image" alt="2x2 preview">
+                                    <div class="photo-preview-placeholder">2x2 Preview</div>
+                                </div>
+                                <div class="photo-preview-copy">
+                                    <div class="photo-preview-title">Photo Preview</div>
+                                    <div class="photo-preview-meta" id="photo-preview-meta">Use a clear front-facing photo. The preview is cropped to a square 2x2 layout for the ID printout.</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="field-hint">Required for Barangay ID requests. You can upload an image or capture one directly from the secretary device camera.</div>
                     </div>
 
                     <div class="field-group" id="residency-section">
@@ -1115,6 +1329,37 @@
                 </div>
             </div>
         </form>
+    </div>
+
+    <div class="camera-modal" id="camera-modal" aria-hidden="true">
+        <div class="camera-dialog" role="dialog" aria-modal="true" aria-labelledby="camera-dialog-title">
+            <div class="camera-dialog-head">
+                <div>
+                    <div class="camera-dialog-title" id="camera-dialog-title">Capture 2x2 Picture</div>
+                    <div class="camera-dialog-copy">Center the resident inside the square guide, then capture the photo.</div>
+                </div>
+                <button type="button" class="camera-close-btn" id="camera-close-btn" aria-label="Close camera">&times;</button>
+            </div>
+            <div class="camera-dialog-body">
+                <div class="camera-video-shell">
+                    <video id="camera-video" autoplay playsinline muted></video>
+                    <div class="camera-frame-guide"></div>
+                </div>
+                <div class="camera-side">
+                    <div class="camera-note">The capture tool automatically crops the camera image to a square format so the saved file matches the 2x2 photo area on the Barangay ID preview.</div>
+                    <div class="photo-preview-box" id="camera-capture-preview">
+                        <img id="camera-capture-image" alt="Captured 2x2 preview">
+                        <div class="photo-preview-placeholder">Captured Preview</div>
+                    </div>
+                    <canvas id="camera-canvas" width="600" height="600" hidden></canvas>
+                </div>
+            </div>
+            <div class="camera-actions">
+                <button type="button" class="photo-action-btn" id="camera-retake-btn">Retake</button>
+                <button type="button" class="photo-action-btn" id="camera-capture-btn">Capture</button>
+                <button type="button" class="photo-action-btn" id="camera-use-btn">Use This Photo</button>
+            </div>
+        </div>
     </div>
 
     {% if not is_manual_walk_in %}
@@ -1192,6 +1437,7 @@
         const purposeSection = document.getElementById("purpose-section");
         const businessSection = document.getElementById("business-section");
         const emergencySection = document.getElementById("emergency-section");
+        const photoSection = document.getElementById("photo-section");
         const residencySection = document.getElementById("residency-section");
         const feeValue = document.getElementById("service-fee-value");
         const feeTypeLabel = document.getElementById("fee-type-label");
@@ -1205,10 +1451,27 @@
         const emergencyName = document.getElementById("emergency_contact_name");
         const emergencyAddress = document.getElementById("emergency_contact_address");
         const emergencyNumber = document.getElementById("emergency_contact_number");
+        const photo2x2 = document.getElementById("photo_2x2");
+        const photoPreviewBox = document.getElementById("photo-preview-box");
+        const photoPreviewImage = document.getElementById("photo-preview-image");
+        const photoPreviewMeta = document.getElementById("photo-preview-meta");
+        const takePhotoButton = document.getElementById("take-photo-btn");
+        const cameraModal = document.getElementById("camera-modal");
+        const cameraVideo = document.getElementById("camera-video");
+        const cameraCanvas = document.getElementById("camera-canvas");
+        const cameraCapturePreview = document.getElementById("camera-capture-preview");
+        const cameraCaptureImage = document.getElementById("camera-capture-image");
+        const cameraCloseButton = document.getElementById("camera-close-btn");
+        const cameraCaptureButton = document.getElementById("camera-capture-btn");
+        const cameraUseButton = document.getElementById("camera-use-btn");
+        const cameraRetakeButton = document.getElementById("camera-retake-btn");
         const residencySince = document.getElementById("residency_since");
         if (!purposeSelect || !purposeOther || !serviceInputs.length) return;
+        const hasPostedData = {% if posted_data %}true{% else %}false{% endif %};
         let currentStep = 1;
         const totalSteps = wizardShell ? Number(wizardShell.dataset.totalSteps || stepPanels.length || 1) : 1;
+        let activeCameraStream = null;
+        let capturedPhotoBlob = null;
 
         function isVisible(element) {
             return !!(element && (element.offsetWidth || element.offsetHeight || element.getClientRects().length));
@@ -1287,6 +1550,117 @@
             return selected ? (selected.dataset.serviceName || "").toLowerCase() : "";
         }
 
+        function updatePhotoPreview(url, message) {
+            if (!photoPreviewBox || !photoPreviewImage) return;
+            if (url) {
+                photoPreviewImage.src = url;
+                photoPreviewBox.classList.add("has-image");
+            } else {
+                photoPreviewImage.removeAttribute("src");
+                photoPreviewBox.classList.remove("has-image");
+            }
+            if (photoPreviewMeta && message) {
+                photoPreviewMeta.textContent = message;
+            }
+        }
+
+        function updateCameraPreview(url) {
+            if (!cameraCapturePreview || !cameraCaptureImage) return;
+            if (url) {
+                cameraCaptureImage.src = url;
+                cameraCapturePreview.classList.add("has-image");
+            } else {
+                cameraCaptureImage.removeAttribute("src");
+                cameraCapturePreview.classList.remove("has-image");
+            }
+        }
+
+        function stopCameraStream() {
+            if (activeCameraStream) {
+                activeCameraStream.getTracks().forEach((track) => track.stop());
+                activeCameraStream = null;
+            }
+            if (cameraVideo) {
+                cameraVideo.srcObject = null;
+            }
+        }
+
+        async function startCameraStream() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                window.alert("Camera access is not available on this device.");
+                return false;
+            }
+            stopCameraStream();
+            try {
+                activeCameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" },
+                    audio: false,
+                });
+                if (cameraVideo) {
+                    cameraVideo.srcObject = activeCameraStream;
+                    await cameraVideo.play();
+                }
+                return true;
+            } catch (error) {
+                window.alert("Unable to access the camera. Please allow camera permission or upload an image instead.");
+                return false;
+            }
+        }
+
+        async function openCameraModal() {
+            const started = await startCameraStream();
+            if (!started || !cameraModal) return;
+            capturedPhotoBlob = null;
+            updateCameraPreview("");
+            cameraModal.classList.add("is-open");
+            cameraModal.setAttribute("aria-hidden", "false");
+        }
+
+        function closeCameraModal() {
+            if (!cameraModal) return;
+            cameraModal.classList.remove("is-open");
+            cameraModal.setAttribute("aria-hidden", "true");
+            stopCameraStream();
+        }
+
+        function assignBlobToPhotoInput(blob) {
+            if (!photo2x2 || !blob) return;
+            const file = new File([blob], "barangay-id-2x2.png", { type: "image/png" });
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            photo2x2.files = transfer.files;
+            updatePhotoPreview(URL.createObjectURL(file), "Captured photo ready for the Barangay ID print preview.");
+        }
+
+        function captureSquarePhoto() {
+            if (!cameraVideo || !cameraCanvas) return;
+            const videoWidth = cameraVideo.videoWidth;
+            const videoHeight = cameraVideo.videoHeight;
+            if (!videoWidth || !videoHeight) return;
+
+            const cropSize = Math.min(videoWidth, videoHeight);
+            const offsetX = Math.floor((videoWidth - cropSize) / 2);
+            const offsetY = Math.floor((videoHeight - cropSize) / 2);
+            const context = cameraCanvas.getContext("2d");
+            context.clearRect(0, 0, cameraCanvas.width, cameraCanvas.height);
+            context.drawImage(
+                cameraVideo,
+                offsetX,
+                offsetY,
+                cropSize,
+                cropSize,
+                0,
+                0,
+                cameraCanvas.width,
+                cameraCanvas.height
+            );
+            const previewUrl = cameraCanvas.toDataURL("image/png");
+            updateCameraPreview(previewUrl);
+            cameraCanvas.toBlob((blob) => {
+                capturedPhotoBlob = blob;
+            }, "image/png");
+        }
+
         function normalizedServiceName(name) {
             return (name || "")
                 .toLowerCase()
@@ -1351,13 +1725,16 @@
                 "barangay permit",
                 "solo parent id"
             ].includes(serviceName);
-            const showEmergency = serviceName === "barangay id";
+            const isIdStyleRequest = serviceName.includes("barangay id") || serviceName.includes("solo parent id");
+            const showEmergency = isIdStyleRequest;
+            const showPhoto = isIdStyleRequest;
             const showResidency = serviceName === "qcid" || serviceName === "qc id";
             const showBusiness = ["business clearance", "barangay permit", "business permit"].includes(serviceName);
 
             purposeSection.style.display = showPurpose ? "flex" : "none";
             businessSection.style.display = showBusiness ? "flex" : "none";
             emergencySection.style.display = showEmergency ? "flex" : "none";
+            photoSection.style.display = showPhoto ? "block" : "none";
             residencySection.style.display = showResidency ? "flex" : "none";
 
             setRequired(purposeSelect, showPurpose);
@@ -1402,6 +1779,7 @@
             setRequired(emergencyName, showEmergency);
             setRequired(emergencyAddress, showEmergency);
             setRequired(emergencyNumber, showEmergency);
+            setRequired(photo2x2, showPhoto);
             if (!showEmergency) {
                 emergencyName.value = "";
                 emergencyAddress.value = "";
@@ -1411,6 +1789,9 @@
             setRequired(residencySince, showResidency);
             if (!showResidency) {
                 residencySince.value = "";
+            }
+            if (!showPhoto) {
+                updatePhotoPreview("", "Use a clear front-facing photo. The preview is cropped to a square 2x2 layout for the ID printout.");
             }
         }
 
@@ -1484,10 +1865,68 @@
         if (applicantVoterStatus) {
             applicantVoterStatus.addEventListener("change", toggleSectionsByService);
         }
+        if (photo2x2) {
+            photo2x2.addEventListener("change", () => {
+                const file = photo2x2.files && photo2x2.files[0];
+                if (!file) {
+                    updatePhotoPreview("", "Use a clear front-facing photo. The preview is cropped to a square 2x2 layout for the ID printout.");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    updatePhotoPreview(event.target.result, "Uploaded photo ready for the Barangay ID print preview.");
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        if (takePhotoButton) {
+            takePhotoButton.addEventListener("click", openCameraModal);
+        }
+        if (cameraCloseButton) {
+            cameraCloseButton.addEventListener("click", closeCameraModal);
+        }
+        if (cameraCaptureButton) {
+            cameraCaptureButton.addEventListener("click", captureSquarePhoto);
+        }
+        if (cameraUseButton) {
+            cameraUseButton.addEventListener("click", () => {
+                if (!capturedPhotoBlob) {
+                    captureSquarePhoto();
+                }
+                if (!capturedPhotoBlob) {
+                    window.alert("Capture a photo first before using it.");
+                    return;
+                }
+                assignBlobToPhotoInput(capturedPhotoBlob);
+                closeCameraModal();
+            });
+        }
+        if (cameraRetakeButton) {
+            cameraRetakeButton.addEventListener("click", async () => {
+                capturedPhotoBlob = null;
+                updateCameraPreview("");
+                await startCameraStream();
+            });
+        }
+        if (cameraModal) {
+            cameraModal.addEventListener("click", (event) => {
+                if (event.target === cameraModal) {
+                    closeCameraModal();
+                }
+            });
+        }
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && cameraModal && cameraModal.classList.contains("is-open")) {
+                closeCameraModal();
+            }
+        });
 
         purposeSelect.addEventListener("change", toggleOtherInput);
         toggleSectionsByService();
         toggleOtherInput();
+        if (hasPostedData) {
+            currentStep = totalSteps;
+        }
         syncWizard();
 
         BMISFormValidation.init(form, {
@@ -1498,7 +1937,7 @@
                 applicant_gender: { label: "Gender", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
                 applicant_civil_status: { label: "Civil status", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
                 applicant_voter_status: { label: "Voter status", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
-                applicant_contact_number: { label: "Applicant contact number", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : "" },
+                applicant_contact_number: { label: "Applicant contact number", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : value && value.replace(/\D/g, "").length < 7 ? "Contact number must be at least 7 digits." : "" },
                 applicant_email: { email: true, label: "Applicant email" },
                 applicant_address_house_number: { label: "House number", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
                 applicant_address_street: { label: "Street", custom: (input, value) => input && input.offsetParent !== null && !value ? "This field is required." : "" },
@@ -1506,10 +1945,11 @@
                 purpose_other: { label: "Other purpose", custom: () => purposeOther.required && !purposeOther.value.trim() ? "This field is required." : "" },
                 emergency_contact_name: { label: "Emergency contact name", custom: (input, value) => input.required && !value ? "This field is required." : "" },
                 emergency_contact_address: { label: "Emergency contact address", custom: (input, value) => input.required && !value ? "This field is required." : "" },
-                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                emergency_contact_number: { label: "Emergency contact number", custom: (input, value) => input.required && !value ? "This field is required." : value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : value && value.replace(/\D/g, "").length < 7 ? "Contact number must be at least 7 digits." : "" },
+                photo_2x2: { label: "2x2 picture", custom: (input) => input.required && (!input.files || !input.files.length) ? "This field is required." : "" },
                 residency_since: { label: "Residency since", custom: (input, value) => input.required && !value ? "This field is required." : value && Number.isNaN(Date.parse(value)) ? "Date must be valid and in the correct format." : "" },
                 business_email: { email: true, label: "Business email" },
-                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "")) ? "Mobile number must contain only digits." : "" },
+                business_telephone: { label: "Business telephone", custom: (input, value) => value && !/^\d+$/.test(value.replace(/\s+/g, "").replace(/[()+-]/g, "")) ? "Mobile number must contain only digits." : value && value.replace(/\D/g, "").length < 7 ? "Contact number must be at least 7 digits." : "" },
                 business_name: { label: "Business name", custom: (input, value) => input.required && !value ? "This field is required." : "" },
                 business_owner_name: { label: "Business owner", custom: (input, value) => input.required && !value ? "This field is required." : "" },
                 business_address: { label: "Business address", custom: (input, value) => input.required && !value ? "This field is required." : "" },

@@ -966,6 +966,28 @@ def normalize_service_name(name):
     return re.sub(r"[^a-z0-9]+", " ", (name or "").lower()).strip()
 
 
+def is_reusable_id_service_name(service_name):
+    normalized_name = normalize_service_name(service_name)
+    return any(keyword in normalized_name for keyword in ["barangay id", "solo parent id"])
+
+
+def get_id_print_labels(service_name):
+    normalized_name = normalize_service_name(service_name)
+    if "solo parent id" in normalized_name:
+        return {
+            "page_title": "Solo Parent ID Print Preview",
+            "card_title": "Solo Parent ID",
+            "back_subcopy": "ID Information<br>Emergency and Signature Details",
+            "print_button_label": "Print Solo Parent ID Details",
+        }
+    return {
+        "page_title": "Barangay ID Print Preview",
+        "card_title": "Barangay Identification Card",
+        "back_subcopy": "ID Information<br>Emergency and Signature Details",
+        "print_button_label": "Print Barangay ID Details",
+    }
+
+
 def is_indigency_service(service_type_or_name):
     if isinstance(service_type_or_name, dict):
         service_name = service_type_or_name.get("name", "")
@@ -996,6 +1018,8 @@ def is_first_time_job_seeker_request(service_request):
 
 
 def has_released_first_time_job_seeker_request(resident, *, exclude_request_id=None):
+    if not resident or not getattr(resident, "pk", None):
+        return False
     queryset = ServiceRequest.objects.filter(
         resident=resident,
         status="RELEASED",
@@ -1006,6 +1030,8 @@ def has_released_first_time_job_seeker_request(resident, *, exclude_request_id=N
 
 
 def get_released_request_count_for_service(resident, service_type, *, exclude_request_id=None):
+    if not resident or not getattr(resident, "pk", None):
+        return 0
     queryset = ServiceRequest.objects.filter(
         resident=resident,
         service_type=service_type,
@@ -1317,12 +1343,12 @@ def get_service_request_rules(service_type):
             "solo parent",
         ]
     )
-    requires_emergency = normalized_name == "barangay id"
+    requires_emergency = is_reusable_id_service_name(normalized_name)
     requires_residency = normalized_name in {"qcid", "qc id"}
     requires_business = normalized_name in {"business clearance", "barangay permit", "business permit"}
     requires_requestor = normalized_name in {"certificate of indigency", "request first time jobseeker", "first time job seeker"}
     requires_deceased_info = normalized_name == "certificate of indigency"
-    requires_id_photo = normalized_name == "barangay id"
+    requires_id_photo = is_reusable_id_service_name(normalized_name)
 
     return {
         "normalized_name": normalized_name,
@@ -1357,6 +1383,7 @@ def build_service_request_form_context(request, resident, service_types, service
     if selected_service:
         selected_service_type = selected_service.get("service_type") if isinstance(selected_service, dict) else selected_service
     selected_service_identity = selected_service if isinstance(selected_service, dict) else selected_service_type
+    resident_has_pk = bool(getattr(resident, "pk", None))
     fee_preview = get_service_request_fee_details(resident, selected_service_type) if (selected_service_type and resident) else None
     is_one_time_used = (
         bool(selected_service_identity)
@@ -1366,10 +1393,10 @@ def build_service_request_form_context(request, resident, service_types, service
     )
     request_history = (
         resident.service_requests.select_related("service_type").order_by("-request_date")
-        if resident else
+        if resident_has_pk else
         ServiceRequest.objects.none()
     )
-    latest_released_request = request_history.filter(status="RELEASED").first() if resident else None
+    latest_released_request = request_history.filter(status="RELEASED").first() if resident_has_pk else None
     return {
         "resident": resident,
         "service_types": service_types,
@@ -1382,7 +1409,7 @@ def build_service_request_form_context(request, resident, service_types, service
         "fee_preview": fee_preview,
         "is_one_time_service_used": is_one_time_used,
         "is_portal_service_page": selected_service is not None,
-        "is_manual_walk_in": resident is None and is_staff_user(request.user),
+        "is_manual_walk_in": is_staff_user(request.user) and not resident_has_pk,
         "is_staff_intake": is_staff_user(request.user),
         "resident_voter_status": bool(resident.voter_status) if resident else False,
         "request_origin_label": "For Walk-In Applicants" if is_staff_user(request.user) else "Portal Request",
@@ -5265,6 +5292,10 @@ def export_barangay_summary_csv(request):
 def _render_service_request_document(request, service):
     resident = service.resident
     address = resident.formatted_address or "-"
+    id_photo_attachment = (
+        service.attachments.filter(note__iexact="2x2 Picture").first()
+        or service.attachments.first()
+    )
 
     # Decide which template to load
     service_name = service.service_type.name.lower()
@@ -5313,7 +5344,7 @@ def _render_service_request_document(request, service):
     elif "qcid" in service_name or "qc id" in service_name:
         template = "qcid_print.html"
 
-    elif "barangay id" in service_name:
+    elif is_reusable_id_service_name(service_name):
         template = "barangay_id_print.html"
 
     else:
@@ -5324,6 +5355,8 @@ def _render_service_request_document(request, service):
         "resident": resident,
         "address": address,
         "today": date.today(),
+        "id_photo_attachment": id_photo_attachment,
+        "id_print_labels": get_id_print_labels(service.service_type.name),
     }
     return render(request, template, context)
 

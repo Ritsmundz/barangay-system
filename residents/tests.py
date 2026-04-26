@@ -10,7 +10,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from .forms import ComplaintForm, HouseholdForm, ResidentPortalRegistrationForm
-from .models import Complaint, Notification, Resident, ServiceRequest, ServiceType, UserProfile
+from .models import Complaint, Notification, Resident, ServiceRequest, ServiceRequestAttachment, ServiceType, UserProfile
 from .views import (
     apply_treasurer_request_action,
     get_service_request_fee_details,
@@ -971,6 +971,147 @@ class ServiceRequestWorkflowTests(TestCase):
         service_request.refresh_from_db()
         self.assertEqual(service_request.status, "READY_FOR_RELEASE")
         self.assertEqual(service_request.payment_status, "PAID")
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+class WalkInServiceRequestTests(TestCase):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEST_MEDIA_ROOT, ignore_errors=True)
+
+    def setUp(self):
+        self.secretary_group, _ = Group.objects.get_or_create(name="Secretary")
+        self.secretary = User.objects.create_user("walkin_secretary", password="StrongPass123!")
+        self.secretary.groups.add(self.secretary_group)
+        self.barangay_id = ServiceType.objects.create(
+            name="Barangay ID",
+            fee=50,
+            voter_fee=25,
+            non_voter_fee=50,
+            free_limit=1,
+        )
+        self.resident = Resident.objects.create(
+            first_name="Paolo",
+            last_name="Rivera",
+            birth_date="1997-04-15",
+            gender="Male",
+            civil_status="Single",
+            precinct="1001A",
+            address_house_number="12",
+            address_street="Molave Street",
+            address_barangay="Gulod",
+            address_city="Quezon City",
+        )
+
+    def _walk_in_post_data(self):
+        return {
+            "service_type": str(self.barangay_id.id),
+            "applicant_first_name": "Andrea",
+            "applicant_middle_name": "Lopez",
+            "applicant_last_name": "Santos",
+            "applicant_suffix": "",
+            "applicant_birth_date": "2000-02-20",
+            "applicant_place_of_birth": "Quezon City",
+            "applicant_gender": "Female",
+            "applicant_civil_status": "Single",
+            "applicant_voter_status": "yes",
+            "applicant_occupation": "Clerk",
+            "applicant_contact_number": "09123456789",
+            "applicant_email": "andrea@example.com",
+            "applicant_precinct": "2002B",
+            "applicant_address_house_number": "45",
+            "applicant_address_street": "Sampaguita Street",
+            "applicant_address_barangay": "Gulod",
+            "applicant_address_city": "Quezon City",
+            "applicant_address_province": "Metro Manila",
+            "emergency_contact_name": "Mario Santos",
+            "emergency_contact_address": "45 Sampaguita Street, Gulod, Quezon City",
+            "emergency_contact_number": "09987654321",
+        }
+
+    def test_walk_in_barangay_id_missing_photo_returns_form_instead_of_crashing(self):
+        self.client.force_login(self.secretary)
+
+        response = self.client.post(
+            reverse("create_walk_in_service_request"),
+            data=self._walk_in_post_data(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Please upload a 2X2 picture for Barangay ID application.")
+        self.assertEqual(ServiceRequest.objects.count(), 0)
+
+    def test_walk_in_barangay_id_submission_creates_request_and_print_preview(self):
+        self.client.force_login(self.secretary)
+        payload = self._walk_in_post_data()
+        payload["photo_2x2"] = SimpleUploadedFile(
+            "barangay-id.gif",
+            TEST_GIF,
+            content_type="image/gif",
+        )
+
+        response = self.client.post(
+            reverse("create_walk_in_service_request"),
+            data=payload,
+        )
+
+        service_request = ServiceRequest.objects.get()
+        self.assertRedirects(response, reverse("generate_document", args=[service_request.id]))
+        self.assertTrue(
+            Resident.objects.filter(
+                first_name="Andrea",
+                last_name="Santos",
+                birth_date="2000-02-20",
+            ).exists()
+        )
+        self.assertEqual(ServiceRequestAttachment.objects.filter(service_request=service_request).count(), 1)
+
+        preview_response = self.client.get(reverse("generate_document", args=[service_request.id]))
+        self.assertEqual(preview_response.status_code, 200)
+        self.assertContains(preview_response, "Print Barangay ID Details")
+        self.assertContains(preview_response, "/media/service_request_attachments/")
+    def test_generate_document_renders_supported_print_templates(self):
+        self.client.force_login(self.secretary)
+        cases = [
+            ("Barangay Clearance", "Print Clearance"),
+            ("Certificate of Residency", "Print Certificate"),
+            ("Certificate of Indigency", "Print Certificate"),
+            ("QCID", "Print QCID Details"),
+            ("Barangay ID", "Print Barangay ID Details"),
+            ("Business Permit", "Print Permit"),
+        ]
+
+        for service_name, expected_text in cases:
+            service_type = ServiceType.objects.create(
+                name=service_name,
+                fee=50,
+                voter_fee=25,
+                non_voter_fee=50,
+                free_limit=1,
+            )
+            service_request = ServiceRequest.objects.create(
+                resident=self.resident,
+                service_type=service_type,
+                purpose="Testing print output",
+                emergency_contact_name="Mario Rivera" if service_name == "Barangay ID" else None,
+                emergency_contact_address="12 Molave Street" if service_name == "Barangay ID" else None,
+                emergency_contact_number="09123456789" if service_name == "Barangay ID" else None,
+                residency_since="2018-05-01" if service_name == "QCID" else None,
+                business_name="Rivera Store" if service_name == "Business Permit" else None,
+                business_owner_name="Paolo Rivera" if service_name == "Business Permit" else None,
+                business_address="12 Molave Street, Gulod, Quezon City" if service_name == "Business Permit" else None,
+                business_nature="Retail" if service_name == "Business Permit" else None,
+                fee=0,
+                payment_required="NO",
+                payment_status="EXEMPT",
+                status="READY_FOR_RELEASE",
+            )
+
+            response = self.client.get(reverse("generate_document", args=[service_request.id]))
+
+            self.assertEqual(response.status_code, 200, service_name)
+            self.assertContains(response, expected_text, msg_prefix=service_name)
 
 
 class FirstTimeJobSeekerLimitTests(TestCase):
