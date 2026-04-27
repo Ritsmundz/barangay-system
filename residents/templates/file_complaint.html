@@ -55,9 +55,6 @@
     .preview-sub{font-size:12px;color:#7b8ba4;margin-top:3px}
     .preview-label{font-size:11px;color:#8a99ae;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
     .value{font-size:14px;color:#1e293b;font-weight:600;line-height:1.45}
-    .sticky-bar{position:sticky;bottom:14px;z-index:20;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;border:1px solid #dbe6f2;border-radius:18px;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);box-shadow:0 16px 40px rgba(17,37,77,.12)}
-    .sticky-note{font-size:12px;color:#6b7a90}.sticky-note strong{color:#1d2d47}
-    .sticky-actions{display:flex;gap:10px;flex-wrap:wrap}
     @media (max-width:1040px){.complaint-layout{grid-template-columns:1fr}.right-col{grid-template-columns:1fr 1fr}}
     @media (max-width:720px){.info-row,.right-col{grid-template-columns:1fr}}
 </style>
@@ -136,13 +133,6 @@
                 </div>
             </form>
 
-            <div class="sticky-bar">
-                <div class="sticky-note"><strong>Before submitting:</strong> make sure the title is clear and the description explains the issue, people involved, and facts the Secretary can verify.</div>
-                <div class="sticky-actions">
-                    <a href="{% url 'complaint_list' %}" class="btn-bmis btn-secondary">Cancel</a>
-                    <button type="submit" form="complaint-form" class="btn-bmis btn-primary" id="sticky-complaint-btn">Submit Complaint</button>
-                </div>
-            </div>
         </div>
 
         <div class="right-col">
@@ -201,7 +191,7 @@
     const pvDescription = document.getElementById("pv-description");
     const previewTitle = document.getElementById("preview-title");
     const pill = document.getElementById("complaint-pill");
-    const submitButtons = [document.getElementById("submit-complaint-btn"), document.getElementById("sticky-complaint-btn")].filter(Boolean);
+    const submitButtons = [document.getElementById("submit-complaint-btn")].filter(Boolean);
 
     function updatePreview() {
         if (resident && pvResident) {

@@ -931,7 +931,7 @@
                     </svg>
                     Service Requests
                 </a>
-                <a href="{% url 'complaint_list' %}" class="sb-item {% if request.resolver_match.url_name == 'complaint_list' or request.resolver_match.url_name == 'complaint_detail' or request.resolver_match.url_name == 'file_complaint' %}active{% endif %}">
+                <a href="{% if user_profile and user_profile.is_verified and user_profile.resident %}{% url 'complaint_list' %}{% else %}{% url 'portal_pending_verification' %}{% endif %}" class="sb-item {% if request.resolver_match.url_name == 'complaint_list' or request.resolver_match.url_name == 'complaint_detail' or request.resolver_match.url_name == 'file_complaint' %}active{% endif %}">
                     <svg viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                     </svg>
