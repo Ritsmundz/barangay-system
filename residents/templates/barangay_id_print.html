@@ -547,18 +547,26 @@
             stroke-linejoin: round;
             flex-shrink: 0;
         }
-        .print-button {
+        .screen-actions {
             position: fixed;
             right: 20px;
             bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .print-button,
+        .back-button {
             padding: 12px 22px;
             border: none;
             border-radius: 8px;
-            background: #16335f;
             color: #fff;
             cursor: pointer;
             box-shadow: 0 12px 24px rgba(22, 51, 95, 0.22);
+            text-decoration: none;
         }
+        .print-button { background: #16335f; }
+        .back-button { background: #475569; }
         @media print {
             body {
                 background: #fff;
@@ -566,7 +574,7 @@
             }
             .page-title,
             .preview-note,
-            .print-button {
+            .screen-actions {
                 display: none;
             }
             .page {
@@ -879,6 +887,9 @@
         </div>
     </div>
 
-    <button class="print-button" onclick="window.print()">{{ id_print_labels.print_button_label }}</button>
+    <div class="screen-actions">
+        <a href="{% url 'service_request_detail' service.id %}" class="back-button">Back to Request</a>
+        <button class="print-button" onclick="window.print()">{{ id_print_labels.print_button_label }}</button>
+    </div>
 </body>
 </html>

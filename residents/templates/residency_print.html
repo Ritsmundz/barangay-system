@@ -26,8 +26,10 @@
         .footer-signature { margin-top: 140px; text-align: right; }
         .signature-block { max-width: 360px; margin: 0 0 0 auto; padding-top: 26px; }
         .signature-name { font-weight: 700; margin-top: 14px; }
-        .print-button { position: fixed; right: 20px; bottom: 20px; padding: 12px 22px; border: none; background: #16335f; color: #fff; cursor: pointer; border-radius: 8px; }
-        @media print { .print-button { display: none; } body { padding: 0; } }
+        .screen-actions { position: fixed; right: 20px; bottom: 20px; display: flex; gap: 12px; align-items: center; }
+        .print-button, .back-button { padding: 12px 22px; border: none; background: #16335f; color: #fff; cursor: pointer; border-radius: 8px; text-decoration: none; font-size: 14px; }
+        .back-button { background: #475569; }
+        @media print { .screen-actions { display: none; } body { padding: 0; } }
     </style>
 </head>
 <body>
@@ -64,6 +66,9 @@
         </div>
     </div>
 
-    <button class="print-button" onclick="window.print()">Print Certificate</button>
+    <div class="screen-actions">
+        <a href="{% url 'service_request_detail' service.id %}" class="back-button">Back to Request</a>
+        <button class="print-button" onclick="window.print()">Print Certificate</button>
+    </div>
 </body>
 </html>

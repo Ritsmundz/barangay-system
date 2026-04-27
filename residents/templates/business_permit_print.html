@@ -27,18 +27,26 @@
             break-before: page;
             page-break-before: always;
         }
-        .print-button {
+        .screen-actions {
             position: fixed;
             right: 20px;
             bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .print-button,
+        .back-button {
             padding: 12px 22px;
             border: none;
             border-radius: 8px;
-            background: #16335f;
             color: #fff;
             font-weight: 700;
             cursor: pointer;
+            text-decoration: none;
         }
+        .print-button { background: #16335f; }
+        .back-button { background: #475569; }
         .header {
             text-align: center;
             position: relative;
@@ -275,7 +283,7 @@
                 padding: 0;
             }
             .sheet + .sheet { margin-top: 0; }
-            .print-button { display: none; }
+            .screen-actions { display: none; }
             .page-break { break-before: page; page-break-before: always; }
         }
     </style>
@@ -673,6 +681,9 @@
         </table>
     </div>
 
-    <button class="print-button" onclick="window.print()">Print Permit</button>
+    <div class="screen-actions">
+        <a href="{% url 'service_request_detail' service.id %}" class="back-button">Back to Request</a>
+        <button class="print-button" onclick="window.print()">Print Permit</button>
+    </div>
 </body>
 </html>
