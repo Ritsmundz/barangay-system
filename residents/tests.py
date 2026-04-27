@@ -431,6 +431,34 @@ class ComplaintWorkflowTests(TestCase):
         complaint.refresh_from_db()
         self.assertEqual(complaint.status, "Withdrawn")
 
+    def test_resident_complaint_form_preloads_hidden_resident_value(self):
+        self.client.login(username="resident1", password="StrongPass123!")
+
+        response = self.client.get(reverse("file_complaint"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            f'type="hidden" name="resident" value="{self.resident.id}"',
+            html=False,
+        )
+
+    def test_verified_resident_can_submit_complaint_without_posting_resident_field(self):
+        self.client.login(username="resident1", password="StrongPass123!")
+
+        response = self.client.post(
+            reverse("file_complaint"),
+            {
+                "title": "Noise Complaint",
+                "description": "There is loud videoke every night near the covered court.",
+            },
+        )
+
+        self.assertRedirects(response, reverse("complaint_list"))
+        complaint = Complaint.objects.get(title="Noise Complaint")
+        self.assertEqual(complaint.resident, self.resident)
+        self.assertEqual(complaint.filed_by, self.resident_user)
+
     def test_secretary_cannot_withdraw_complaint_through_status_update(self):
         complaint = Complaint.objects.create(
             resident=self.resident,

@@ -4785,7 +4785,10 @@ def file_complaint(request):
             return redirect("complaint_list")
 
     else:
-        form = ComplaintForm()
+        if is_resident_user:
+            form = ComplaintForm(initial={"resident": resident_profile.resident_id})
+        else:
+            form = ComplaintForm()
 
     if is_resident_user:
         form.fields["resident"].widget = form.fields["resident"].hidden_widget()

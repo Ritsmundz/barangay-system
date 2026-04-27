@@ -205,8 +205,12 @@
 
     function updatePreview() {
         if (resident && pvResident) {
-            const option = resident.selectedOptions && resident.selectedOptions[0];
-            pvResident.textContent = option && option.value ? option.text : "Not selected";
+            if (resident.type === "hidden") {
+                pvResident.textContent = resident.value ? "{{ resident_profile.resident|escapejs }}" : "Not selected";
+            } else {
+                const option = resident.selectedOptions && resident.selectedOptions[0];
+                pvResident.textContent = option && option.value ? option.text : "Not selected";
+            }
         }
         const titleText = (title?.value || "").trim();
         const descText = (description?.value || "").trim();
@@ -234,7 +238,11 @@
 
     BMISFormValidation.init(document.getElementById("complaint-form"), {
         rules: {
-            id_resident: { required: true, label: "Complainant" },
+            id_resident: {
+                required: true,
+                label: "Complainant",
+                custom: (input, value) => input && input.type === "hidden" ? (value ? "" : "This field is required.") : (!value ? "This field is required." : "")
+            },
             id_title: { required: true, minLength: 5, maxLength: 200, label: "Complaint title" },
             id_description: {
                 required: true,
