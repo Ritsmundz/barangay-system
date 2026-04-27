@@ -1043,12 +1043,14 @@ def get_released_request_count_for_service(resident, service_type, *, exclude_re
 
 
 def is_service_request_fee_exempt(resident, service_type, *, exclude_request_id=None):
+    free_limit = max(int(getattr(service_type, "free_limit", 1) or 0), 0)
+    if not resident or not getattr(resident, "pk", None):
+        return False, 0, free_limit
     previous_released_count = get_released_request_count_for_service(
         resident,
         service_type,
         exclude_request_id=exclude_request_id,
     )
-    free_limit = max(int(getattr(service_type, "free_limit", 1) or 0), 0)
     return previous_released_count < free_limit, previous_released_count, free_limit
 
 
@@ -1978,22 +1980,7 @@ def handle_service_request_submission(request, resident, service_types, service_
             selected_service=selected_service,
         )
 
-    if resident.pk:
-        fee_details = get_service_request_fee_details(resident, service_type)
-    else:
-        standard_fee = Decimal(get_standard_service_fee(resident, service_type) or 0)
-        free_limit = max(int(getattr(service_type, "free_limit", 1) or 0), 0)
-        is_exempt = free_limit > 0
-        fee_amount = Decimal("0.00") if is_exempt else standard_fee
-        fee_note = "This is the first request for this service, so no payment is required." if is_exempt else f"Please bring the exact amount of Php {fee_amount:.2f} when claiming this document."
-        fee_details = {
-            "amount": fee_amount,
-            "is_exempt": is_exempt,
-            "standard_amount": standard_fee,
-            "previous_released_count": 0,
-            "free_limit": free_limit,
-            "fee_note": fee_note,
-        }
+    fee_details = get_service_request_fee_details(resident, service_type)
     payment_required = "NO" if fee_details["is_exempt"] or fee_details["amount"] <= 0 else "YES"
     payment_status = "EXEMPT" if payment_required == "NO" else "PENDING"
 
@@ -4324,7 +4311,7 @@ def create_walk_in_service_request(request):
         )
         if context is not None:
             return render(request, "service_request_form.html", context)
-        return redirect("generate_document", request_id=service.id)
+        return redirect("service_request_detail", request_id=service.id)
 
     return render(
         request,

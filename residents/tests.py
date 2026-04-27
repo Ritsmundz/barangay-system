@@ -861,6 +861,22 @@ class ServiceRequestFeeRuleTests(TestCase):
         self.assertEqual(fee_details["amount"], self.clearance.non_voter_fee)
         self.assertEqual(fee_details["previous_released_count"], 1)
 
+    def test_unsaved_walk_in_resident_is_not_exempt(self):
+        walk_in_resident = Resident(
+            first_name="Mila",
+            last_name="Dela Cruz",
+            birth_date="1998-01-12",
+            gender="Female",
+            civil_status="Single",
+            voter_status=False,
+        )
+
+        fee_details = get_service_request_fee_details(walk_in_resident, self.clearance)
+
+        self.assertFalse(fee_details["is_exempt"])
+        self.assertEqual(fee_details["amount"], self.clearance.non_voter_fee)
+        self.assertEqual(fee_details["previous_released_count"], 0)
+
     def test_released_requests_for_other_service_do_not_affect_current_service(self):
         ServiceRequest.objects.create(
             resident=self.resident,
@@ -1095,7 +1111,7 @@ class WalkInServiceRequestTests(TestCase):
         self.assertContains(response, "Please upload a 2X2 picture for Barangay ID application.")
         self.assertEqual(ServiceRequest.objects.count(), 0)
 
-    def test_walk_in_barangay_id_submission_creates_request_and_print_preview(self):
+    def test_walk_in_barangay_id_submission_creates_request_and_redirects_to_details(self):
         self.client.force_login(self.secretary)
         payload = self._walk_in_post_data()
         payload["photo_2x2"] = SimpleUploadedFile(
@@ -1110,7 +1126,7 @@ class WalkInServiceRequestTests(TestCase):
         )
 
         service_request = ServiceRequest.objects.get()
-        self.assertRedirects(response, reverse("generate_document", args=[service_request.id]))
+        self.assertRedirects(response, reverse("service_request_detail", args=[service_request.id]))
         self.assertTrue(
             Resident.objects.filter(
                 first_name="Andrea",
@@ -1119,11 +1135,6 @@ class WalkInServiceRequestTests(TestCase):
             ).exists()
         )
         self.assertEqual(ServiceRequestAttachment.objects.filter(service_request=service_request).count(), 1)
-
-        preview_response = self.client.get(reverse("generate_document", args=[service_request.id]))
-        self.assertEqual(preview_response.status_code, 200)
-        self.assertContains(preview_response, "Print Barangay ID Details")
-        self.assertContains(preview_response, "/media/service_request_attachments/")
     def test_generate_document_renders_supported_print_templates(self):
         self.client.force_login(self.secretary)
         cases = [

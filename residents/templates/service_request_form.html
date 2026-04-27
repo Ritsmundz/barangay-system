@@ -908,7 +908,7 @@
         <div class="page-title">Service Request</div>
         <div class="page-subtitle">
             {% if is_manual_walk_in %}
-            Manual secretary encoding with immediate print-ready output after submission
+            Manual secretary encoding that redirects to the request details page after submission
             {% elif is_staff_intake %}
             Secretary intake form for resident-assisted document processing
             {% else %}
@@ -997,9 +997,9 @@
                         <div class="wizard-overview-copy">After saving, the request enters the normal processing workflow.</div>
                     </div>
                     <div class="wizard-overview-card">
-                        <div class="wizard-overview-label">Print Flow</div>
-                        <div class="wizard-overview-value">Ready Right After</div>
-                        <div class="wizard-overview-copy">The matched print template opens after submission for immediate release work.</div>
+                        <div class="wizard-overview-label">Next Screen</div>
+                        <div class="wizard-overview-value">Request Details</div>
+                        <div class="wizard-overview-copy">After submission, the secretary is redirected to the request details page to continue the workflow.</div>
                     </div>
                 </div>
                 {% endif %}
@@ -1044,7 +1044,7 @@
                         <input id="applicant_address_city" name="applicant_address_city" class="bmis-input" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_city }}{% else %}Quezon City{% endif %}" placeholder="City">
                         <input id="applicant_address_province" name="applicant_address_province" class="bmis-input field-span-2" type="text" value="{% if posted_data %}{{ posted_data.applicant_address_province }}{% endif %}" placeholder="Province">
                     </div>
-                    <div class="field-hint">After submission, the secretary is sent directly to the print-ready document for the selected service.</div>
+                    <div class="field-hint">After submission, the secretary is redirected to the service request details page for the selected service.</div>
                 </div>
                 </div>
                 {% endif %}

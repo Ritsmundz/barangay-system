@@ -374,11 +374,6 @@
                             <button type="submit" class="action-btn">Mark Unpaid</button>
                         </form>
                         {% endif %}
-                        <form method="post" action="{% url 'treasurer_update_request_status' sr.id %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="action" value="mark_released">
-                            <button type="submit" class="action-btn release">Mark Released</button>
-                        </form>
                     </div>
                 </td>
             </tr>
