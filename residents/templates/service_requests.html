@@ -210,7 +210,10 @@
                             <div class="action-row">
                             <a href="{% url 'service_request_detail' sr.id %}" class="btn btn-soft">View Details</a>
                             {% if can_manage_requests and sr.status == "READY_FOR_RELEASE" and sr.can_release_request %}
-                            <a href="{% url 'print_and_release_document' sr.id %}" class="btn btn-release">Release & Print</a>
+                            <form method="post" action="{% url 'print_and_release_document' sr.id %}" style="display:inline-flex;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-release">Release & Print</button>
+                            </form>
                             {% endif %}
                             </div>
                             {% if can_manage_requests and sr.status != "RELEASED" and sr.status != "REJECTED" %}

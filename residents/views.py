@@ -5383,6 +5383,8 @@ def generate_document(request, request_id):
 
 @group_required(is_staff_user)
 def print_and_release_document(request, request_id):
+    if request.method != "POST":
+        return HttpResponseForbidden("Release and print must be submitted from the request controls.")
 
     service = get_object_or_404(ServiceRequest, id=request_id)
 

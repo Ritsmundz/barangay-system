@@ -390,7 +390,10 @@
                         {% endif %}
                         {% if can_manage and can_print_release and can_release_request %}
                         <div class="status-form">
-                            <a href="{% url 'print_and_release_document' service_request.id %}" class="btn btn-release">Release & Print</a>
+                            <form method="post" action="{% url 'print_and_release_document' service_request.id %}" style="display:inline-flex;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-release">Release & Print</button>
+                            </form>
                             <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Preview Document</a>
                         </div>
                         {% elif can_manage and can_print_release %}

@@ -1000,6 +1000,31 @@ class ServiceRequestWorkflowTests(TestCase):
         self.assertEqual(service_request.status, "READY_FOR_RELEASE")
         self.assertEqual(service_request.payment_status, "PAID")
 
+    def test_secretary_print_and_release_marks_request_as_released(self):
+        service_request = self.make_request(payment_required="NO", payment_status="EXEMPT")
+        service_request.status = "READY_FOR_RELEASE"
+        service_request.save()
+        self.client.force_login(self.secretary)
+
+        response = self.client.post(
+            reverse("print_and_release_document", args=[service_request.id]),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        service_request.refresh_from_db()
+        self.assertEqual(service_request.status, "RELEASED")
+        self.assertIsNotNone(service_request.processed_date)
+
+    def test_print_and_release_rejects_get_requests(self):
+        service_request = self.make_request(payment_required="NO", payment_status="EXEMPT")
+        service_request.status = "READY_FOR_RELEASE"
+        service_request.save()
+        self.client.force_login(self.secretary)
+
+        response = self.client.get(reverse("print_and_release_document", args=[service_request.id]))
+
+        self.assertEqual(response.status_code, 403)
+
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
 class WalkInServiceRequestTests(TestCase):
