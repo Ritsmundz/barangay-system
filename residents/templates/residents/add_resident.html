@@ -85,6 +85,12 @@
     .modal-body{padding:18px 20px;display:grid;gap:14px}
     .modal-actions{padding:16px 20px;border-top:1px solid #e7eef6;background:#fbfdff;display:flex;justify-content:flex-end;gap:10px}
     .modal-msg{font-size:12px;color:#dc2626}
+    .crop-stage{display:grid;gap:12px}
+    .crop-frame{border:1px solid #dbe6f2;border-radius:18px;background:#f8fbff;padding:12px}
+    .crop-canvas{display:block;width:100%;max-height:420px;border-radius:12px;background:#0f172a;cursor:crosshair}
+    .crop-hint{font-size:12px;color:#64748b}
+    .crop-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12px;color:#475569}
+    .crop-meta strong{color:#16335f}
     @media (max-width:1100px){.add-layout{grid-template-columns:1fr}.aside{grid-template-columns:1fr 1fr}}
     @media (max-width:820px){.grid-2,.grid-3,.toggles,.aside,.scan-row{grid-template-columns:1fr}.span-2{grid-column:auto}.avatar-preview{width:72px;height:72px;border-radius:20px;font-size:24px}}
 </style>
@@ -267,6 +273,37 @@
                 <button type="submit" class="btn-bmis btn-primary" id="save-household-modal">Save Household</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="id-crop-modal">
+    <div class="modal-card" style="width:min(820px,100%);">
+        <div class="modal-head">
+            <div>
+                <div class="modal-title">Recrop ID Before Scanning</div>
+                <div class="modal-sub">Drag a box over the readable part of the ID, then scan the cropped area.</div>
+            </div>
+            <button type="button" class="modal-close" id="close-id-crop-modal" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="crop-stage">
+                <div class="crop-frame">
+                    <canvas id="id-crop-canvas" class="crop-canvas" width="760" height="420"></canvas>
+                </div>
+                <div class="crop-meta">
+                    <span><strong>Tip:</strong> Include the QR code or the text block, not the whole background.</span>
+                    <span id="id-crop-selection">Crop selection ready.</span>
+                </div>
+                <div class="crop-hint">Click and drag to redraw the crop box. If you skip this step, you can still scan the original image.</div>
+                <div class="modal-msg" id="id-crop-msg"></div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn-bmis btn-secondary" id="cancel-id-crop">Cancel</button>
+            <button type="button" class="btn-bmis btn-secondary" id="reset-id-crop">Reset Crop</button>
+            <button type="button" class="btn-bmis btn-secondary" id="scan-original-id">Scan Original</button>
+            <button type="button" class="btn-bmis btn-primary" id="scan-cropped-id">Scan Cropped</button>
+        </div>
     </div>
 </div>
 
@@ -551,7 +588,114 @@
     const fileInput = $("id-scan-file");
     const scanBtn = $("scan-id-btn");
     const scanStatus = $("scan-status");
+    const cropModal = $("id-crop-modal");
+    const closeCropModalBtn = $("close-id-crop-modal");
+    const cancelCropModalBtn = $("cancel-id-crop");
+    const resetCropBtn = $("reset-id-crop");
+    const scanOriginalBtn = $("scan-original-id");
+    const scanCroppedBtn = $("scan-cropped-id");
+    const cropMsg = $("id-crop-msg");
+    const cropSelection = $("id-crop-selection");
+    const cropCanvas = $("id-crop-canvas");
+    const cropCtx = cropCanvas?.getContext("2d");
     const scanMap = {first_name:"id_first_name",middle_name:"id_middle_name",last_name:"id_last_name",suffix:"id_suffix",birth_date:"id_birth_date",place_of_birth:"id_place_of_birth",gender:"id_gender",civil_status:"id_civil_status",nationality:"id_nationality",religion:"id_religion",precinct:"id_precinct"};
+    let originalScanFile = null;
+    let cropImage = null;
+    let cropBounds = null;
+    let dragStart = null;
+    let isCropping = false;
+    let drawScale = 1;
+    let drawOffsetX = 0;
+    let drawOffsetY = 0;
+    let drawWidth = 0;
+    let drawHeight = 0;
+
+    function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    function defaultCropBounds() {
+        if (!cropImage) return null;
+        const width = Math.max(80, Math.round(cropImage.width * 0.84));
+        const height = Math.max(80, Math.round(cropImage.height * 0.84));
+        return {
+            x: Math.round((cropImage.width - width) / 2),
+            y: Math.round((cropImage.height - height) / 2),
+            width,
+            height,
+        };
+    }
+
+    function updateCropSelectionLabel() {
+        if (!cropSelection || !cropBounds) return;
+        cropSelection.textContent = `Crop: ${cropBounds.width}px × ${cropBounds.height}px`;
+        cropSelection.textContent = `Crop: ${cropBounds.width}px x ${cropBounds.height}px`;
+    }
+
+    function renderCropCanvas() {
+        if (!cropCtx || !cropCanvas) return;
+        cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+        cropCtx.fillStyle = "#0f172a";
+        cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+        if (!cropImage) return;
+
+        drawScale = Math.min(cropCanvas.width / cropImage.width, cropCanvas.height / cropImage.height);
+        drawWidth = cropImage.width * drawScale;
+        drawHeight = cropImage.height * drawScale;
+        drawOffsetX = (cropCanvas.width - drawWidth) / 2;
+        drawOffsetY = (cropCanvas.height - drawHeight) / 2;
+
+        cropCtx.drawImage(cropImage, drawOffsetX, drawOffsetY, drawWidth, drawHeight);
+
+        if (!cropBounds) return;
+        const x = drawOffsetX + cropBounds.x * drawScale;
+        const y = drawOffsetY + cropBounds.y * drawScale;
+        const width = cropBounds.width * drawScale;
+        const height = cropBounds.height * drawScale;
+
+        cropCtx.save();
+        cropCtx.fillStyle = "rgba(15, 23, 42, 0.52)";
+        cropCtx.fillRect(0, 0, cropCanvas.width, cropCanvas.height);
+        cropCtx.clearRect(x, y, width, height);
+        cropCtx.drawImage(cropImage, drawOffsetX, drawOffsetY, drawWidth, drawHeight);
+        cropCtx.strokeStyle = "#38bdf8";
+        cropCtx.lineWidth = 2;
+        cropCtx.strokeRect(x, y, width, height);
+        cropCtx.fillStyle = "#38bdf8";
+        [[x, y], [x + width, y], [x, y + height], [x + width, y + height]].forEach(([px, py]) => {
+            cropCtx.fillRect(px - 4, py - 4, 8, 8);
+        });
+        cropCtx.restore();
+        updateCropSelectionLabel();
+    }
+
+    function modalPointerToImage(event) {
+        if (!cropCanvas || !cropImage) return null;
+        const rect = cropCanvas.getBoundingClientRect();
+        const canvasX = (event.clientX - rect.left) * (cropCanvas.width / rect.width);
+        const canvasY = (event.clientY - rect.top) * (cropCanvas.height / rect.height);
+        const imageX = clamp((canvasX - drawOffsetX) / drawScale, 0, cropImage.width);
+        const imageY = clamp((canvasY - drawOffsetY) / drawScale, 0, cropImage.height);
+        return { x: imageX, y: imageY };
+    }
+
+    function openCropModal() {
+        cropModal?.classList.add("is-open");
+        document.body.style.overflow = "hidden";
+    }
+
+    function closeCropModal() {
+        cropModal?.classList.remove("is-open");
+        document.body.style.overflow = "";
+        cropMsg.textContent = "";
+    }
+
+    function setCropButtonsDisabled(disabled) {
+        [scanOriginalBtn, scanCroppedBtn, resetCropBtn].forEach((btn) => {
+            if (btn) btn.disabled = disabled;
+        });
+    }
+
     async function scanFile(file) {
         if (!file) return;
         scanStatus.textContent = "Scanning ID...";
@@ -578,10 +722,125 @@
             scanStatus.textContent = "Scan failed. Please try another image.";
         }
     }
+
+    async function loadFileForCropping(file) {
+        if (!file || !cropCanvas) return;
+        originalScanFile = file;
+        cropMsg.textContent = "";
+        cropSelection.textContent = "Preparing preview...";
+        const imgUrl = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            cropImage = img;
+            cropBounds = defaultCropBounds();
+            renderCropCanvas();
+            openCropModal();
+            URL.revokeObjectURL(imgUrl);
+        };
+        img.onerror = () => {
+            scanStatus.textContent = "Unable to preview this image. Try another file.";
+            URL.revokeObjectURL(imgUrl);
+        };
+        img.src = imgUrl;
+    }
+
+    function resetCrop() {
+        cropBounds = defaultCropBounds();
+        renderCropCanvas();
+    }
+
+    async function scanCroppedSelection() {
+        if (!cropImage || !cropBounds) return;
+        setCropButtonsDisabled(true);
+        cropMsg.textContent = "Preparing cropped image...";
+        const canvas = document.createElement("canvas");
+        canvas.width = cropBounds.width;
+        canvas.height = cropBounds.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(
+            cropImage,
+            cropBounds.x,
+            cropBounds.y,
+            cropBounds.width,
+            cropBounds.height,
+            0,
+            0,
+            cropBounds.width,
+            cropBounds.height
+        );
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                cropMsg.textContent = "Unable to prepare the cropped image.";
+                setCropButtonsDisabled(false);
+                return;
+            }
+            closeCropModal();
+            const croppedFile = new File([blob], (originalScanFile?.name || "resident-id") + "-crop.png", { type: "image/png" });
+            await scanFile(croppedFile);
+            setCropButtonsDisabled(false);
+        }, "image/png");
+    }
+
+    cropCanvas?.addEventListener("pointerdown", (event) => {
+        const point = modalPointerToImage(event);
+        if (!point || !cropImage) return;
+        dragStart = point;
+        isCropping = true;
+        cropBounds = { x: point.x, y: point.y, width: 1, height: 1 };
+        cropCanvas.setPointerCapture?.(event.pointerId);
+        renderCropCanvas();
+    });
+
+    cropCanvas?.addEventListener("pointermove", (event) => {
+        if (!isCropping || !dragStart || !cropImage) return;
+        const point = modalPointerToImage(event);
+        if (!point) return;
+        const x1 = clamp(Math.min(dragStart.x, point.x), 0, cropImage.width);
+        const y1 = clamp(Math.min(dragStart.y, point.y), 0, cropImage.height);
+        const x2 = clamp(Math.max(dragStart.x, point.x), 0, cropImage.width);
+        const y2 = clamp(Math.max(dragStart.y, point.y), 0, cropImage.height);
+        cropBounds = {
+            x: Math.round(x1),
+            y: Math.round(y1),
+            width: Math.max(1, Math.round(x2 - x1)),
+            height: Math.max(1, Math.round(y2 - y1)),
+        };
+        renderCropCanvas();
+    });
+
+    function finishCropDrag(event) {
+        if (!isCropping) return;
+        isCropping = false;
+        dragStart = null;
+        cropCanvas?.releasePointerCapture?.(event.pointerId);
+        if (cropBounds && (cropBounds.width < 24 || cropBounds.height < 24)) {
+            cropBounds = defaultCropBounds();
+        }
+        renderCropCanvas();
+    }
+
+    cropCanvas?.addEventListener("pointerup", finishCropDrag);
+    cropCanvas?.addEventListener("pointercancel", finishCropDrag);
+
     if (scanBtn && fileInput) {
         scanBtn.addEventListener("click", () => fileInput.click());
-        fileInput.addEventListener("change", () => scanFile(fileInput.files?.[0]));
+        fileInput.addEventListener("change", () => {
+            loadFileForCropping(fileInput.files?.[0]);
+            fileInput.value = "";
+        });
     }
+    scanOriginalBtn?.addEventListener("click", async () => {
+        if (!originalScanFile) return;
+        closeCropModal();
+        await scanFile(originalScanFile);
+    });
+    scanCroppedBtn?.addEventListener("click", scanCroppedSelection);
+    resetCropBtn?.addEventListener("click", resetCrop);
+    closeCropModalBtn?.addEventListener("click", closeCropModal);
+    cancelCropModalBtn?.addEventListener("click", closeCropModal);
+    cropModal?.addEventListener("click", (event) => {
+        if (event.target === cropModal) closeCropModal();
+    });
 })();
 </script>
 {% endblock %}
