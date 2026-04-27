@@ -403,6 +403,10 @@
                         <div class="status-form">
                             <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Preview Document</a>
                         </div>
+                        {% elif can_manage and service_request.status == "RELEASED" %}
+                        <div class="status-form">
+                            <a href="{% url 'generate_document' service_request.id %}" class="btn btn-soft">Reprint Document</a>
+                        </div>
                         {% endif %}
                     </article>
                 </div>

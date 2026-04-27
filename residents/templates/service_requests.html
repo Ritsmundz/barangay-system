@@ -214,6 +214,8 @@
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-release">Release & Print</button>
                             </form>
+                            {% elif can_manage_requests and sr.status == "RELEASED" %}
+                            <a href="{% url 'generate_document' sr.id %}" class="btn btn-soft">Reprint</a>
                             {% endif %}
                             </div>
                             {% if can_manage_requests and sr.status != "RELEASED" and sr.status != "REJECTED" %}
