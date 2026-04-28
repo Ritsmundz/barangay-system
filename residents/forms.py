@@ -290,6 +290,9 @@ class ResidentForm(forms.ModelForm):
 
 class ResidentPortalRegistrationForm(UserCreationForm):
     CIVIL_STATUS_CHOICES = ResidentForm.CIVIL_STATUS_CHOICES
+    REGISTRATION_STATUS_CHOICES = [
+        choice for choice in Resident.STATUS_CHOICES if choice[0] not in {"Deceased", "Moved"}
+    ]
 
     first_name = forms.CharField(max_length=100)
     middle_name = forms.CharField(max_length=100, required=False)
@@ -327,7 +330,7 @@ class ResidentPortalRegistrationForm(UserCreationForm):
     indigenous = forms.BooleanField(required=False)
     solo_parent = forms.BooleanField(required=False)
     voter_status = forms.BooleanField(required=False)
-    status = forms.ChoiceField(choices=Resident.STATUS_CHOICES, required=False, initial="Alive")
+    status = forms.ChoiceField(choices=REGISTRATION_STATUS_CHOICES, required=False, initial="Alive")
     address = forms.CharField(
         max_length=255,
         required=False,

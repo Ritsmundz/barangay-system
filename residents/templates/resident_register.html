@@ -332,6 +332,58 @@
             box-shadow: 0 0 0 4px rgba(40, 98, 211, 0.12);
         }
 
+        .password-wrap {
+            position: relative;
+        }
+
+        .password-wrap input {
+            padding-right: 52px;
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 10px;
+            background: transparent;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .password-toggle:hover {
+            background: rgba(40, 98, 211, 0.08);
+            color: var(--primary-deep);
+        }
+
+        .password-toggle:focus-visible {
+            outline: 2px solid rgba(40, 98, 211, 0.38);
+            outline-offset: 2px;
+        }
+
+        .password-toggle svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .password-toggle .icon-hide {
+            display: none;
+        }
+
+        .password-toggle.is-visible .icon-show {
+            display: none;
+        }
+
+        .password-toggle.is-visible .icon-hide {
+            display: block;
+        }
+
         input[type="file"] {
             padding: 10px 12px;
             min-height: auto;
@@ -874,8 +926,8 @@
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.suffix.id_for_label }}">Suffix</label></div>{{ form.suffix }}<div class="field-error">{% for error in form.suffix.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.email.id_for_label }}">Email address</label></div>{{ form.email }}<div class="field-error">{% for error in form.email.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.username.id_for_label }}">Username<span class="required-mark">*</span></label></div>{{ form.username }}<div class="field-error">{% for error in form.username.errors %}{{ error }}{% endfor %}</div></div>
-                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password1.id_for_label }}">Password<span class="required-mark">*</span></label></div>{{ form.password1 }}<div class="field-error">{% for error in form.password1.errors %}{{ error }}{% endfor %}</div></div>
-                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password2.id_for_label }}">Confirm password<span class="required-mark">*</span></label></div>{{ form.password2 }}<div class="field-error">{% for error in form.password2.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password1.id_for_label }}">Password<span class="required-mark">*</span></label></div><div class="password-wrap">{{ form.password1 }}<button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false"><svg class="icon-show" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 4.5c-4.25 0-7.307 3.092-8.458 5.007a.93.93 0 000 .986C2.693 12.408 5.75 15.5 10 15.5s7.307-3.092 8.458-5.007a.93.93 0 000-.986C17.307 7.592 14.25 4.5 10 4.5zm0 9.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0-1.8a2.7 2.7 0 100-5.4 2.7 2.7 0 000 5.4z"/></svg><svg class="icon-hide" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3.28 2.22a.75.75 0 10-1.06 1.06l2.09 2.1C2.98 6.38 1.98 7.7 1.35 8.74a.93.93 0 000 .98C2.5 11.63 5.64 14.75 10 14.75c1.74 0 3.27-.5 4.58-1.25l2.14 2.14a.75.75 0 001.06-1.06L3.28 2.22zm7.83 7.83a2.7 2.7 0 01-3.16-3.16l3.16 3.16zm4.88 1.1l-1.1-1.1c.5-.56.94-1.16 1.31-1.77A12.79 12.79 0 0010 5.25c-.91 0-1.76.12-2.54.34L6.2 4.33c1.15-.38 2.42-.58 3.8-.58 4.36 0 7.5 3.12 8.65 5.03a.93.93 0 010 .98 14.2 14.2 0 01-2.66 3.4z"/></svg></button></div><div class="field-error">{% for error in form.password1.errors %}{{ error }}{% endfor %}</div></div>
+                                <div class="field" data-field-wrapper data-step-field><div class="field-label-row"><label for="{{ form.password2.id_for_label }}">Confirm password<span class="required-mark">*</span></label></div><div class="password-wrap">{{ form.password2 }}<button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false"><svg class="icon-show" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10 4.5c-4.25 0-7.307 3.092-8.458 5.007a.93.93 0 000 .986C2.693 12.408 5.75 15.5 10 15.5s7.307-3.092 8.458-5.007a.93.93 0 000-.986C17.307 7.592 14.25 4.5 10 4.5zm0 9.5a4.5 4.5 0 110-9 4.5 4.5 0 010 9zm0-1.8a2.7 2.7 0 100-5.4 2.7 2.7 0 000 5.4z"/></svg><svg class="icon-hide" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3.28 2.22a.75.75 0 10-1.06 1.06l2.09 2.1C2.98 6.38 1.98 7.7 1.35 8.74a.93.93 0 000 .98C2.5 11.63 5.64 14.75 10 14.75c1.74 0 3.27-.5 4.58-1.25l2.14 2.14a.75.75 0 001.06-1.06L3.28 2.22zm7.83 7.83a2.7 2.7 0 01-3.16-3.16l3.16 3.16zm4.88 1.1l-1.1-1.1c.5-.56.94-1.16 1.31-1.77A12.79 12.79 0 0010 5.25c-.91 0-1.76.12-2.54.34L6.2 4.33c1.15-.38 2.42-.58 3.8-.58 4.36 0 7.5 3.12 8.65 5.03a.93.93 0 010 .98 14.2 14.2 0 01-2.66 3.4z"/></svg></button></div><div class="field-error">{% for error in form.password2.errors %}{{ error }}{% endfor %}</div></div>
                                 <div class="field-wide"><div class="password-meter"><div class="password-meter-bar"><div class="password-meter-fill" id="password-meter-fill"></div></div><div class="password-meter-text" id="password-meter-text">Password strength will appear here.</div></div></div>
                             </div>
                         </div>
@@ -1285,6 +1337,18 @@
                         validateInput(input);
                         updateSummary();
                     });
+                });
+            });
+
+            document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+                const input = button.parentElement.querySelector('input');
+                if (!input) return;
+                button.addEventListener('click', function () {
+                    const visible = input.type === 'text';
+                    input.type = visible ? 'password' : 'text';
+                    button.classList.toggle('is-visible', !visible);
+                    button.setAttribute('aria-pressed', String(!visible));
+                    button.setAttribute('aria-label', visible ? 'Show password' : 'Hide password');
                 });
             });
 
