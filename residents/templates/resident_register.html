@@ -362,6 +362,30 @@
             margin: 0;
         }
 
+        .consent-box {
+            display: grid;
+            gap: 10px;
+            padding: 16px 18px;
+            border-radius: 18px;
+            background: rgba(245, 248, 252, 0.92);
+            border: 1px solid rgba(23, 48, 79, 0.1);
+        }
+
+        .consent-box .check-item {
+            align-items: flex-start;
+            min-height: auto;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            font-weight: 600;
+        }
+
+        .consent-copy {
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--muted);
+        }
+
         .hint {
             font-size: 11px;
             color: var(--muted);
@@ -930,6 +954,16 @@
                                 <div class="summary-item"><strong>Address</strong><span data-confirm="address">-</span></div>
                                 <div class="summary-item"><strong>Account</strong><span data-confirm="account">-</span></div>
                             </div>
+                            <div class="field-wide" data-field-wrapper data-step-field>
+                                <div class="consent-box">
+                                    <label class="check-item" for="{{ form.consent_agreement.id_for_label }}">
+                                        {{ form.consent_agreement }}
+                                        <span>I agree to the collection and processing of my personal data for account registration, identity verification, and resident portal services in accordance with the Data Privacy Act of 2012.</span>
+                                    </label>
+                                    <div class="consent-copy">You must agree before submitting your registration.</div>
+                                    <div class="field-error">{% for error in form.consent_agreement.errors %}{{ error }}{% endfor %}</div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -993,7 +1027,8 @@
                 '{{ form.civil_status.id_for_label }}': { required: true, message: 'Select your civil status.' },
                 '{{ form.contact_number.id_for_label }}': { pattern: /^(09\d{9}|\+639\d{9}|0\d{10,14}|\d{7,15})$/, message: 'Enter a valid contact number.' },
                 '{{ form.permanent_address.id_for_label }}': { required: true, message: 'Select Yes or No.' },
-                '{{ form.valid_id_image.id_for_label }}': { required: true, message: 'Upload a valid ID image.' }
+                '{{ form.valid_id_image.id_for_label }}': { required: true, message: 'Upload a valid ID image.' },
+                '{{ form.consent_agreement.id_for_label }}': { required: true, message: 'You must agree to the data privacy consent before registering.' }
             };
             BMISFormValidation.init(form, {
                 rules: {
@@ -1052,7 +1087,13 @@
                             return permanentAddressField && permanentAddressField.value === 'False' && !getValue(addressProvinceField) ? 'This field is required.' : '';
                         }
                     },
-                    '{{ form.valid_id_image.id_for_label }}': { required: true, label: 'Valid ID image' }
+                    '{{ form.valid_id_image.id_for_label }}': { required: true, label: 'Valid ID image' },
+                    '{{ form.consent_agreement.id_for_label }}': {
+                        label: 'Data privacy consent',
+                        custom: function (input) {
+                            return input.checked ? '' : 'You must agree to the data privacy consent before registering.';
+                        }
+                    }
                 }
             });
             const stepInputs = steps.map((step) => Array.from(step.querySelectorAll('[data-step-field] input, [data-step-field] select, [data-step-field] textarea')));
@@ -1060,6 +1101,7 @@
             function getValue(input) {
                 if (!input) return '';
                 if (input.type === 'file') return input.files && input.files.length ? input.files[0].name : '';
+                if (input.type === 'checkbox') return input.checked ? input.value || 'on' : '';
                 return (input.value || '').trim();
             }
 

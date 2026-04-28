@@ -334,6 +334,10 @@ class ResidentPortalRegistrationForm(UserCreationForm):
         widget=forms.HiddenInput(),
     )
     valid_id_image = forms.ImageField()
+    consent_agreement = forms.BooleanField(
+        required=True,
+        error_messages={"required": "You must agree to the data privacy consent before registering."},
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -378,6 +382,7 @@ class ResidentPortalRegistrationForm(UserCreationForm):
         self.fields["birthdate"].widget.attrs.setdefault("max", date.today().isoformat())
         self.fields["contact_number"].widget.attrs.setdefault("autocomplete", "tel")
         self.fields["valid_id_image"].widget.attrs.setdefault("accept", "image/*")
+        self.fields["consent_agreement"].label = "I agree to the collection and processing of my personal data for resident registration."
         for field in self.fields.values():
             if hasattr(field, "max_length") and field.max_length:
                 field.widget.attrs.setdefault("maxlength", str(field.max_length))
@@ -469,6 +474,7 @@ class ResidentPortalRegistrationForm(UserCreationForm):
             "status",
             "address",
             "valid_id_image",
+            "consent_agreement",
             "password1",
             "password2",
         ]

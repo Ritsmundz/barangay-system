@@ -72,6 +72,7 @@ class ResidentPortalRegistrationTests(TestCase):
                 "solo_parent": "",
                 "voter_status": "on",
                 "status": "Alive",
+                "consent_agreement": "on",
                 "password1": "StrongPass123!",
                 "password2": "StrongPass123!",
                 "valid_id_image": SimpleUploadedFile(
@@ -155,6 +156,7 @@ class ResidentPortalRegistrationTests(TestCase):
                 "solo_parent": "",
                 "voter_status": "",
                 "status": "Alive",
+                "consent_agreement": "on",
                 "password1": "StrongPass123!",
                 "password2": "StrongPass123!",
                 "valid_id_image": SimpleUploadedFile(
@@ -198,6 +200,87 @@ class ResidentPortalRegistrationTests(TestCase):
         self.assertIn("email", form.errors)
         self.assertIn("contact_number", form.errors)
         self.assertIn("password1", form.errors)
+
+    def test_registration_requires_data_privacy_consent(self):
+        form = ResidentPortalRegistrationForm(
+            data={
+                "username": "noconsentresident",
+                "first_name": "Juan",
+                "last_name": "Dela Cruz",
+                "birthdate": "2000-01-15",
+                "gender": "Male",
+                "civil_status": "Single",
+                "email": "noconsent@example.com",
+                "permanent_address": "True",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+            },
+            files={
+                "valid_id_image": SimpleUploadedFile(
+                    "valid-id.gif",
+                    TEST_GIF,
+                    content_type="image/gif",
+                ),
+            },
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("consent_agreement", form.errors)
+
+    @override_settings(ALLOWED_HOSTS=["localhost", "127.0.0.1", "testserver"])
+    def test_registration_page_sets_csrf_cookie_and_accepts_post_with_token(self):
+        csrf_client = self.client_class(enforce_csrf_checks=True)
+
+        get_response = csrf_client.get(reverse("resident_register"), HTTP_HOST="localhost")
+
+        self.assertEqual(get_response.status_code, 200)
+        self.assertContains(get_response, "csrfmiddlewaretoken")
+        self.assertIn("csrftoken", csrf_client.cookies)
+
+        response = csrf_client.post(
+            reverse("resident_register"),
+            data={
+                "csrfmiddlewaretoken": csrf_client.cookies["csrftoken"].value,
+                "username": "csrftokenresident",
+                "first_name": "Juan",
+                "middle_name": "Santos",
+                "last_name": "Dela Cruz",
+                "suffix": "",
+                "birthdate": "2000-01-15",
+                "place_of_birth": "Quezon City",
+                "gender": "Male",
+                "civil_status": "Single",
+                "nationality": "Filipino",
+                "religion": "Catholic",
+                "occupation": "Student",
+                "educational_attainment": "College",
+                "contact_number": "09123456789",
+                "email": "csrftokenresident@example.com",
+                "permanent_address": "True",
+                "address_house_number": "123",
+                "address_street": "Sampaguita St.",
+                "address_barangay": "",
+                "address_city": "",
+                "address_province": "",
+                "precinct": "101A",
+                "pwd": "",
+                "indigenous": "",
+                "solo_parent": "",
+                "voter_status": "on",
+                "status": "Alive",
+                "consent_agreement": "on",
+                "password1": "StrongPass123!",
+                "password2": "StrongPass123!",
+                "valid_id_image": SimpleUploadedFile(
+                    "valid-id.gif",
+                    TEST_GIF,
+                    content_type="image/gif",
+                ),
+            },
+            HTTP_HOST="localhost",
+        )
+
+        self.assertRedirects(response, reverse("portal_pending_verification"))
 
     @override_settings(
         EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
@@ -258,6 +341,7 @@ class ResidentPortalRegistrationTests(TestCase):
                     "solo_parent": "",
                     "voter_status": "on",
                     "status": "Alive",
+                    "consent_agreement": "on",
                     "password1": "StrongPass123!",
                     "password2": "StrongPass123!",
                     "valid_id_image": SimpleUploadedFile(

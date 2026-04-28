@@ -27,6 +27,7 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.text import slugify
 from .models import Resident, Household, ServiceRequest, ServiceRequestAttachment, Payment, Complaint, ServiceType, AuditLog, RequestPurpose, UserProfile, Notification
 from .forms import (
@@ -3332,6 +3333,7 @@ def role_redirect(request):
         return redirect('admin/')
 
 
+@ensure_csrf_cookie
 def resident_register(request):
     if request.user.is_authenticated:
         return redirect("role_redirect")
