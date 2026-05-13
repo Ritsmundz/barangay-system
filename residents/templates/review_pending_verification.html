@@ -105,7 +105,7 @@
     <section class="rp-shell">
         <div class="rp-head">
             <div class="rp-title">Review Portal Account</div>
-            <div class="rp-sub">Verify the submitted portal identity, then link the account to an existing resident or create a new resident record.</div>
+            <div class="rp-sub">Verify the submitted portal identity, then create a new resident record for the portal account when approved.</div>
         </div>
         <div class="rp-stepbar">
             <div class="rp-step active">
@@ -184,47 +184,7 @@
                         </div>
                     </div>
 
-                    <div class="rp-note">
-                        <strong>Option 1: Link to an Existing Resident</strong>
-                        Search for a matching resident in the barangay database. If the portal user is brand-new and does not yet exist as a resident record, use the create form on the right.
-                    </div>
-
-                    {% if can_manage %}
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="approve">
-                        <div class="rp-search-row">
-                            <div class="rp-field">
-                                <label for="resident_id">Select Existing Resident</label>
-                                <select name="resident_id" id="resident_id" required>
-                                    <option value="">-- Select a resident --</option>
-                                    {% for resident in suggested_residents %}
-                                    <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>{{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}</option>
-                                    {% endfor %}
-                                    {% for resident in available_residents %}
-                                    <option value="{{ resident.id }}" {% if selected_resident_id == resident.id %}selected{% endif %}>{{ resident.last_name }}, {{ resident.first_name }} - {{ resident.birth_date }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <button type="submit" class="btn-bmis btn-primary">Approve and Link</button>
-                        </div>
-
-                        {% if mismatch_warning %}
-                        <div class="ui-alert warning" style="margin-top:14px;">
-                            <strong>Selected resident data does not fully match the submitted portal details.</strong>
-                            <ul style="margin-top:8px;padding-left:18px;">
-                                {% for item in mismatch_details %}
-                                <li>{{ item }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                        <label class="rp-checkbox" style="margin-top:12px;display:block;">
-                            <input type="checkbox" name="confirm_override" value="1">
-                            Confirm manual override for this mismatched link
-                        </label>
-                        {% endif %}
-                    </form>
-                    {% else %}
+                    {% if not can_manage %}
                     <div class="ui-alert info">
                         Captain view only: the Secretary must approve, reject, or create the resident record from this page.
                     </div>

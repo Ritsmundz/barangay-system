@@ -145,8 +145,10 @@
             </div>
 
             <div class="hero-cta">
-                {% if primary_role != "Treasurer" %}
+                {% if can_edit_resident %}
                 <a href="{% url 'edit_resident' resident.id %}" class="btn-bmis btn-secondary">Edit Profile</a>
+                {% endif %}
+                {% if primary_role != "Treasurer" %}
                 {% if resident.status == "Alive" %}
                 <a href="{% url 'create_walk_in_service_request' %}" class="btn-bmis btn-primary">Create Request</a>
                 {% endif %}

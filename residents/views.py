@@ -3028,8 +3028,7 @@ def scan_resident_id(request):
             return JsonResponse({
                 "ok": False,
                 "error": (
-                    "This ID could not be auto-filled because no readable QR data was found and the full OCR engine "
-                    "is not installed yet. Install Tesseract to scan text-based IDs smoothly."
+                    "This ID could not be auto-filled because no readable QR data was found."
                 ),
                 "needs_tesseract": True,
             }, status=422)
@@ -3043,7 +3042,7 @@ def scan_resident_id(request):
     response_payload = {"ok": True, "data": extracted}
     if not tesseract_bin:
         response_payload["warning"] = (
-            "QR-based fields were applied. Install Tesseract as well if you want text-only IDs to auto-fill smoothly."
+            "QR-based fields were applied successfully."
         )
     return JsonResponse(response_payload)
 
@@ -4430,6 +4429,7 @@ def update_service_request_status(request, request_id):
 @login_required
 def resident_profile(request, resident_id):
     resident = get_object_or_404(Resident, id=resident_id)
+    can_edit_resident = False
     if is_resident(request.user):
         profile = get_user_profile(request.user)
         if not profile or not profile.resident or profile.resident_id != resident.id:
@@ -4438,8 +4438,10 @@ def resident_profile(request, resident_id):
             messages.error(request, "Your account is still pending verification.")
             return redirect("portal_pending_verification")
         services = ServiceRequest.objects.filter(resident=profile.resident)
+        can_edit_resident = request.user.has_perm("residents.change_resident")
     elif is_staff_user(request.user):
         services = ServiceRequest.objects.filter(resident=resident)
+        can_edit_resident = request.user.has_perm("residents.change_resident")
     else:
         return HttpResponseForbidden("You do not have permission to access this page.")
 
@@ -4473,6 +4475,7 @@ def resident_profile(request, resident_id):
         "status_filter": status_filter,
         "sort_filter": sort_filter,
         "status_choices": ServiceRequest.STATUS_CHOICES,
+        "can_edit_resident": can_edit_resident,
     }
     return render(request, "resident_profile.html", context)
 
@@ -4480,10 +4483,24 @@ def resident_profile(request, resident_id):
 #EDIT RESIDENT
 #EDIT RESIDENT
 #EDIT RESIDENT
-@group_required(is_secretary)
+@login_required
 def edit_resident(request, resident_id):
-
     resident = get_object_or_404(Resident, id=resident_id)
+    profile = get_user_profile(request.user)
+
+    if is_resident(request.user):
+        if not request.user.has_perm("residents.change_resident"):
+            return HttpResponseForbidden("You do not have permission to access this page.")
+        if not profile or not profile.resident or profile.resident_id != resident.id:
+            return HttpResponseForbidden("You can only edit your own resident profile.")
+        if not profile.is_verified:
+            messages.error(request, "Your account is still pending verification.")
+            return redirect("portal_pending_verification")
+    elif is_staff_user(request.user):
+        if not request.user.has_perm("residents.change_resident"):
+            return HttpResponseForbidden("You do not have permission to access this page.")
+    else:
+        return HttpResponseForbidden("You do not have permission to access this page.")
 
     if request.method == "POST":
         before_data = snapshot_instance(resident)
