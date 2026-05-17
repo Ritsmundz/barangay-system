@@ -75,13 +75,26 @@ def _append_unique(values, candidate):
         values.append(candidate)
 
 
+def _append_host_variants(values, candidate):
+    candidate = (candidate or '').strip()
+    if not candidate:
+        return
+
+    _append_unique(values, candidate)
+
+    if candidate.startswith('www.'):
+        _append_unique(values, candidate[4:])
+    elif '.' in candidate and candidate != 'localhost':
+        _append_unique(values, f'www.{candidate}')
+
+
 ALLOWED_HOSTS = _split_csv_env(os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
 
 for default_host in ('localhost', '127.0.0.1', 'barangay-system-4jua.onrender.com'):
-    _append_unique(ALLOWED_HOSTS, default_host)
+    _append_host_variants(ALLOWED_HOSTS, default_host)
 
 render_external_hostname = os.getenv('RENDER_EXTERNAL_HOSTNAME', '').strip()
-_append_unique(ALLOWED_HOSTS, render_external_hostname)
+_append_host_variants(ALLOWED_HOSTS, render_external_hostname)
 
 render_external_url = os.getenv('RENDER_EXTERNAL_URL', '').strip().rstrip('/')
 if render_external_url:
@@ -89,7 +102,7 @@ if render_external_url:
         from urllib.parse import urlparse
 
         parsed_render_url = urlparse(render_external_url)
-        _append_unique(ALLOWED_HOSTS, parsed_render_url.hostname)
+        _append_host_variants(ALLOWED_HOSTS, parsed_render_url.hostname)
     except ValueError:
         pass
 
