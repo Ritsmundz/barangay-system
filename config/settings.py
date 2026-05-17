@@ -88,7 +88,11 @@ def _append_host_variants(values, candidate):
         _append_unique(values, f'www.{candidate}')
 
 
-ALLOWED_HOSTS = _split_csv_env(os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
+configured_allowed_hosts = _split_csv_env(os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1'))
+ALLOWED_HOSTS = []
+
+for configured_host in configured_allowed_hosts:
+    _append_host_variants(ALLOWED_HOSTS, configured_host)
 
 for default_host in ('localhost', '127.0.0.1', 'barangay-system-4jua.onrender.com'):
     _append_host_variants(ALLOWED_HOSTS, default_host)
