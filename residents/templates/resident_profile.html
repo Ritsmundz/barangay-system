@@ -150,7 +150,6 @@
                 {% endif %}
                 {% if primary_role != "Treasurer" %}
                 {% if resident.status == "Alive" %}
-                <a href="{% url 'create_walk_in_service_request' %}" class="btn-bmis btn-primary">Create Request</a>
                 {% endif %}
                 {% endif %}
             </div>
@@ -215,7 +214,6 @@
                             <button type="submit" class="btn-bmis btn-secondary">Apply</button>
                         </div>
                         {% if resident.status == "Alive" and primary_role != "Treasurer" %}
-                        <a href="{% url 'create_walk_in_service_request' %}" class="btn-bmis btn-primary">New Request</a>
                         {% endif %}
                     </form>
                 </div>
